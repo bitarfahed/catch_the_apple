@@ -8,11 +8,12 @@ The long-term goal is to grow this prototype into a polished portfolio project t
 
 The project is intentionally simple at this stage:
 
-- One executable Pygame file: `main.py`
+- Thin executable entry point: `main.py`
+- Modular game package: `catch_the_apple/`
 - Rectangle-based basket and apple rendering
 - Keyboard input with left and right arrow keys
 - Score, lives, collision detection, apple respawn, and basic difficulty scaling
-- No package layout, asset pipeline, tests, or scene/state system yet
+- No asset pipeline, tests, or scene/state system yet
 
 ## Running
 

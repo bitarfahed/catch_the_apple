@@ -2,13 +2,13 @@
 
 ## Overview
 
-Catch the Apple is currently a single-file Pygame game implemented in `main.py`. The architecture is a direct prototype structure: initialization, global state, input handling, update logic, collision checks, rendering, and shutdown all live in one module.
+Catch the Apple is currently a small modular Pygame game. The root `main.py` file is a thin executable entry point, and the game logic lives in the `catch_the_apple` package.
 
-This is appropriate for the current size of the project, but future development should introduce clear module boundaries while preserving the simplicity of a 2D Pygame arcade game.
+The architecture is intentionally lightweight. It separates the first major responsibilities without introducing a broad framework or changing gameplay.
 
 ## Current Runtime Structure
 
-The game starts when `main.py` is executed. Pygame is initialized, a window is created, game variables are defined, and the main loop runs until the player closes the window or loses all lives.
+The game starts when `main.py` is executed. `main.py` delegates to `catch_the_apple.app.main`, which creates and runs `catch_the_apple.game.Game`. Pygame is initialized inside the `Game` constructor, so importing the entry point no longer starts the game loop.
 
 The loop currently follows this order:
 
@@ -25,20 +25,21 @@ The loop currently follows this order:
 
 | Subsystem | Current State |
 |---|---|
-| Entry point | Direct execution of `main.py` |
-| Game state | Module-level variables |
-| Input | Direct Pygame keyboard polling |
-| Entities | Basket and apple represented by position/size variables |
-| Collision | `pygame.Rect.colliderect` |
-| Physics | Fixed pixel-per-frame movement |
-| Rendering | Pygame primitive rectangles and font rendering |
+| Entry point | `main.py` and `catch_the_apple.__main__` delegate to `catch_the_apple.app.main` |
+| Game loop | `catch_the_apple.game.Game` owns initialization, loop, and shutdown |
+| Game state | `GameState` dataclass for score, lives, and running flag |
+| Input | `catch_the_apple.input.poll_input` wraps Pygame event and key polling |
+| Entities | `Basket` and `Apple` dataclasses |
+| Collision | `catch_the_apple.collision.collides` uses `pygame.Rect.colliderect` |
+| Physics | Fixed pixel-per-frame movement preserved from the prototype |
+| Rendering | `catch_the_apple.rendering.Renderer` draws rectangles and HUD text |
 | Assets | No external assets yet |
-| Configuration | Hardcoded constants and globals |
+| Configuration | Constants in `catch_the_apple.config` |
 | Tests | None yet |
 
 ## Intended Direction
 
-Future architecture should separate responsibilities into small, practical modules: configuration, game lifecycle, entities, input, update systems, collision, rendering, assets, and state management.
+Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer state management, asset loading, deterministic systems, and testable game rules.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 
