@@ -1,7 +1,8 @@
 import pygame
 
 from catch_the_apple import config
-from catch_the_apple.entities import Apple, Basket, GameState
+from catch_the_apple.session import GameSession
+from catch_the_apple.world import World
 
 
 class Renderer:
@@ -9,13 +10,14 @@ class Renderer:
         self.screen = screen
         self.font = pygame.font.SysFont(config.FONT_NAME, config.FONT_SIZE)
 
-    def render(self, basket: Basket, apple: Apple, state: GameState) -> None:
+    def render(self, world: World, session: GameSession) -> None:
         self.screen.fill(config.BLUE)
 
-        pygame.draw.rect(self.screen, config.GREEN, basket.rect)
-        pygame.draw.rect(self.screen, config.RED, apple.rect)
+        pygame.draw.rect(self.screen, config.GREEN, world.basket.rect)
+        for falling_object in world.falling_objects:
+            pygame.draw.rect(self.screen, config.RED, falling_object.rect)
 
-        score_text = self.font.render(f"Score: {state.score}", True, config.WHITE)
-        lives_text = self.font.render(f"Lives: {state.lives}", True, config.WHITE)
+        score_text = self.font.render(f"Score: {session.score}", True, config.WHITE)
+        lives_text = self.font.render(f"Lives: {session.lives}", True, config.WHITE)
         self.screen.blit(score_text, (10, 10))
         self.screen.blit(lives_text, (config.SCREEN_WIDTH - 120, 10))

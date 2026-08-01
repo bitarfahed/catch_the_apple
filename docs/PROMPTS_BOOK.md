@@ -297,3 +297,160 @@ The runtime was changed from frame-dependent movement to delta-time movement. Th
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 3: World Model & Gameplay Systems
+
+**Date:** 2026-08-01
+
+**Goal:** Introduce a structured world model and dedicated gameplay systems while keeping the player-facing game functionally identical.
+
+**Full Prompt Text:**
+
+```text
+Prompt 3 - World Model & Gameplay Systems
+
+Context
+
+The project now has a modular architecture and a runtime based on delta time.
+
+This prompt introduces the core gameplay architecture that future features will build upon.
+
+Do not add new gameplay mechanics.
+
+The player should experience the same game as before.
+
+---
+
+Objectives
+
+Replace the remaining global gameplay state with a structured world model.
+
+Introduce clear ownership and separation between:
+
+- Game session
+- World
+- Basket
+- Falling object(s)
+- Game rules
+
+Represent entities using appropriate data structures (prefer dataclasses where appropriate).
+
+Create dedicated systems responsible for:
+
+- Input
+- Movement
+- Spawning
+- Collision
+- Scoring
+- Difficulty progression
+
+Each system should have a single responsibility.
+
+The renderer should only render.
+
+Game rules should not directly manipulate rendering.
+
+The current gameplay must remain functionally identical:
+
+- One falling apple
+- One basket
+- Score
+- Lives
+- Apple speed increases every five points
+
+The architecture should naturally support multiple falling objects in a future prompt without implementing them now.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 3
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add multiple apples.
+- Add procedural graphics.
+- Add particles.
+- Add menus.
+- Add audio.
+- Change collision mathematics.
+- Introduce data-driven object types yet.
+- Change gameplay rules.
+
+Avoid unnecessary abstractions and overengineering.
+
+---
+
+Acceptance Criteria
+
+- Global mutable state has been eliminated or significantly reduced.
+- Gameplay systems have clear responsibilities.
+- Gameplay remains functionally identical.
+- Architecture is ready for multiple entities in the next prompt.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Architecture decisions
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/session.py`
+- `catch_the_apple/world.py`
+- `catch_the_apple/systems/__init__.py`
+- `catch_the_apple/systems/difficulty.py`
+- `catch_the_apple/systems/game_rules.py`
+- `catch_the_apple/systems/movement.py`
+- `catch_the_apple/systems/scoring.py`
+- `catch_the_apple/systems/spawning.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/entities.py`
+- `catch_the_apple/game.py`
+- `catch_the_apple/rendering.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Files Removed:**
+
+- `catch_the_apple/utils.py`
+
+**Short Implementation Summary:**
+
+Session state was moved into `GameSession`, and active gameplay entities were moved into `World`. The world currently contains one basket and one falling apple, represented internally as a `falling_objects` list to prepare for future multiple-object support without adding that mechanic now. Movement, spawning, scoring, difficulty progression, and game-rule coordination were split into focused system modules. The renderer now renders a world/session snapshot and does not own gameplay rules.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Import smoke check for the runtime, world, session, and gameplay systems passed without starting the game loop.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

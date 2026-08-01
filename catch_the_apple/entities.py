@@ -66,10 +66,3 @@ class Apple:
     @property
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.x), int(self.y), self.size, self.size)
-
-
-@dataclass
-class GameState:
-    score: int = 0
-    lives: int = config.INITIAL_LIVES
-    running: bool = True

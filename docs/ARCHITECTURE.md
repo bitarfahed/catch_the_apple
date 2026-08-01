@@ -10,6 +10,8 @@ The architecture is intentionally lightweight. It separates the first major resp
 
 The game starts when `main.py` is executed. `main.py` delegates to `catch_the_apple.app.main`, which creates and runs `catch_the_apple.game.Game`. Pygame is initialized inside the `Game` constructor, so importing the entry point no longer starts the game loop.
 
+`Game` owns the runtime loop. `GameSession` owns session-level state such as score, lives, and whether the session is running. `World` owns active gameplay entities: currently one basket and one falling apple stored through a list-shaped `falling_objects` model so future prompts can support multiple falling objects without changing the renderer or runtime loop again.
+
 The loop currently follows this order:
 
 1. Process window events.
@@ -26,8 +28,9 @@ The loop currently follows this order:
 | Subsystem | Current State |
 |---|---|
 | Entry point | `main.py` and `catch_the_apple.__main__` delegate to `catch_the_apple.app.main` |
-| Game loop | `catch_the_apple.game.Game` owns initialization, loop, and shutdown |
-| Game state | `GameState` dataclass for score, lives, and running flag |
+| Game loop | `catch_the_apple.game.Game` owns initialization, loop, update/render calls, and shutdown |
+| Game session | `catch_the_apple.session.GameSession` owns score, lives, and running flag |
+| World | `catch_the_apple.world.World` owns the basket and falling object collection |
 | Input | `catch_the_apple.input.poll_input` wraps Pygame event and key polling |
 | Entities | `Basket` and `Apple` dataclasses |
 | Collision | `catch_the_apple.collision.collides` uses `pygame.Rect.colliderect` |
@@ -35,6 +38,7 @@ The loop currently follows this order:
 | Physics | Simple velocity-style movement using pixels per second |
 | Rendering | `catch_the_apple.rendering.Renderer` draws rectangles and HUD text |
 | Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
+| Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
 | Assets | No external assets yet |
 | Configuration | Constants in `catch_the_apple.config` |
 | Tests | None yet |

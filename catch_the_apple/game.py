@@ -1,12 +1,12 @@
 import pygame
 
 from catch_the_apple import config
-from catch_the_apple.collision import collides
-from catch_the_apple.entities import Basket, GameState
 from catch_the_apple.input import poll_input
-from catch_the_apple.math2d import clamp
 from catch_the_apple.rendering import Renderer
-from catch_the_apple.utils import create_apple, reset_apple
+from catch_the_apple.session import GameSession
+from catch_the_apple.systems.game_rules import apply_game_rules
+from catch_the_apple.systems.movement import update_movement
+from catch_the_apple.world import World
 
 
 class Game:
@@ -19,14 +19,13 @@ class Game:
         )
         pygame.display.set_caption(config.WINDOW_TITLE)
 
-        self.state = GameState()
-        self.basket = Basket()
-        self.apple = create_apple()
+        self.session = GameSession()
+        self.world = World()
         self.renderer = Renderer(self.screen)
         self.clock = pygame.time.Clock()
 
     def run(self) -> None:
-        while self.state.running:
+        while self.session.running:
             delta_time = self.measure_delta_time()
             self.update(delta_time)
             self.render()
@@ -40,29 +39,11 @@ class Game:
     def update(self, delta_time: float) -> None:
         input_state = poll_input()
         if input_state.quit_requested:
-            self.state.running = False
+            self.session.running = False
 
-        if input_state.left_pressed and self.basket.x > 0:
-            self.basket.x -= self.basket.speed * delta_time
-        if input_state.right_pressed and self.basket.x < config.SCREEN_WIDTH - self.basket.width:
-            self.basket.x += self.basket.speed * delta_time
-
-        self.basket.x = clamp(self.basket.x, 0, config.SCREEN_WIDTH - self.basket.width)
-
-        self.apple.y += self.apple.speed * delta_time
-
-        if self.apple.y > config.SCREEN_HEIGHT:
-            self.state.lives -= 1
-            reset_apple(self.apple)
-            if self.state.lives <= 0:
-                self.state.running = False
-
-        if collides(self.basket, self.apple):
-            self.state.score += 1
-            reset_apple(self.apple)
-            if self.state.score % 5 == 0:
-                self.apple.speed += config.APPLE_SPEED_INCREASE
+        update_movement(self.world, input_state, delta_time)
+        apply_game_rules(self.world, self.session)
 
     def render(self) -> None:
-        self.renderer.render(self.basket, self.apple, self.state)
+        self.renderer.render(self.world, self.session)
         pygame.display.flip()
