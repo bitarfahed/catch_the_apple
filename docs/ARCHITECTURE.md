@@ -31,15 +31,17 @@ The loop currently follows this order:
 | Input | `catch_the_apple.input.poll_input` wraps Pygame event and key polling |
 | Entities | `Basket` and `Apple` dataclasses |
 | Collision | `catch_the_apple.collision.collides` uses `pygame.Rect.colliderect` |
-| Physics | Fixed pixel-per-frame movement preserved from the prototype |
+| Runtime timing | Delta-time measured from `pygame.time.Clock`, clamped to avoid large spikes |
+| Physics | Simple velocity-style movement using pixels per second |
 | Rendering | `catch_the_apple.rendering.Renderer` draws rectangles and HUD text |
+| Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
 | Assets | No external assets yet |
 | Configuration | Constants in `catch_the_apple.config` |
 | Tests | None yet |
 
 ## Intended Direction
 
-Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer state management, asset loading, deterministic systems, and testable game rules.
+Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer state management, asset loading, deterministic systems, and testable game rules. The current runtime now has separate update and render phases, which should remain the foundation for future gameplay and rendering work.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 

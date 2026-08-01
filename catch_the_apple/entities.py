@@ -1,33 +1,71 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pygame
 
 from catch_the_apple import config
+from catch_the_apple.math2d import Transform2D, vec2
 
 
 @dataclass
 class Basket:
-    x: int = (config.SCREEN_WIDTH - config.BASKET_WIDTH) // 2
-    y: int = config.SCREEN_HEIGHT - config.BASKET_HEIGHT - config.BASKET_Y_OFFSET
+    transform: Transform2D = field(
+        default_factory=lambda: Transform2D(
+            position=vec2(
+                (config.SCREEN_WIDTH - config.BASKET_WIDTH) // 2,
+                config.SCREEN_HEIGHT - config.BASKET_HEIGHT - config.BASKET_Y_OFFSET,
+            )
+        )
+    )
     width: int = config.BASKET_WIDTH
     height: int = config.BASKET_HEIGHT
-    speed: int = config.BASKET_SPEED
+    speed: float = config.BASKET_SPEED
+
+    @property
+    def x(self) -> float:
+        return self.transform.position.x
+
+    @x.setter
+    def x(self, value: float) -> None:
+        self.transform.position.x = value
+
+    @property
+    def y(self) -> float:
+        return self.transform.position.y
+
+    @y.setter
+    def y(self, value: float) -> None:
+        self.transform.position.y = value
 
     @property
     def rect(self) -> pygame.Rect:
-        return pygame.Rect(self.x, self.y, self.width, self.height)
+        return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 
 
 @dataclass
 class Apple:
-    x: int
-    y: int = -config.APPLE_SIZE
+    transform: Transform2D
     size: int = config.APPLE_SIZE
-    speed: int = config.APPLE_INITIAL_SPEED
+    speed: float = config.APPLE_INITIAL_SPEED
+
+    @property
+    def x(self) -> float:
+        return self.transform.position.x
+
+    @x.setter
+    def x(self, value: float) -> None:
+        self.transform.position.x = value
+
+    @property
+    def y(self) -> float:
+        return self.transform.position.y
+
+    @y.setter
+    def y(self, value: float) -> None:
+        self.transform.position.y = value
 
     @property
     def rect(self) -> pygame.Rect:
-        return pygame.Rect(self.x, self.y, self.size, self.size)
+        return pygame.Rect(int(self.x), int(self.y), self.size, self.size)
 
 
 @dataclass

@@ -168,3 +168,132 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 2: Core Runtime
+
+**Date:** 2026-08-01
+
+**Goal:** Establish a time-based runtime foundation with separated update/render phases and reusable 2D transform utilities while preserving current gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 2 - Core Runtime
+
+Context
+
+The project now has a modular architecture with a clean entry point.
+
+This prompt establishes the runtime foundation that all future gameplay and rendering systems will rely on.
+
+Do not introduce new gameplay features.
+
+The game should feel almost identical to the player.
+
+---
+
+Objectives
+
+Replace the current frame-dependent update model with a time-based runtime.
+
+Implement:
+
+- Delta-time based update loop.
+- Separation between update() and render().
+- Frame time measurement.
+- Reasonable delta-time clamping to avoid large frame spikes.
+- A small math module containing reusable 2D vector utilities (use pygame.Vector2 or your own lightweight abstraction where appropriate).
+- A reusable Transform2D data structure supporting:
+  - position
+  - rotation
+  - scale
+
+The Transform2D implementation should be simple and designed for future procedural rendering, not overengineered.
+
+Future systems should be able to reuse this runtime foundation without requiring another major refactor.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 2
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Change gameplay rules.
+- Add multiple apples.
+- Add new entities.
+- Add menus.
+- Add particles.
+- Add procedural rendering.
+- Add lighting.
+- Add physics beyond delta-time movement.
+- Introduce fixed timestep yet unless it can be done with almost no additional complexity.
+
+Avoid unnecessary abstractions.
+
+---
+
+Acceptance Criteria
+
+- Gameplay remains visually almost identical.
+- Movement is based on elapsed time instead of frames.
+- Update and rendering are clearly separated.
+- Transform2D exists and is reusable.
+- Runtime is prepared for future systems.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Runtime architecture decisions
+- Manual verification performed
+- Confirmation that gameplay behavior was intentionally preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/math2d.py`
+
+**Files Modified:**
+
+- `catch_the_apple/config.py`
+- `catch_the_apple/entities.py`
+- `catch_the_apple/game.py`
+- `catch_the_apple/utils.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+The runtime was changed from frame-dependent movement to delta-time movement. The original per-frame speeds were converted to pixels-per-second values using the existing 60 FPS target so gameplay remains nearly identical. The `Game` class now has explicit `measure_delta_time`, `update`, and `render` methods. Delta time is clamped to prevent unusually large frame spikes. A small `math2d` module now provides a `pygame.Vector2` alias, `vec2`, `clamp`, and a reusable `Transform2D` dataclass with position, rotation, and scale. Basket and apple entities now store position through `Transform2D` while preserving simple `x`, `y`, and `rect` access.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Import smoke check for `main` and package modules passed without starting the game loop.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.
