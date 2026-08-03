@@ -2,13 +2,15 @@
 
 ## Overview
 
-Catch the Apple is currently a small modular Pygame game. The root `main.py` file is a thin executable entry point, and the game logic lives in the `catch_the_apple` package.
+Catch the Apple is a modular Pygame game using a professional `src/` package layout. The root `main.py` file is a thin executable launcher, and the game logic lives in the `src/catch_the_apple` package.
 
-The architecture is intentionally lightweight. It separates the first major responsibilities without introducing a broad framework or changing gameplay.
+The architecture is intentionally lightweight. It separates major responsibilities without introducing a broad framework or changing gameplay.
 
 ## Current Runtime Structure
 
-The game starts when `main.py` is executed. `main.py` delegates to `catch_the_apple.app.main`, which creates and runs `catch_the_apple.game.Game`. Pygame is initialized inside the `Game` constructor, so importing the entry point no longer starts the game loop.
+The game starts when `main.py` is executed. `main.py` bootstraps the local `src/` path, then delegates to the public SDK exposed by `catch_the_apple.main`. The SDK creates and runs `catch_the_apple.game.Game`. Pygame is initialized inside the `Game` constructor, so importing the package does not start the game loop.
+
+External tools should use `catch_the_apple`, `catch_the_apple.sdk.GameSDK`, `catch_the_apple.sdk.create_game`, or `catch_the_apple.sdk.run_game` instead of importing internal modules directly.
 
 `Game` owns the runtime loop. `GameSession` owns session-level state such as score, lives, and whether the session is running. `World` owns active gameplay entities: currently one basket and a collection of falling objects. Falling objects are created from data-driven object definitions. The spawn system is configured to keep one regular apple active, preserving current gameplay while supporting future expansion.
 
@@ -26,7 +28,8 @@ The loop currently follows this order:
 
 | Subsystem | Current State |
 |---|---|
-| Entry point | `main.py` and `catch_the_apple.__main__` delegate to `catch_the_apple.app.main` |
+| Public SDK | `catch_the_apple.__init__` and `catch_the_apple.sdk` expose version, game creation, and run helpers |
+| Entry point | `main.py`, `catch_the_apple.__main__`, and `catch_the_apple.app` delegate to the SDK |
 | Game loop | `catch_the_apple.game.Game` owns initialization, loop, update/render calls, and shutdown |
 | Game session | `catch_the_apple.session.GameSession` owns score, lives, and running flag |
 | World | `catch_the_apple.world.World` owns the basket and falling object collection |
@@ -51,12 +54,12 @@ The loop currently follows this order:
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
 | Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
 | Assets | No external assets yet |
-| Configuration | Constants, spawn parameters, and enabled object IDs in `catch_the_apple.config` |
+| Configuration | Runtime constants, spawn parameters, and enabled object IDs in `catch_the_apple.config`; packaging/tool config in `pyproject.toml` |
 | Tests | Headless `unittest` coverage for core math, gameplay systems, collision, particles, persistence, environment, procedural rendering, and lighting |
 
 ## Intended Direction
 
-Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer object behaviors, asset loading, deterministic systems, broader integration tests, and packaging. The current runtime has separate update and render phases, which should remain the foundation for future gameplay and rendering work.
+Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer object behaviors, asset loading, deterministic systems, broader integration tests, and packaging. The SDK should remain the supported boundary for launch/control use cases.
 
 Basket movement state exposes current velocity, movement direction, and speed for animation and rendering systems.
 
@@ -83,6 +86,7 @@ The goal is not to create a general game engine. The architecture should serve t
 The following current decisions are good foundations:
 
 - Pygame as the rendering and input framework
+- `src/` package layout with SDK facade
 - Simple arcade loop structure
 - Focused world/session model
 - Data-driven object definitions

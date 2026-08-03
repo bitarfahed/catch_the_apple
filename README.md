@@ -6,7 +6,8 @@ The project remains intentionally focused: it is a game, not a general-purpose e
 
 ## Features
 
-- Modular `catch_the_apple` package with a thin executable entry point.
+- Professional `src/` package layout with a thin executable launcher.
+- Public SDK surface exposed through `catch_the_apple` and `catch_the_apple.sdk`.
 - Delta-time runtime with separate update and render phases.
 - Structured session, world, entity, input, movement, spawning, scoring, difficulty, and game-rules systems.
 - Data-driven object definitions with the regular apple enabled for normal play.
@@ -46,10 +47,10 @@ Run the game from the repository root:
 python main.py
 ```
 
-The package entry point is also available:
+When installed as a package, the console script is also available:
 
 ```bash
-python -m catch_the_apple
+catch-the-apple
 ```
 
 ## Controls
@@ -77,27 +78,36 @@ python -m unittest discover
 
 The tests configure SDL for headless execution where practical, so they can validate core logic without opening a visible game window.
 
+Ruff is configured in `pyproject.toml`. When uv and the dev tool group are available, run:
+
+```bash
+uv run --group dev ruff check .
+```
+
 ## Project Structure
 
 ```text
-catch_the_apple/
-  app.py                  Application entry point
-  game.py                 Runtime loop and subsystem composition
-  states.py               Main menu, playing, paused, and game-over flow
-  world.py                World-owned entities
-  entities.py             Basket and falling-object data structures
-  systems/                Gameplay systems
-  rendering.py            Main renderer orchestration
-  procedural_assets.py    Cached procedural apple and basket drawing
-  lighting.py             Surface lighting and ground shadows
-  environment.py          Procedural parallax background
-  dynamic_environment.py  Wind, weather, and day/night state
-  particles.py            Generic pooled particle simulation
-  persistence.py          Local save data
-  audio.py                Audio channels and settings
-  debug.py                Runtime debug snapshots
-docs/                     Architecture, workflow, roadmap, and prompt log
-tests/                    Headless automated tests
+main.py                     Thin local launcher
+src/catch_the_apple/
+  __init__.py               Public SDK exports
+  sdk.py                    Supported launch/control interface
+  app.py                    Backward-compatible launch facade
+  game.py                   Runtime loop and subsystem composition
+  states.py                 Main menu, playing, paused, and game-over flow
+  world.py                  World-owned entities
+  entities.py               Basket and falling-object data structures
+  systems/                  Gameplay systems
+  rendering.py              Main renderer orchestration
+  procedural_assets.py      Cached procedural apple and basket drawing
+  lighting.py               Surface lighting and ground shadows
+  environment.py            Procedural parallax background
+  dynamic_environment.py    Wind, weather, and day/night state
+  particles.py              Generic pooled particle simulation
+  persistence.py            Local save data
+  audio.py                  Audio channels and settings
+  debug.py                  Runtime debug snapshots
+docs/                       Architecture, PRDs, workflow, roadmap, and prompt log
+tests/                      Headless automated tests
 ```
 
 ## Documentation
@@ -105,6 +115,10 @@ tests/                    Headless automated tests
 - `docs/ARCHITECTURE.md` describes the runtime architecture and subsystem boundaries.
 - `docs/DEVELOPMENT.md` defines the development workflow and verification expectations.
 - `docs/GRAPHICS_AND_MATH.md` explains the current graphics and mathematical foundations.
+- `docs/PRD.md` defines the product requirements.
+- `docs/PLAN.md` records the current engineering plan.
+- `docs/TODO.md` tracks deferred quality and release work.
+- `docs/prds/` contains mechanism-specific PRDs.
 - `docs/ROADMAP.md` captures future project directions.
 - `docs/PROMPTS_BOOK.md` is the permanent prompt-driven development log.
 
@@ -117,7 +131,7 @@ Save data is stored locally in the user's home directory under `.catch_the_apple
 - The game currently has one active regular apple during normal play.
 - Future object definitions exist, but special behaviors are intentionally not enabled yet.
 - Audio channel structure and settings exist, but no bundled audio assets are included.
-- The project does not currently include packaging metadata for building a distributable executable.
+- The project does not currently include a bundled distributable executable.
 
 ## Future Work
 

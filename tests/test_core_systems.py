@@ -1,14 +1,21 @@
 import os
+import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_PATH = PROJECT_ROOT / "src"
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
+
 import pygame
 
-from catch_the_apple import config
+from catch_the_apple import __version__, config, get_version
 from catch_the_apple.audio import AudioSettings
 from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.dynamic_environment import EnvironmentManager, WEATHER_PRESETS
@@ -66,6 +73,14 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(clamp(-5.0, 0.0, 10.0), 0.0)
         self.assertEqual(clamp(15.0, 0.0, 10.0), 10.0)
         self.assertEqual(clamp(6.0, 0.0, 10.0), 6.0)
+
+    def test_sdk_exposes_project_version(self) -> None:
+        self.assertEqual(get_version(), __version__)
+
+    def test_package_version_matches_project_metadata(self) -> None:
+        pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+        self.assertEqual(__version__, pyproject["project"]["version"])
 
     def test_object_registry_contains_only_regular_apple_in_spawn_config(self) -> None:
         expected_ids = {"regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up"}

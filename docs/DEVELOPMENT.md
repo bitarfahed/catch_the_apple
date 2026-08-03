@@ -20,12 +20,20 @@ Development should be incremental, testable, and honest about the current state 
 4. Verify the game or affected subsystem after each implementation step.
 5. Record completed prompt work in `docs/PROMPTS_BOOK.md`.
 
+Use the public SDK surface for launch/control integrations:
+
+- `catch_the_apple.run_game()`
+- `catch_the_apple.create_game()`
+- `catch_the_apple.GameSDK`
+
 ## Verification Expectations
 
 Verification should include:
 
 - Running the game when practical
 - Running automated tests with `python -m unittest discover`
+- Running bytecode compilation with `python -m compileall src tests main.py`
+- Running Ruff with `uv run --group dev ruff check .` when the dev tool group is installed
 - Checking formatting and linting once configured
 - Manually validating visual/gameplay behavior for player-facing changes
 

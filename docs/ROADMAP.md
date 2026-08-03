@@ -29,3 +29,7 @@ Add automated tests around deterministic game logic and maintain quality checks 
 ## Phase 7: Portfolio Presentation
 
 Prepare the project for public review with complete documentation, screenshots or media, clear run instructions, and a concise explanation of technical highlights.
+
+## Phase 8: Release Operations
+
+Maintain the professional `src/` layout, SDK launch surface, PRDs, automated tests, Ruff checks, and uv workflow. Add CI and packaging only when they support the standalone Pygame application.

@@ -2178,3 +2178,145 @@ Added a focused headless `unittest` suite for math helpers, transforms, object d
 The repository now has a coherent package layout with clear ownership across runtime, state flow, session/world data, gameplay systems, collision, procedural rendering, lighting, environment, effects, audio, persistence, UI, and debug tools. The architecture remains appropriately scoped to a 2D Pygame game and avoids a broad engine abstraction. The best-preserved foundations are the thin entry point, delta-time update/render split, data-driven object registry, composite collision model, cached procedural surfaces, pooled particle system, environment manager, and isolated developer tooling.
 
 **Completion Status:** Complete.
+
+## Prompt 16 - Professional Architecture Compliance
+
+**Goal:** Align the feature-complete standalone Python/Pygame application with the project's adopted professional software engineering guidelines while preserving gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 16 - Professional Architecture Compliance
+
+Context
+
+The project is feature complete and portfolio-ready.
+
+This prompt aligns the repository with the professional software engineering guidelines adopted for this project.
+
+Only adopt requirements that are relevant to a standalone Python/Pygame application.
+
+Do not force enterprise patterns that do not fit this project.
+
+---
+
+Objectives
+
+Refactor the repository to better comply with the adopted software engineering guidelines.
+
+Implement or improve, where appropriate:
+
+- Professional `src/` project layout.
+- SDK architecture as the single public entry point for business logic.
+- Thin launcher (`main.py`) that delegates to the SDK.
+- Package organization using `**init**.py`.
+- Project version management.
+- Complete documentation structure (`README`, `docs/PRD.md`, `docs/PLAN.md`, `docs/TODO.md`).
+- Dedicated PRDs for major mechanisms (Rendering, Collision, Particle System, Environment, etc.).
+- Configuration separation.
+- Type hints.
+- Comprehensive docstrings.
+- File-size compliance (split files exceeding ~150 LOC where practical).
+- Ruff compliance.
+- uv-based workflows.
+- Repository consistency.
+
+The SDK should become the primary interface for launching and controlling the game.
+
+Future tools, tests or external applications should interact with the SDK rather than internal modules.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add new gameplay.
+- Change game balance.
+- Add unnecessary enterprise infrastructure.
+- Introduce APIs or networking.
+- Add database support.
+
+Adopt only architecture that clearly improves maintainability.
+
+---
+
+Acceptance Criteria
+
+- SDK architecture implemented.
+- Launcher delegates to SDK.
+- Repository follows professional package structure.
+- Documentation complies with the adopted guidelines.
+- Gameplay remains unchanged.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- SDK architecture decisions
+- Documentation improvements
+- Compliance improvements
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `.gitignore`
+- `docs/PLAN.md`
+- `docs/PRD.md`
+- `docs/TODO.md`
+- `docs/prds/COLLISION_PRD.md`
+- `docs/prds/ENVIRONMENT_PRD.md`
+- `docs/prds/PARTICLE_SYSTEM_PRD.md`
+- `docs/prds/RENDERING_PRD.md`
+- `src/catch_the_apple/_version.py`
+- `src/catch_the_apple/sdk.py`
+
+**Files Modified:**
+
+- `README.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DEVELOPMENT.md`
+- `docs/PROMPTS_BOOK.md`
+- `docs/ROADMAP.md`
+- `main.py`
+- `pyproject.toml`
+- `requirements.txt`
+- `tests/test_core_systems.py`
+
+**Files Moved:**
+
+- `catch_the_apple/` moved to `src/catch_the_apple/`
+
+**SDK Architecture Decisions:**
+
+Added `catch_the_apple.sdk` as the supported public integration surface. The package root now exports `GameSDK`, `GameRunConfig`, `create_game`, `run_game`, `get_version`, `main`, and `__version__`. `main.py`, `catch_the_apple.__main__`, and the compatibility `app.py` facade all delegate to the SDK. Internal modules remain available to the package, but future external tools should use the SDK boundary.
+
+**Documentation Improvements:**
+
+Added product, plan, TODO, and mechanism-specific PRD documents. Updated README, architecture, development, and roadmap docs for the `src/` layout, SDK launch surface, uv/Ruff workflow, package metadata, and current compliance posture.
+
+**Compliance Improvements:**
+
+Adopted `src/` layout, package discovery metadata, console-script metadata, version module, public SDK facade, `.gitignore`, Ruff configuration, dev dependency group, and version-sync test coverage. Large rendering/environment modules were left intact because splitting them during this prompt would be a broader redesign with little immediate gameplay or maintainability payoff.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 14 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- `.venv\Scripts\python.exe -c "import main; print('main import ok')"` passed.
+- Dummy-video SDK launch smoke check passed.
+- Ruff could not be executed because the local `uv.exe` launcher failed before spawning commands and Ruff is not installed in the current virtual environment. Ruff configuration and a uv dev dependency group were added for the intended workflow.
+
+**Completion Status:** Complete.
