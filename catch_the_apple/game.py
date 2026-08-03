@@ -6,6 +6,7 @@ from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.systems.game_rules import apply_game_rules
 from catch_the_apple.systems.movement import update_movement
+from catch_the_apple.systems.spawning import SpawnSystem
 from catch_the_apple.world import World
 
 
@@ -21,6 +22,8 @@ class Game:
 
         self.session = GameSession()
         self.world = World()
+        self.spawn_system = SpawnSystem(config.SPAWN_CONFIG)
+        self.spawn_system.update(self.world)
         self.renderer = Renderer(self.screen)
         self.clock = pygame.time.Clock()
 
@@ -42,7 +45,8 @@ class Game:
             self.session.running = False
 
         update_movement(self.world, input_state, delta_time)
-        apply_game_rules(self.world, self.session)
+        apply_game_rules(self.world, self.session, self.spawn_system)
+        self.spawn_system.update(self.world)
 
     def render(self) -> None:
         self.renderer.render(self.world, self.session)

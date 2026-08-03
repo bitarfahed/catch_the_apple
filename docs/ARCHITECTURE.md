@@ -10,18 +10,17 @@ The architecture is intentionally lightweight. It separates the first major resp
 
 The game starts when `main.py` is executed. `main.py` delegates to `catch_the_apple.app.main`, which creates and runs `catch_the_apple.game.Game`. Pygame is initialized inside the `Game` constructor, so importing the entry point no longer starts the game loop.
 
-`Game` owns the runtime loop. `GameSession` owns session-level state such as score, lives, and whether the session is running. `World` owns active gameplay entities: currently one basket and one falling apple stored through a list-shaped `falling_objects` model so future prompts can support multiple falling objects without changing the renderer or runtime loop again.
+`Game` owns the runtime loop. `GameSession` owns session-level state such as score, lives, and whether the session is running. `World` owns active gameplay entities: currently one basket and a collection of falling objects. The spawn system is configured to keep one regular apple active, preserving current gameplay while supporting future expansion.
 
 The loop currently follows this order:
 
-1. Process window events.
-2. Read keyboard input.
-3. Update basket position.
-4. Update apple position.
-5. Handle missed apples.
-6. Check basket/apple collision.
-7. Draw background, entities, score, and lives.
-8. Flip the display and cap the frame rate.
+1. Measure clamped delta time.
+2. Poll input.
+3. Update basket and falling object movement.
+4. Apply game rules for misses, catches, scoring, lives, and difficulty.
+5. Ask the spawn system to maintain the configured active object count.
+6. Render the world and session state.
+7. Flip the display.
 
 ## Current Subsystems
 
@@ -32,15 +31,16 @@ The loop currently follows this order:
 | Game session | `catch_the_apple.session.GameSession` owns score, lives, and running flag |
 | World | `catch_the_apple.world.World` owns the basket and falling object collection |
 | Input | `catch_the_apple.input.poll_input` wraps Pygame event and key polling |
-| Entities | `Basket` and `Apple` dataclasses |
+| Entities | `Basket` and `FallingObject` dataclasses |
 | Collision | `catch_the_apple.collision.collides` uses `pygame.Rect.colliderect` |
 | Runtime timing | Delta-time measured from `pygame.time.Clock`, clamped to avoid large spikes |
 | Physics | Simple velocity-style movement using pixels per second |
 | Rendering | `catch_the_apple.rendering.Renderer` draws rectangles and HUD text |
 | Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
+| Spawn system | `SpawnSystem` owns seeded random placement and maintains the configured active object count |
 | Assets | No external assets yet |
-| Configuration | Constants in `catch_the_apple.config` |
+| Configuration | Constants and spawn parameters in `catch_the_apple.config` |
 | Tests | None yet |
 
 ## Intended Direction

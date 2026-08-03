@@ -454,3 +454,137 @@ Session state was moved into `GameSession`, and active gameplay entities were mo
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 4: Multiple Falling Objects & Spawn System
+
+**Date:** 2026-08-03
+
+**Goal:** Replace the single-apple spawning implementation with a configurable, collection-based falling object management system while keeping one regular apple active for current gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 4 - Multiple Falling Objects & Spawn System
+
+Context
+
+The project now has a modular architecture, a delta-time runtime, and a structured world model.
+
+This prompt expands the world from a single falling object to a scalable object management system.
+
+Do not introduce new gameplay mechanics yet.
+
+The player should still experience essentially the same game.
+
+---
+
+Objectives
+
+Replace the single-apple implementation with a generic falling object management system.
+
+Implement:
+
+- A world-managed collection of falling objects.
+- A dedicated Spawn System.
+- Object lifecycle management (spawn, update, remove/reset).
+- Configurable maximum active objects.
+- Deterministic random generator with an optional seed.
+- Spawn parameters collected into one configuration location.
+
+For now, configure the game so that only **one regular apple** is active at a time, preserving current gameplay.
+
+However, the architecture should naturally support multiple simultaneous objects in future prompts without another major refactor.
+
+The Spawn System should be responsible only for deciding when and where objects appear.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 4
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add golden apples.
+- Add rotten apples.
+- Add bombs.
+- Add power-ups.
+- Change scoring rules.
+- Change difficulty rules.
+- Add procedural rendering.
+- Add particles.
+- Add menus.
+- Change gameplay balance.
+
+Avoid overengineering.
+
+---
+
+Acceptance Criteria
+
+- Falling objects are managed as a collection.
+- Spawn logic is isolated in its own system.
+- Gameplay remains functionally identical.
+- The architecture is ready for multiple object types.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Spawn architecture decisions
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- None.
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/collision.py`
+- `catch_the_apple/config.py`
+- `catch_the_apple/entities.py`
+- `catch_the_apple/game.py`
+- `catch_the_apple/systems/difficulty.py`
+- `catch_the_apple/systems/game_rules.py`
+- `catch_the_apple/systems/spawning.py`
+- `catch_the_apple/world.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+The apple entity was generalized to `FallingObject`, and `World` now owns an initially empty collection that is populated by `SpawnSystem`. Spawn parameters are centralized in `config.SpawnConfig`, including maximum active objects, spawn bounds, spawn height, object size, object speed, and an optional random seed. `SpawnSystem` owns a dedicated `random.Random` instance, creates regular apple-like falling objects, maintains the configured active object count, and resets object positions after catches or misses. The current configuration keeps `max_active_objects` at 1, preserving the current one-apple gameplay.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Import smoke check for runtime, world, session, and spawn-related systems passed without starting the game loop.
+- Seeded spawn reproducibility smoke check passed.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

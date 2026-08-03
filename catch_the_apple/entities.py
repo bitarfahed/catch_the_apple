@@ -42,7 +42,7 @@ class Basket:
 
 
 @dataclass
-class Apple:
+class FallingObject:
     transform: Transform2D
     size: int = config.APPLE_SIZE
     speed: float = config.APPLE_INITIAL_SPEED

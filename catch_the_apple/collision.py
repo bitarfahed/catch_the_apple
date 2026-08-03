@@ -1,5 +1,5 @@
-from catch_the_apple.entities import Apple, Basket
+from catch_the_apple.entities import Basket, FallingObject
 
 
-def collides(basket: Basket, apple: Apple) -> bool:
-    return basket.rect.colliderect(apple.rect)
+def collides(basket: Basket, falling_object: FallingObject) -> bool:
+    return basket.rect.colliderect(falling_object.rect)

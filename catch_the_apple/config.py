@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 FPS = 60
@@ -18,6 +20,22 @@ BASKET_SPEED = 8 * FPS
 APPLE_SIZE = 30
 APPLE_INITIAL_SPEED = 5 * FPS
 APPLE_SPEED_INCREASE = 1 * FPS
+
+RANDOM_SEED = None
+
+
+@dataclass(frozen=True)
+class SpawnConfig:
+    max_active_objects: int = 1
+    seed: int | None = RANDOM_SEED
+    x_min: int = 0
+    x_max: int = SCREEN_WIDTH - APPLE_SIZE
+    spawn_y: int = -APPLE_SIZE
+    object_size: int = APPLE_SIZE
+    object_speed: float = APPLE_INITIAL_SPEED
+
+
+SPAWN_CONFIG = SpawnConfig()
 
 INITIAL_LIVES = 3
 FONT_NAME = "Arial"
