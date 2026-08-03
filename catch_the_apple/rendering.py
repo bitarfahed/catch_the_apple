@@ -2,6 +2,7 @@ import pygame
 
 from catch_the_apple import config
 from catch_the_apple.collision import build_basket_collision_model
+from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.world import World
 
@@ -10,13 +11,20 @@ class Renderer:
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
         self.font = pygame.font.SysFont(config.FONT_NAME, config.FONT_SIZE)
+        self.assets = ProceduralAssetRenderer()
 
     def render(self, world: World, session: GameSession) -> None:
         self.screen.fill(config.BLUE)
 
-        pygame.draw.rect(self.screen, config.GREEN, world.basket.rect)
+        basket_surface = self.assets.get_basket_surface(world.basket.width, world.basket.height)
+        self.screen.blit(basket_surface, world.basket.rect)
         for falling_object in world.falling_objects:
-            pygame.draw.rect(self.screen, falling_object.definition.color, falling_object.rect)
+            object_surface = self.assets.get_falling_object_surface(
+                falling_object.definition.identifier,
+                falling_object.size,
+                falling_object.definition.color,
+            )
+            self.screen.blit(object_surface, falling_object.rect)
 
         if session.debug_collision_enabled:
             self.render_debug_collision_overlay(world)

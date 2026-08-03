@@ -1020,3 +1020,143 @@ Replaced the old rectangle-only collision helper with a collision subsystem cont
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 8: Procedural Asset Rendering
+
+**Date:** 2026-08-03
+
+**Goal:** Replace rectangle-based basket and apple drawing with cached procedural graphics while preserving gameplay, collision, and physics behavior.
+
+**Full Prompt Text:**
+
+```text
+Prompt 8 - Procedural Asset Rendering
+
+Context
+
+The project now has a solid gameplay architecture.
+
+This prompt begins replacing placeholder graphics with procedurally generated visuals.
+
+The objective is to improve rendering quality while keeping gameplay unchanged.
+
+---
+
+Objectives
+
+Replace the rectangle-based rendering of the basket and apple with procedurally generated graphics.
+
+Implement:
+
+- A Procedural Apple Renderer.
+- A Procedural Basket Renderer.
+
+The procedural apple should be composed from simple geometric primitives and include:
+
+- Apple body
+- Stem
+- Leaf
+- Soft shading
+- Highlight
+- Optional subtle color variation
+
+The procedural basket should include:
+
+- Basket body
+- Rim
+- Simple woven pattern
+- Basic shading
+
+Rendering should use cached `pygame.Surface` objects.
+
+Generate surfaces only when needed (for example, when size or appearance changes), never every frame.
+
+The renderer should expose a clean API so future lighting and animation systems can reuse these assets.
+
+Gameplay, collision, and physics must remain unchanged.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 8
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add lighting.
+- Add shadows.
+- Add particles.
+- Add squash/stretch.
+- Add animation.
+- Add image assets (PNG files).
+- Change gameplay.
+- Change collision.
+- Add NumPy unless it provides a clear benefit.
+
+Avoid per-frame surface generation.
+
+---
+
+Acceptance Criteria
+
+- Apples are rendered procedurally.
+- Basket is rendered procedurally.
+- Rendering uses cached surfaces.
+- No external image assets are required.
+- Gameplay remains unchanged.
+- Renderer is ready for future lighting.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Rendering architecture decisions
+- Surface caching strategy
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/procedural_assets.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/rendering.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added `ProceduralAppleRenderer`, `ProceduralBasketRenderer`, and `ProceduralAssetRenderer`. Apples are now rendered from Pygame primitives with a body, stem, leaf, shading, and highlight. The basket is rendered from primitives with a body, rim, woven pattern, and basic shading. The main renderer now blits cached procedural surfaces at the existing entity rectangles instead of drawing placeholder rectangles. Debug collision overlay rendering remains available and is drawn over the procedural visuals when enabled.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Procedural surface smoke check confirmed apple and basket surface sizes and cache reuse.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

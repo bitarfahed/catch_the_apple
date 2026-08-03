@@ -15,7 +15,7 @@ The project is intentionally simple at this stage:
 - Data-driven object definitions with only the regular apple enabled
 - Velocity-based basket movement with acceleration, drag, and dash state
 - Circle/composite collision system with optional debug overlay
-- Rectangle-based basket and apple rendering
+- Cached procedural basket and apple rendering
 - Keyboard input with left and right arrow keys
 - Score, lives, collision detection, apple respawn, and basic difficulty scaling
 - No asset pipeline, tests, or scene/state system yet
