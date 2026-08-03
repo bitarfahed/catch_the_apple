@@ -3,6 +3,7 @@ import pygame
 from catch_the_apple import config
 from catch_the_apple.collision import build_basket_collision_model
 from catch_the_apple.effects import VisualEffects
+from catch_the_apple.environment import ProceduralEnvironmentRenderer
 from catch_the_apple.lighting import LightingSystem
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
@@ -14,11 +15,20 @@ class Renderer:
         self.screen = screen
         self.font = pygame.font.SysFont(config.FONT_NAME, config.FONT_SIZE)
         self.assets = ProceduralAssetRenderer()
+        self.environment = ProceduralEnvironmentRenderer(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
         self.lighting = LightingSystem()
         self._particle_surface_cache: dict[tuple[int, tuple[int, int, int], int], pygame.Surface] = {}
+        self.elapsed_time = 0.0
 
-    def render(self, world: World, session: GameSession, effects: VisualEffects | None = None) -> None:
-        self.screen.fill(config.BLUE)
+    def render(
+        self,
+        world: World,
+        session: GameSession,
+        effects: VisualEffects | None = None,
+        delta_time: float = 0.0,
+    ) -> None:
+        self.elapsed_time += delta_time
+        self.environment.render(self.screen, self.elapsed_time)
 
         basket_surface = self.assets.get_basket_surface(world.basket.width, world.basket.height)
         basket_surface = self.lighting.apply_lighting(basket_surface)

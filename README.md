@@ -18,6 +18,7 @@ The project is intentionally simple at this stage:
 - Cached procedural basket and apple rendering
 - Lightweight ambient/directional lighting with cached shadows
 - Generic particle effects with reusable squash/stretch animation
+- Procedural parallax environment with sky, clouds, mountains, trees, bushes, and grass
 - Keyboard input with left and right arrow keys
 - Score, lives, collision detection, apple respawn, and basic difficulty scaling
 - No asset pipeline, tests, or scene/state system yet

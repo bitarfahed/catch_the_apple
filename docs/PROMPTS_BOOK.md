@@ -1452,3 +1452,138 @@ Added a generic pooled particle engine with configurable particle data and emitt
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 11: Procedural Environment & Parallax
+
+**Date:** 2026-08-03
+
+**Goal:** Add a fully procedural, cached, multi-layer parallax environment behind gameplay without changing mechanics.
+
+**Full Prompt Text:**
+
+```text
+Prompt 11 - Procedural Environment & Parallax
+
+Context
+
+The project now features a modular gameplay architecture, procedural object rendering, lighting, and a generic particle system.
+
+This prompt upgrades the visual environment surrounding the gameplay.
+
+The objective is to create depth and atmosphere without affecting gameplay mechanics.
+
+---
+
+Objectives
+
+Implement a procedural environment renderer.
+
+Create multiple background layers such as:
+
+- Sky
+- Distant mountains
+- Trees
+- Bushes
+- Foreground grass
+
+All layers should be procedurally generated.
+
+Implement a parallax system where each layer moves according to its own depth factor.
+
+Implement a procedural sky with:
+
+- Vertical color gradient
+- Procedural clouds
+- Lightweight value noise (or a similarly simple noise technique)
+
+Cache generated surfaces whenever practical.
+
+The environment renderer should be completely independent from gameplay systems.
+
+Design the renderer so future weather and day/night systems can modify the environment without requiring another major refactor.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 11
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add weather.
+- Add wind.
+- Add day/night cycle.
+- Change gameplay.
+- Add camera movement.
+- Add post-processing.
+- Load external background images.
+
+Keep the environment lightweight and performant.
+
+---
+
+Acceptance Criteria
+
+- Environment is fully procedural.
+- Multiple parallax layers are implemented.
+- Sky uses a procedural gradient.
+- Clouds are procedurally generated.
+- Generated assets are cached.
+- Gameplay remains unchanged.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Environment architecture decisions
+- Caching strategy
+- Performance considerations
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/environment.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/game.py`
+- `catch_the_apple/rendering.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added `ProceduralEnvironmentRenderer` and `EnvironmentLayer`. The renderer procedurally generates cached layers for sky, procedural clouds, distant mountains, trees, bushes, and foreground grass. The sky uses a vertical color gradient and deterministic cloud generation. Each layer has its own depth factor and scroll speed, producing lightweight time-based parallax independent of gameplay state. The main renderer now draws the environment before gameplay objects, effects, debug overlays, and HUD.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Environment smoke check confirmed five cached layers and successful dummy-display rendering.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

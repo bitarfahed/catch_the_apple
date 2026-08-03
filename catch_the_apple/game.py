@@ -33,7 +33,7 @@ class Game:
         while self.session.running:
             delta_time = self.measure_delta_time()
             self.update(delta_time)
-            self.render()
+            self.render(delta_time)
 
         pygame.quit()
 
@@ -54,6 +54,6 @@ class Game:
         self.effects.handle_events(events)
         self.effects.update(self.world, delta_time)
 
-    def render(self) -> None:
-        self.renderer.render(self.world, self.session, self.effects)
+    def render(self, delta_time: float) -> None:
+        self.renderer.render(self.world, self.session, self.effects, delta_time)
         pygame.display.flip()
