@@ -15,7 +15,7 @@ class Renderer:
 
         pygame.draw.rect(self.screen, config.GREEN, world.basket.rect)
         for falling_object in world.falling_objects:
-            pygame.draw.rect(self.screen, config.RED, falling_object.rect)
+            pygame.draw.rect(self.screen, falling_object.definition.color, falling_object.rect)
 
         score_text = self.font.render(f"Score: {session.score}", True, config.WHITE)
         lives_text = self.font.render(f"Lives: {session.lives}", True, config.WHITE)

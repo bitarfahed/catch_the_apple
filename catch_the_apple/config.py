@@ -28,10 +28,10 @@ RANDOM_SEED = None
 class SpawnConfig:
     max_active_objects: int = 1
     seed: int | None = RANDOM_SEED
+    enabled_object_ids: tuple[str, ...] = ("regular_apple",)
     x_min: int = 0
     x_max: int = SCREEN_WIDTH - APPLE_SIZE
     spawn_y: int = -APPLE_SIZE
-    object_size: int = APPLE_SIZE
     object_speed: float = APPLE_INITIAL_SPEED
 
 

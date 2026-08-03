@@ -588,3 +588,149 @@ The apple entity was generalized to `FallingObject`, and `World` now owns an ini
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 5: Data-Driven Gameplay Model
+
+**Date:** 2026-08-03
+
+**Goal:** Introduce structured object definitions and make spawning/game rules use object data while keeping only the regular apple active in normal gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 5 - Data-Driven Gameplay Model
+
+Context
+
+The project now supports a scalable world model and a generic spawn system.
+
+This prompt introduces a data-driven gameplay model without significantly changing the player's experience.
+
+Only one regular apple should still appear during normal gameplay.
+
+---
+
+Objectives
+
+Replace hardcoded gameplay rules with configurable object definitions.
+
+Introduce a data-driven object type system.
+
+Each object type should be described by structured data rather than hardcoded conditionals.
+
+At minimum, support the concept of:
+
+- Regular Apple
+- Golden Apple
+- Rotten Apple
+- Bomb
+- Power-Up
+
+Only the Regular Apple should be enabled for spawning in this prompt.
+
+Each object definition should be capable of describing attributes such as:
+
+- Identifier
+- Display name
+- Category
+- Score value
+- Damage
+- Spawn weight
+- Radius or collision size
+- Colors (placeholder values are acceptable)
+- Gameplay tags
+- Optional future behaviors
+
+The Spawn System should obtain object information from this registry rather than embedding gameplay rules.
+
+The architecture should allow adding future object types by creating new data definitions instead of modifying multiple systems.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 5
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Spawn Golden Apples.
+- Spawn Rotten Apples.
+- Spawn Bombs.
+- Spawn Power-Ups.
+- Change gameplay balance.
+- Add particles.
+- Add procedural rendering.
+- Add menus.
+- Add audio.
+- Implement special object behaviors.
+
+Avoid unnecessary abstractions.
+
+---
+
+Acceptance Criteria
+
+- Gameplay remains visually and functionally identical.
+- Object definitions are data-driven.
+- The Spawn System uses the object registry.
+- New object types can be added without modifying core gameplay systems.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Data model decisions
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/object_definitions.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/config.py`
+- `catch_the_apple/entities.py`
+- `catch_the_apple/rendering.py`
+- `catch_the_apple/systems/game_rules.py`
+- `catch_the_apple/systems/scoring.py`
+- `catch_the_apple/systems/spawning.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added an `ObjectDefinition` dataclass and registry containing regular apple, golden apple, rotten apple, bomb, and power-up definitions. `SpawnConfig` now declares enabled object IDs, with only `regular_apple` enabled. `FallingObject` instances reference their object definition, and the spawn system creates objects from weighted registry definitions instead of a hardcoded regular apple constructor. Rendering now uses the object definition color, and scoring/life loss read score and damage values from object data. The regular apple data preserves the existing red color, score value, damage, and collision size.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Import smoke check for object definitions, spawning, and game rules passed without starting the game loop.
+- Spawn data smoke check confirmed the default spawned object is `regular_apple` with score value 1, damage 1, red color, and size 30.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

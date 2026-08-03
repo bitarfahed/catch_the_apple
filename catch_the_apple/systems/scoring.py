@@ -1,9 +1,9 @@
 from catch_the_apple.session import GameSession
 
 
-def add_score(session: GameSession) -> None:
-    session.score += 1
+def add_score(session: GameSession, amount: int) -> None:
+    session.score += amount
 
 
-def lose_life(session: GameSession) -> None:
-    session.lives -= 1
+def lose_life(session: GameSession, amount: int) -> None:
+    session.lives -= amount

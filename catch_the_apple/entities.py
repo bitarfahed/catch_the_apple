@@ -4,6 +4,7 @@ import pygame
 
 from catch_the_apple import config
 from catch_the_apple.math2d import Transform2D, vec2
+from catch_the_apple.object_definitions import ObjectDefinition
 
 
 @dataclass
@@ -44,8 +45,12 @@ class Basket:
 @dataclass
 class FallingObject:
     transform: Transform2D
-    size: int = config.APPLE_SIZE
+    definition: ObjectDefinition
     speed: float = config.APPLE_INITIAL_SPEED
+
+    @property
+    def size(self) -> int:
+        return self.definition.collision_size
 
     @property
     def x(self) -> float:

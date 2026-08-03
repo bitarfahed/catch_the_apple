@@ -10,7 +10,7 @@ The architecture is intentionally lightweight. It separates the first major resp
 
 The game starts when `main.py` is executed. `main.py` delegates to `catch_the_apple.app.main`, which creates and runs `catch_the_apple.game.Game`. Pygame is initialized inside the `Game` constructor, so importing the entry point no longer starts the game loop.
 
-`Game` owns the runtime loop. `GameSession` owns session-level state such as score, lives, and whether the session is running. `World` owns active gameplay entities: currently one basket and a collection of falling objects. The spawn system is configured to keep one regular apple active, preserving current gameplay while supporting future expansion.
+`Game` owns the runtime loop. `GameSession` owns session-level state such as score, lives, and whether the session is running. `World` owns active gameplay entities: currently one basket and a collection of falling objects. Falling objects are created from data-driven object definitions. The spawn system is configured to keep one regular apple active, preserving current gameplay while supporting future expansion.
 
 The loop currently follows this order:
 
@@ -32,15 +32,16 @@ The loop currently follows this order:
 | World | `catch_the_apple.world.World` owns the basket and falling object collection |
 | Input | `catch_the_apple.input.poll_input` wraps Pygame event and key polling |
 | Entities | `Basket` and `FallingObject` dataclasses |
+| Object definitions | `catch_the_apple.object_definitions` stores registry data for apples, hazards, and power-ups |
 | Collision | `catch_the_apple.collision.collides` uses `pygame.Rect.colliderect` |
 | Runtime timing | Delta-time measured from `pygame.time.Clock`, clamped to avoid large spikes |
 | Physics | Simple velocity-style movement using pixels per second |
 | Rendering | `catch_the_apple.rendering.Renderer` draws rectangles and HUD text |
 | Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
-| Spawn system | `SpawnSystem` owns seeded random placement and maintains the configured active object count |
+| Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
 | Assets | No external assets yet |
-| Configuration | Constants and spawn parameters in `catch_the_apple.config` |
+| Configuration | Constants, spawn parameters, and enabled object IDs in `catch_the_apple.config` |
 | Tests | None yet |
 
 ## Intended Direction
