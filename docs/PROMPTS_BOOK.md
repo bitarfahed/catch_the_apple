@@ -877,3 +877,146 @@ Added `MovementState` to the basket with velocity, acceleration, movement direct
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 7: Collision System & Continuous Collision Detection
+
+**Date:** 2026-08-03
+
+**Goal:** Replace simple rectangle collision with a reusable collision subsystem using circular falling-object shapes, a composite basket model, continuous collision checks, and a toggleable debug overlay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 7 - Collision System & Continuous Collision Detection
+
+Context
+
+The project now has a modular architecture, a delta-time runtime, structured world management, data-driven object definitions, and advanced basket movement.
+
+This prompt upgrades the collision system into a reusable gameplay subsystem.
+
+The current gameplay should remain almost identical.
+
+---
+
+Objectives
+
+Replace the current simple collision implementation with a reusable collision framework.
+
+Implement support for:
+
+- Circle collision shapes for falling objects.
+- A composite basket collision model consisting of:
+  - Catch region
+  - Left rim
+  - Right rim
+  - Basket body
+
+Introduce Continuous Collision Detection (CCD) to prevent fast-moving objects from tunneling through the basket.
+
+Each falling object should keep both its previous and current position.
+
+The collision system should determine interactions using the swept movement between frames when appropriate.
+
+Prepare the system so additional collision shapes can be added later without another major refactor.
+
+Create a Debug Collision Overlay that can be toggled on/off and visualizes:
+
+- Collision boundaries
+- Catch region
+- Object collision circles
+- Swept movement path (optional if simple to implement)
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 7
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Change gameplay rules.
+- Add bouncing physics.
+- Add object responses.
+- Add particles.
+- Add camera shake.
+- Add procedural rendering.
+- Add lighting.
+- Add new object types.
+
+Keep the collision system focused and reusable.
+
+---
+
+Acceptance Criteria
+
+- Collision logic is isolated in its own subsystem.
+- Falling objects use circular collision.
+- Basket uses a composite collision model.
+- Continuous Collision Detection prevents tunneling.
+- Debug collision overlay is available.
+- Gameplay remains stable.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Collision architecture decisions
+- CCD implementation summary
+- Manual verification performed
+- Confirmation that gameplay behavior remains stable
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- None.
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/collision.py`
+- `catch_the_apple/config.py`
+- `catch_the_apple/entities.py`
+- `catch_the_apple/game.py`
+- `catch_the_apple/input.py`
+- `catch_the_apple/rendering.py`
+- `catch_the_apple/session.py`
+- `catch_the_apple/systems/game_rules.py`
+- `catch_the_apple/systems/movement.py`
+- `catch_the_apple/systems/spawning.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Replaced the old rectangle-only collision helper with a collision subsystem containing circle shapes, a composite basket collision model, structured collision results, circle-vs-rectangle checks, and swept circle checks against the basket catch region. Falling objects now track previous position before movement and reset that history when respawned. The basket exposes catch, rim, and body regions for collision/debug use. F1 toggles a debug overlay that draws basket regions, falling object circles, and swept movement paths.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Focused collision smoke checks confirmed composite region construction, direct catch detection, and CCD catch detection for a tunneling movement path.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

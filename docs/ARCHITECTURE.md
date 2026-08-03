@@ -33,7 +33,7 @@ The loop currently follows this order:
 | Input | `catch_the_apple.input.poll_input` wraps Pygame event and key polling |
 | Entities | `Basket` and `FallingObject` dataclasses |
 | Object definitions | `catch_the_apple.object_definitions` stores registry data for apples, hazards, and power-ups |
-| Collision | `catch_the_apple.collision.collides` uses `pygame.Rect.colliderect` |
+| Collision | `catch_the_apple.collision` provides circle/object collision, composite basket regions, and swept catch checks |
 | Runtime timing | Delta-time measured from `pygame.time.Clock`, clamped to avoid large spikes |
 | Physics | Velocity-based basket movement with acceleration, drag, dash state, and screen constraints |
 | Rendering | `catch_the_apple.rendering.Renderer` draws rectangles and HUD text |
@@ -49,6 +49,8 @@ The loop currently follows this order:
 Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer state management, asset loading, deterministic systems, and testable game rules. The current runtime now has separate update and render phases, which should remain the foundation for future gameplay and rendering work.
 
 Basket movement state exposes current velocity, movement direction, and speed for future animation and rendering systems. Visual effects are not implemented yet.
+
+Collision debug rendering can be toggled with F1. The overlay visualizes basket regions, object circles, and swept object movement paths without changing gameplay rules.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 
