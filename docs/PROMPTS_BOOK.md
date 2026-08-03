@@ -1160,3 +1160,134 @@ Added `ProceduralAppleRenderer`, `ProceduralBasketRenderer`, and `ProceduralAsse
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 9: 2D Lighting & Shadow Pipeline
+
+**Date:** 2026-08-03
+
+**Goal:** Add a lightweight reusable 2D lighting and shadow pipeline for procedurally rendered assets while preserving gameplay behavior.
+
+**Full Prompt Text:**
+
+```text
+Prompt 9 - 2D Lighting & Shadow Pipeline
+
+Context
+
+The project now renders procedural apples and baskets using cached surfaces.
+
+This prompt introduces a lightweight 2D lighting pipeline that enhances visual quality without becoming a full rendering engine.
+
+Gameplay must remain unchanged.
+
+---
+
+Objectives
+
+Implement a reusable 2D lighting system suitable for procedurally rendered objects.
+
+Implement:
+
+- Ambient lighting
+- One directional light source
+- Diffuse shading
+- Simple specular highlights
+- Ground shadows beneath falling objects
+
+The lighting system should operate on procedurally generated assets and reuse cached rendering whenever practical.
+
+Ground shadows should respond to:
+
+- Object height
+- Light direction
+- Light intensity
+
+Shadows should appear soft and visually convincing while remaining computationally inexpensive.
+
+The lighting implementation should expose a clean API so future systems (day/night cycle and weather) can control lighting parameters without modifying the renderer.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 9
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Implement a full pixel-by-pixel lighting engine.
+- Use expensive per-frame Python pixel loops.
+- Add particles.
+- Add weather.
+- Add day/night cycle.
+- Add post-processing.
+- Change gameplay.
+- Change collision or physics.
+
+Prefer cached surfaces, precomputed shading, or efficient rendering techniques.
+
+---
+
+Acceptance Criteria
+
+- Procedural assets support lighting.
+- Ambient and directional lighting are implemented.
+- Objects cast convincing ground shadows.
+- Lighting parameters are reusable by future systems.
+- Rendering performance remains stable.
+- Gameplay remains unchanged.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Lighting architecture decisions
+- Shadow implementation strategy
+- Performance considerations
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/lighting.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/rendering.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added `LightingConfig`, `DirectionalLight`, and `LightingSystem`. The renderer now applies cached ambient/directional lighting to procedural basket and falling-object surfaces, including simple diffuse and specular overlays. Falling objects also draw soft ground shadows whose size, offset, and opacity respond to estimated object height, directional light vector, and light intensity. Gameplay, collision, physics, spawning, and scoring were not changed.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Lighting smoke check confirmed lit surface generation, shadow generation, and cache reuse.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

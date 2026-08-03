@@ -37,6 +37,7 @@ The loop currently follows this order:
 | Runtime timing | Delta-time measured from `pygame.time.Clock`, clamped to avoid large spikes |
 | Physics | Velocity-based basket movement with acceleration, drag, dash state, and screen constraints |
 | Rendering | `catch_the_apple.rendering.Renderer` draws cached procedural surfaces and HUD text |
+| Lighting | `catch_the_apple.lighting` applies reusable ambient/directional lighting and ground shadows |
 | Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
 | Procedural assets | `catch_the_apple.procedural_assets` generates cached apple and basket surfaces |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
@@ -54,6 +55,8 @@ Basket movement state exposes current velocity, movement direction, and speed fo
 Collision debug rendering can be toggled with F1. The overlay visualizes basket regions, object circles, and swept object movement paths without changing gameplay rules.
 
 Procedural asset rendering currently generates basket and apple surfaces from Pygame primitives and caches them by appearance. No external image assets are required.
+
+Lighting is surface-based and cached. It applies ambient shading, directional diffuse highlights, simple specular overlays, and soft ground shadows without per-frame pixel loops.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 
