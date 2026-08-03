@@ -5,6 +5,7 @@ import random
 import pygame
 
 from catch_the_apple import config
+from catch_the_apple.dynamic_environment import EnvironmentState
 
 
 @dataclass(frozen=True)
@@ -22,11 +23,16 @@ class ProceduralEnvironmentRenderer:
         self.seed = seed
         self._layers: tuple[EnvironmentLayer, ...] | None = None
 
-    def render(self, target: pygame.Surface, elapsed_time: float) -> None:
+    def render(self, target: pygame.Surface, environment: EnvironmentState) -> None:
         for layer in self.layers:
-            offset = int(elapsed_time * layer.scroll_speed * layer.depth_factor) % self.width
+            wind_scroll = environment.wind.velocity.x * 0.25
+            offset = int(
+                environment.elapsed_time * (layer.scroll_speed + wind_scroll) * layer.depth_factor
+            ) % self.width
             target.blit(layer.surface, (-offset, 0))
             target.blit(layer.surface, (self.width - offset, 0))
+        self._apply_environment_tint(target, environment)
+        self._draw_sun_and_moon(target, environment)
 
     @property
     def layers(self) -> tuple[EnvironmentLayer, ...]:
@@ -45,8 +51,8 @@ class ProceduralEnvironmentRenderer:
 
     def _create_sky_layer(self) -> pygame.Surface:
         surface = pygame.Surface((self.width, self.height)).convert()
-        top = (88, 164, 222)
-        bottom = (68, 132, 190)
+        top = (92, 174, 235)
+        bottom = (76, 145, 204)
         for y in range(self.height):
             t = y / max(1, self.height - 1)
             color = blend_color(top, bottom, t)
@@ -60,6 +66,28 @@ class ProceduralEnvironmentRenderer:
             alpha = rng.randint(36, 70)
             self._draw_cloud(surface, x, y, scale, alpha, rng)
         return surface
+
+    def _apply_environment_tint(self, target: pygame.Surface, environment: EnvironmentState) -> None:
+        sky_overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        half_height = self.height // 2
+        for y in range(half_height):
+            t = y / max(1, half_height - 1)
+            color = blend_color(environment.day_night.sky_top, environment.day_night.sky_bottom, t)
+            pygame.draw.line(sky_overlay, (*color, 80), (0, y), (self.width, y))
+        tint = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        tint.fill((*environment.weather.visual_tint, 28))
+        target.blit(sky_overlay, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
+        target.blit(tint, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        if environment.weather.fog_alpha > 0:
+            fog = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            fog.fill((220, 230, 230, environment.weather.fog_alpha))
+            target.blit(fog, (0, 0))
+
+    def _draw_sun_and_moon(self, target: pygame.Surface, environment: EnvironmentState) -> None:
+        daylight_alpha = int(environment.day_night.directional_intensity * 260)
+        moon_alpha = int((1.0 - environment.day_night.ambient) * 190)
+        pygame.draw.circle(target, (255, 231, 145, daylight_alpha), environment.day_night.sun_position, 22)
+        pygame.draw.circle(target, (215, 225, 245, moon_alpha), environment.day_night.moon_position, 14)
 
     def _create_mountain_layer(self) -> pygame.Surface:
         surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)

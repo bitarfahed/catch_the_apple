@@ -1587,3 +1587,149 @@ Added `ProceduralEnvironmentRenderer` and `EnvironmentLayer`. The renderer proce
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 12: Dynamic Environment
+
+**Date:** 2026-08-03
+
+**Goal:** Add modular wind, weather presets, and smooth day/night environment state coordinated by a central environment manager while preserving gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 12 - Dynamic Environment
+
+Context
+
+The project now includes a procedural environment with layered parallax backgrounds and procedurally generated scenery.
+
+This prompt brings the environment to life by introducing dynamic environmental systems.
+
+The objective is to improve atmosphere and visual quality while keeping gameplay fair and readable.
+
+---
+
+Objectives
+
+Implement three integrated environmental systems:
+
+1. Wind System
+- Create a reusable wind model with configurable direction, strength, and gusts.
+- Wind should gently influence falling objects and compatible particle emitters.
+- The current wind state should be available to future gameplay systems.
+
+2. Weather System
+Implement configurable weather presets such as:
+- Clear
+- Light Wind
+- Strong Wind
+- Rain
+- Falling Leaves
+- Fog
+
+Weather should primarily affect visuals.
+Gameplay influence should remain subtle and configurable.
+
+3. Day/Night Cycle
+Implement a smooth day/night cycle affecting:
+- Sky colors
+- Ambient light
+- Directional light intensity
+- Sun/moon position
+- Background colors
+- Shadow intensity
+
+Transitions should be continuous and time-based.
+
+Design these systems so they are independent, configurable, and controlled through a central Environment Manager.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 12
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Change scoring.
+- Change collision.
+- Add new gameplay mechanics.
+- Add new object types.
+- Add post-processing.
+- Add menus.
+- Add audio.
+
+Keep all environmental systems modular and efficient.
+
+---
+
+Acceptance Criteria
+
+- Wind system implemented.
+- Weather presets implemented.
+- Smooth day/night cycle implemented.
+- Environment Manager coordinates all environmental systems.
+- Gameplay remains stable and fair.
+- Rendering performance remains acceptable.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Environment architecture decisions
+- Performance considerations
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/dynamic_environment.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/effects.py`
+- `catch_the_apple/environment.py`
+- `catch_the_apple/game.py`
+- `catch_the_apple/lighting.py`
+- `catch_the_apple/particles.py`
+- `catch_the_apple/rendering.py`
+- `catch_the_apple/systems/movement.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added a central `EnvironmentManager` coordinating `WindSystem`, configurable weather presets, and a continuous `DayNightCycle`. Weather presets include clear, light wind, strong wind, rain, falling leaves, and fog. Wind exposes current direction, strength, and velocity, with configurable gusts. Falling objects receive only subtle configurable wind drift, while particles receive stronger visual wind. Day/night state updates sky colors, ambient lighting, directional light intensity, sun/moon positions, and shadow intensity. The procedural environment renderer now consumes environment state for dynamic sky tinting, fog, sun/moon drawing, and wind-influenced parallax.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Environment manager smoke check confirmed six weather presets, wind updates, lighting changes, and weather switching.
+- Environment rendering smoke check confirmed fog preset rendering with cached procedural layers.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

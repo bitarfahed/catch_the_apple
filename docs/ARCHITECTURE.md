@@ -41,6 +41,7 @@ The loop currently follows this order:
 | Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
 | Procedural assets | `catch_the_apple.procedural_assets` generates cached apple and basket surfaces |
 | Environment | `catch_the_apple.environment` generates cached procedural parallax background layers |
+| Dynamic environment | `catch_the_apple.dynamic_environment` coordinates wind, weather presets, and day/night lighting state |
 | Effects | `catch_the_apple.particles`, `effects`, and `animation` provide pooled particles and squash/stretch components |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
 | Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
@@ -63,6 +64,8 @@ Lighting is surface-based and cached. It applies ambient shading, directional di
 Visual effects are simulated outside gameplay rules. Gameplay systems emit lightweight events, effects consume those events, and the renderer draws particles and animation-scaled surfaces.
 
 The environment renderer is independent from gameplay state. It generates cached procedural layers for sky, clouds, mountains, trees, bushes, and grass, then scrolls them by per-layer depth factors for lightweight parallax.
+
+The environment manager coordinates wind, weather presets, and day/night state. It exposes current wind and lighting parameters to rendering, particles, and future gameplay systems through narrow APIs.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 

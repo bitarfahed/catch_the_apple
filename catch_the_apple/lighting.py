@@ -27,6 +27,13 @@ class LightingSystem:
         self._lit_surface_cache: dict[tuple[int, tuple[int, int], float, float, float], pygame.Surface] = {}
         self._shadow_cache: dict[tuple[int, int, int], pygame.Surface] = {}
 
+    def set_config(self, lighting_config: LightingConfig) -> None:
+        if lighting_config == self.config:
+            return
+        self.config = lighting_config
+        self._lit_surface_cache.clear()
+        self._shadow_cache.clear()
+
     def apply_lighting(self, surface: pygame.Surface, height_factor: float = 0.0) -> pygame.Surface:
         cache_key = (
             id(surface),

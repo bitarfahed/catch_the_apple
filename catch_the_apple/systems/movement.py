@@ -1,14 +1,23 @@
 from catch_the_apple import config
+from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.input import InputState
 from catch_the_apple.math2d import clamp
 from catch_the_apple.world import World
 
 
-def update_movement(world: World, input_state: InputState, delta_time: float) -> None:
+def update_movement(
+    world: World,
+    input_state: InputState,
+    delta_time: float,
+    environment_manager: EnvironmentManager | None = None,
+) -> None:
     update_basket_movement(world, input_state, delta_time)
 
     for falling_object in world.falling_objects:
         falling_object.previous_position.update(falling_object.transform.position)
+        if environment_manager is not None:
+            falling_object.x += environment_manager.gameplay_wind_velocity().x * delta_time
+            falling_object.x = clamp(falling_object.x, 0.0, config.SCREEN_WIDTH - falling_object.size)
         falling_object.y += falling_object.speed * delta_time
 
 

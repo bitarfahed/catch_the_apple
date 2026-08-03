@@ -1,6 +1,7 @@
 import pygame
 
 from catch_the_apple import config
+from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.effects import VisualEffects
 from catch_the_apple.input import poll_input
 from catch_the_apple.rendering import Renderer
@@ -25,6 +26,7 @@ class Game:
         self.world = World()
         self.spawn_system = SpawnSystem(config.SPAWN_CONFIG)
         self.spawn_system.update(self.world)
+        self.environment_manager = EnvironmentManager()
         self.effects = VisualEffects()
         self.renderer = Renderer(self.screen)
         self.clock = pygame.time.Clock()
@@ -48,12 +50,13 @@ class Game:
         if input_state.debug_collision_toggled:
             self.session.debug_collision_enabled = not self.session.debug_collision_enabled
 
-        update_movement(self.world, input_state, delta_time)
+        self.environment_manager.update(delta_time)
+        update_movement(self.world, input_state, delta_time, self.environment_manager)
         events = apply_game_rules(self.world, self.session, self.spawn_system)
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
-        self.effects.update(self.world, delta_time)
+        self.effects.update(self.world, delta_time, self.environment_manager)
 
     def render(self, delta_time: float) -> None:
-        self.renderer.render(self.world, self.session, self.effects, delta_time)
+        self.renderer.render(self.world, self.session, self.effects, delta_time, self.environment_manager.state)
         pygame.display.flip()

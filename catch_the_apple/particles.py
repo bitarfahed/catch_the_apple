@@ -44,7 +44,7 @@ class Particle:
         self.gravity_scale = config.gravity_scale
         self.active = True
 
-    def update(self, delta_time: float, gravity: Vector2) -> None:
+    def update(self, delta_time: float, gravity: Vector2, wind: Vector2) -> None:
         if not self.active:
             return
         self.age += delta_time
@@ -52,7 +52,7 @@ class Particle:
             self.active = False
             return
 
-        self.velocity += (self.acceleration + gravity * self.gravity_scale) * delta_time
+        self.velocity += (self.acceleration + gravity * self.gravity_scale + wind) * delta_time
         if self.drag > 0.0:
             self.velocity *= max(0.0, 1.0 - self.drag * delta_time)
         self.position += self.velocity * delta_time
@@ -149,9 +149,10 @@ class ParticleSystem:
             )
             self._acquire_particle().reset(particle_config)
 
-    def update(self, delta_time: float) -> None:
+    def update(self, delta_time: float, wind: Vector2 | None = None) -> None:
+        wind = wind or vec2()
         for particle in self.particles:
-            particle.update(delta_time, self.gravity)
+            particle.update(delta_time, self.gravity, wind)
 
     def active_particles(self):
         for particle in self.particles:

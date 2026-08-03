@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import pygame
 
 from catch_the_apple.animation import SquashStretch
+from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent
 from catch_the_apple.math2d import vec2
 from catch_the_apple.particles import EmitterConfig, ParticleSystem
@@ -101,7 +102,12 @@ class VisualEffects:
                 self.particles.emit(event.position, APPLE_CATCH_BURST)
                 self.object_squash_for(event.falling_object).trigger(0.18)
 
-    def update(self, world: World, delta_time: float) -> None:
+    def update(
+        self,
+        world: World,
+        delta_time: float,
+        environment_manager: EnvironmentManager | None = None,
+    ) -> None:
         self._trail_timer = max(0.0, self._trail_timer - delta_time)
         self.basket_squash.update(delta_time)
         for animation in self.object_squash.values():
@@ -117,7 +123,8 @@ class VisualEffects:
             self.emit_motion_trails(world)
             self._trail_timer = 0.045
 
-        self.particles.update(delta_time)
+        wind = environment_manager.particle_wind_velocity() if environment_manager is not None else vec2()
+        self.particles.update(delta_time, wind)
 
     def emit_motion_trails(self, world: World) -> None:
         for falling_object in world.falling_objects:

@@ -2,6 +2,7 @@ import pygame
 
 from catch_the_apple import config
 from catch_the_apple.collision import build_basket_collision_model
+from catch_the_apple.dynamic_environment import EnvironmentState
 from catch_the_apple.effects import VisualEffects
 from catch_the_apple.environment import ProceduralEnvironmentRenderer
 from catch_the_apple.lighting import LightingSystem
@@ -26,9 +27,14 @@ class Renderer:
         session: GameSession,
         effects: VisualEffects | None = None,
         delta_time: float = 0.0,
+        environment_state: EnvironmentState | None = None,
     ) -> None:
         self.elapsed_time += delta_time
-        self.environment.render(self.screen, self.elapsed_time)
+        if environment_state is not None:
+            self.lighting.set_config(environment_state.lighting)
+            self.environment.render(self.screen, environment_state)
+        else:
+            self.screen.fill(config.BLUE)
 
         basket_surface = self.assets.get_basket_surface(world.basket.width, world.basket.height)
         basket_surface = self.lighting.apply_lighting(basket_surface)
