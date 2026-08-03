@@ -1,0 +1,106 @@
+# Graphics and Mathematics
+
+## Purpose
+
+This document summarizes the current graphics and mathematical systems in Catch the Apple. The project remains a 2D Pygame game, so the rendering approach favors clear, lightweight techniques over engine-style generality.
+
+## Coordinate Model
+
+The game uses Pygame's screen coordinate system:
+
+- The origin is the top-left corner of the window.
+- Positive X moves right.
+- Positive Y moves down.
+- Gameplay positions are stored as floating-point values and converted to integer rectangles for drawing and collision checks.
+
+Reusable 2D helpers live in `catch_the_apple.math2d`:
+
+- `Vector2` aliases `pygame.Vector2`.
+- `vec2()` creates vectors consistently.
+- `clamp()` constrains values such as positions, velocities, and interpolation factors.
+- `Transform2D` stores position, rotation, and scale for future rendering and animation reuse.
+
+## Timing and Motion
+
+The runtime is delta-time based. The main loop measures elapsed time through `pygame.time.Clock`, clamps large spikes, then updates simulation and rendering as separate steps.
+
+Basket movement is velocity-based:
+
+- Horizontal input applies acceleration.
+- Drag slows the basket when no direction is held.
+- Maximum speed limits normal motion.
+- Dash uses a separate timed movement state with its own speed, duration, and cooldown.
+- Screen bounds clamp basket position and cancel outward velocity at the edges.
+
+Falling objects store both previous and current positions so collision can use swept movement when needed.
+
+## Collision Mathematics
+
+Falling objects currently use circular collision shapes. The basket uses a composite model:
+
+- Catch region
+- Left rim
+- Right rim
+- Basket body
+
+Circle-vs-rectangle checks are used for normal overlap. Continuous collision detection expands the basket catch region by the object radius and tests the segment between previous and current object centers, reducing tunneling when objects move quickly.
+
+## Procedural Assets
+
+The apple and basket are generated with Pygame drawing primitives rather than external PNG assets.
+
+The apple surface includes:
+
+- Ellipse body
+- Stem
+- Leaf
+- Simple shading
+- Highlight
+
+The basket surface includes:
+
+- Body
+- Rim
+- Woven line pattern
+- Basic shading
+
+Procedural surfaces are cached by size and appearance so they are generated only when needed.
+
+## Lighting and Shadows
+
+The lighting system is surface-based and intentionally inexpensive:
+
+- Ambient lighting is applied with a multiplicative surface pass.
+- Directional lighting adds diffuse color and simple specular highlights.
+- Ground shadows are generated as cached translucent ellipses.
+- Shadow size and alpha respond to estimated object height, light intensity, and light direction.
+
+The system avoids expensive per-frame Python pixel loops.
+
+## Environment Rendering
+
+The environment renderer procedurally creates and caches parallax layers:
+
+- Sky gradient
+- Clouds
+- Mountains
+- Trees
+- Bushes
+- Foreground grass
+
+Each layer has a depth factor and scroll speed. The dynamic environment manager supplies wind, weather tint, fog alpha, day/night colors, and lighting parameters.
+
+## Performance Notes
+
+- Most visual assets are cached Pygame surfaces.
+- Particle simulation uses a fixed pool to reduce runtime allocations.
+- Lighting cache entries are invalidated only when lighting configuration changes.
+- The current procedural sky and environment layers are generated once per renderer instance.
+- The debug and collision overlays are optional and can be toggled during play.
+
+## Known Technical Limits
+
+- Collision shapes are intentionally limited to circles and rectangles.
+- Lighting is stylized surface compositing, not physically based lighting.
+- The environment uses lightweight procedural drawing rather than large-scale terrain generation.
+- Rendering still targets a fixed-size playfield.

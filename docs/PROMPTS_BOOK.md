@@ -2031,3 +2031,150 @@ Added `AudioSystem` and `AudioSettings` with separate registries for music, soun
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+## Prompt 15 - Final Quality Pass, Testing & Portfolio Release
+
+**Goal:** Polish the feature-complete project for portfolio release by adding core automated tests, cleaning release documentation, and recording final architecture, performance, and limitation notes without adding gameplay features.
+
+**Full Prompt Text:**
+
+```text
+Prompt 15 - Final Quality Pass, Testing & Portfolio Release
+
+Context
+
+The project has now reached feature completion.
+
+This final prompt is dedicated to improving quality, reliability, maintainability, and presentation.
+
+No major gameplay features should be added.
+
+Focus on polishing the existing project into a portfolio-quality release.
+
+---
+
+Objectives
+
+Perform a complete project review.
+
+Implement or improve:
+
+- Automated tests for core gameplay logic and mathematical systems.
+- Headless test execution where practical.
+- Code cleanup and removal of dead code.
+- Final architectural consistency review.
+- Type hints where missing.
+- Documentation improvements.
+- Installation instructions.
+- Controls documentation.
+- Project structure documentation.
+- Architecture documentation.
+- Graphics and mathematics documentation.
+- Performance notes.
+- Known limitations.
+- Future work section.
+
+Review the entire repository for:
+
+- Code duplication.
+- Unnecessary abstractions.
+- Tight coupling.
+- Performance bottlenecks.
+- Readability improvements.
+- API consistency.
+- Naming consistency.
+
+Only optimize code where measurable or clearly beneficial.
+
+Ensure the repository is suitable for public release.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 15
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Final implementation summary
+- Test results
+- Final architecture notes
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add new gameplay mechanics.
+- Redesign major systems.
+- Introduce unnecessary optimizations.
+- Expand project scope.
+
+Prefer stability over additional features.
+
+---
+
+Acceptance Criteria
+
+- Core systems are tested.
+- Documentation is complete.
+- Repository is clean and consistent.
+- Public GitHub presentation is polished.
+- PROMPTS_BOOK contains the complete development history.
+- The project is ready for portfolio presentation and public release.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Testing summary
+- Documentation summary
+- Final architecture review
+- Performance review
+- Remaining known limitations
+- Confirmation that the repository is ready for public release
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `docs/GRAPHICS_AND_MATH.md`
+- `requirements.txt`
+- `tests/__init__.py`
+- `tests/test_core_systems.py`
+
+**Files Modified:**
+
+- `README.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DEVELOPMENT.md`
+- `docs/PROMPTS_BOOK.md`
+- `pyproject.toml`
+
+**Final Implementation Summary:**
+
+Added a focused headless `unittest` suite for math helpers, transforms, object definitions, deterministic spawning, basket movement and dash state, scoring and miss rules, continuous collision detection, pooled particles, persistence recovery/save behavior, environment state, procedural rendering cache behavior, lighting cache behavior, and environment layer caching. Refreshed public documentation with installation instructions, controls, testing instructions, project structure, save data notes, known limitations, future work, and a dedicated graphics and mathematics overview. Updated project metadata description from the scaffold placeholder.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 12 tests.
+- `.venv\Scripts\python.exe -m compileall catch_the_apple tests` passed.
+- `.venv\Scripts\python.exe -c "import main; import catch_the_apple; import catch_the_apple.app; print('import smoke ok')"` passed.
+
+**Final Architecture Notes:**
+
+The repository now has a coherent package layout with clear ownership across runtime, state flow, session/world data, gameplay systems, collision, procedural rendering, lighting, environment, effects, audio, persistence, UI, and debug tools. The architecture remains appropriately scoped to a 2D Pygame game and avoids a broad engine abstraction. The best-preserved foundations are the thin entry point, delta-time update/render split, data-driven object registry, composite collision model, cached procedural surfaces, pooled particle system, environment manager, and isolated developer tooling.
+
+**Completion Status:** Complete.

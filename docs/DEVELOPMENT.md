@@ -22,12 +22,14 @@ Development should be incremental, testable, and honest about the current state 
 
 ## Verification Expectations
 
-As the project grows, verification should include:
+Verification should include:
 
 - Running the game when practical
-- Running automated tests once they exist
+- Running automated tests with `python -m unittest discover`
 - Checking formatting and linting once configured
 - Manually validating visual/gameplay behavior for player-facing changes
+
+The automated tests are designed to run headlessly where practical by configuring SDL's dummy video and audio drivers.
 
 ## Documentation Expectations
 

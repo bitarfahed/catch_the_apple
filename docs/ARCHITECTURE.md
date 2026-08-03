@@ -52,13 +52,13 @@ The loop currently follows this order:
 | Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
 | Assets | No external assets yet |
 | Configuration | Constants, spawn parameters, and enabled object IDs in `catch_the_apple.config` |
-| Tests | None yet |
+| Tests | Headless `unittest` coverage for core math, gameplay systems, collision, particles, persistence, environment, procedural rendering, and lighting |
 
 ## Intended Direction
 
-Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer state management, asset loading, deterministic systems, and testable game rules. The current runtime now has separate update and render phases, which should remain the foundation for future gameplay and rendering work.
+Future architecture should continue separating responsibilities into small, practical modules only when the game needs them: richer object behaviors, asset loading, deterministic systems, broader integration tests, and packaging. The current runtime has separate update and render phases, which should remain the foundation for future gameplay and rendering work.
 
-Basket movement state exposes current velocity, movement direction, and speed for future animation and rendering systems. Visual effects are not implemented yet.
+Basket movement state exposes current velocity, movement direction, and speed for animation and rendering systems.
 
 Collision debug rendering can be toggled with F1. The overlay visualizes basket regions, object circles, and swept object movement paths without changing gameplay rules.
 
@@ -84,7 +84,10 @@ The following current decisions are good foundations:
 
 - Pygame as the rendering and input framework
 - Simple arcade loop structure
-- Rectangle collision for early gameplay
+- Focused world/session model
+- Data-driven object definitions
+- Composite basket collision plus circular falling-object collision
 - Score/lives mechanic
 - Gradual difficulty increase
+- Cached procedural rendering strategy
 - Fixed-size playfield while the prototype is still small
