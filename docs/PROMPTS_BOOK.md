@@ -2320,3 +2320,136 @@ Adopted `src/` layout, package discovery metadata, console-script metadata, vers
 - Ruff could not be executed because the local `uv.exe` launcher failed before spawning commands and Ruff is not installed in the current virtual environment. Ruff configuration and a uv dev dependency group were added for the intended workflow.
 
 **Completion Status:** Complete.
+
+## Prompt 17 - Final Compliance Audit
+
+**Goal:** Perform a final engineering compliance audit against the adopted software project guidelines and identify any remaining issues without expanding scope or changing gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 17 - Final Compliance Audit
+
+Context
+
+The project is now considered complete.
+
+Perform one final engineering review against the adopted software project guidelines.
+
+This is a quality and compliance audit, not a feature-development prompt.
+
+---
+
+Objectives
+
+Audit the entire repository.
+
+Evaluate compliance with the adopted software engineering guidelines.
+
+Verify:
+
+- Repository structure
+- SDK architecture
+- Documentation quality
+- README completeness
+- PRD / PLAN / TODO
+- Dedicated mechanism documentation
+- Prompt Book completeness
+- Modular architecture
+- Separation of responsibilities
+- Type hints
+- Docstrings
+- File-size guideline
+- Ruff compliance
+- Test quality
+- Coverage
+- uv workflow
+- Package organization
+- Version management
+- Public GitHub readiness
+
+Produce a detailed compliance report.
+
+For every guideline indicate one of:
+
+- Fully Compliant
+- Partially Compliant
+- Not Applicable
+- Not Implemented
+
+For every partial or failed item explain why.
+
+Do not implement new features unless a very small change is required to satisfy an existing guideline.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Expand project scope.
+- Add new gameplay.
+- Perform large refactors.
+- Rewrite completed systems unless absolutely necessary.
+
+---
+
+Acceptance Criteria
+
+- Complete compliance audit produced.
+- Remaining issues identified.
+- Repository ready for public release.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Compliance summary
+- Remaining recommendations
+- Known limitations
+- Final architectural assessment
+- Portfolio readiness assessment
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Audit Summary:**
+
+The repository is ready for public portfolio release. The strongest compliance areas are project structure, SDK launch architecture, modular subsystem ownership, documentation structure, test coverage for core systems, package metadata, and version management. Remaining partials are limited to Ruff execution in the local environment, comprehensive internal docstrings, a few files slightly above the preferred line-count guideline, and test coverage breadth beyond core systems.
+
+**Verification Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 14 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- SDK import/version check passed.
+- `uv --version` failed because the local `uv.exe` launcher could not start.
+- Ruff could not be executed because uv is unavailable in the current shell state and Ruff is not installed in the active virtual environment.
+
+**Remaining Recommendations:**
+
+- Install or repair uv locally, then run `uv run --group dev ruff check .`.
+- Add CI for tests and Ruff.
+- Add selective docstrings for public internal subsystem classes, especially rendering, collision, environment, and particles.
+- Consider splitting `dynamic_environment.py`, `environment.py`, and `particles.py` only if future changes make them harder to maintain.
+- Add state-flow and full-renderer smoke tests when practical.
+
+**Known Limitations:**
+
+- Normal gameplay still enables one regular apple.
+- Future object definitions are present but inactive.
+- Audio architecture exists without bundled audio assets.
+- No bundled executable distribution is included.
+
+**Final Architectural Assessment:**
+
+The architecture is appropriate for a standalone 2D Pygame portfolio game. The SDK boundary, `src/` layout, focused gameplay systems, cached procedural rendering, environment manager, persistence, debug tooling, and headless tests provide a professional foundation without forcing enterprise patterns.
+
+**Completion Status:** Complete.
