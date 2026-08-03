@@ -8,6 +8,7 @@ def update_movement(world: World, input_state: InputState, delta_time: float) ->
     update_basket_movement(world, input_state, delta_time)
 
     for falling_object in world.falling_objects:
+        falling_object.previous_position.update(falling_object.transform.position)
         falling_object.y += falling_object.speed * delta_time
 
 

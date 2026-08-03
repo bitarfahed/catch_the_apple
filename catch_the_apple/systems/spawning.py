@@ -37,6 +37,7 @@ class SpawnSystem:
     def reset_falling_object(self, falling_object: FallingObject) -> None:
         falling_object.x = self.random_falling_object_x(falling_object.definition)
         falling_object.y = self.config.spawn_y
+        falling_object.previous_position.update(falling_object.transform.position)
 
     def random_falling_object_x(self, definition: ObjectDefinition) -> int:
         max_x = min(self.config.x_max, config.SCREEN_WIDTH - definition.collision_size)

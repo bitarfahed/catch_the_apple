@@ -66,6 +66,37 @@ class Basket:
         return pygame.Rect(int(self.x), int(self.y), self.width, self.height)
 
     @property
+    def catch_region_rect(self) -> pygame.Rect:
+        return self.rect
+
+    @property
+    def left_rim_rect(self) -> pygame.Rect:
+        return pygame.Rect(
+            int(self.x),
+            int(self.y - config.BASKET_RIM_HEIGHT + self.height),
+            config.BASKET_RIM_WIDTH,
+            config.BASKET_RIM_HEIGHT,
+        )
+
+    @property
+    def right_rim_rect(self) -> pygame.Rect:
+        return pygame.Rect(
+            int(self.x + self.width - config.BASKET_RIM_WIDTH),
+            int(self.y - config.BASKET_RIM_HEIGHT + self.height),
+            config.BASKET_RIM_WIDTH,
+            config.BASKET_RIM_HEIGHT,
+        )
+
+    @property
+    def body_rect(self) -> pygame.Rect:
+        return pygame.Rect(
+            int(self.x),
+            int(self.y + config.BASKET_CATCH_REGION_HEIGHT),
+            self.width,
+            self.height - config.BASKET_CATCH_REGION_HEIGHT,
+        )
+
+    @property
     def velocity(self) -> pygame.Vector2:
         return self.movement.velocity
 
@@ -83,6 +114,10 @@ class FallingObject:
     transform: Transform2D
     definition: ObjectDefinition
     speed: float = config.APPLE_INITIAL_SPEED
+    previous_position: pygame.Vector2 = field(default_factory=pygame.Vector2)
+
+    def __post_init__(self) -> None:
+        self.previous_position.update(self.transform.position)
 
     @property
     def size(self) -> int:
@@ -107,3 +142,18 @@ class FallingObject:
     @property
     def rect(self) -> pygame.Rect:
         return pygame.Rect(int(self.x), int(self.y), self.size, self.size)
+
+    @property
+    def radius(self) -> float:
+        return self.size / 2
+
+    @property
+    def center(self) -> pygame.Vector2:
+        return pygame.Vector2(self.x + self.radius, self.y + self.radius)
+
+    @property
+    def previous_center(self) -> pygame.Vector2:
+        return pygame.Vector2(
+            self.previous_position.x + self.radius,
+            self.previous_position.y + self.radius,
+        )

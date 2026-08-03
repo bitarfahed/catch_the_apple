@@ -8,3 +8,4 @@ class GameSession:
     score: int = 0
     lives: int = config.INITIAL_LIVES
     running: bool = True
+    debug_collision_enabled: bool = False

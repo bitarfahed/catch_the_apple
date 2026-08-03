@@ -1,5 +1,5 @@
 from catch_the_apple import config
-from catch_the_apple.collision import collides
+from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.session import GameSession
 from catch_the_apple.systems.difficulty import apply_score_progression
 from catch_the_apple.systems.scoring import add_score, lose_life
@@ -15,7 +15,8 @@ def apply_game_rules(world: World, session: GameSession, spawn_system: SpawnSyst
             if session.lives <= 0:
                 session.running = False
 
-        if collides(world.basket, falling_object):
+        collision = detect_basket_collision(world.basket, falling_object)
+        if collision.caught:
             add_score(session, falling_object.definition.score_value)
             spawn_system.reset_falling_object(falling_object)
             apply_score_progression(session.score, falling_object)

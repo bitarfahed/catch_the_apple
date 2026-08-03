@@ -43,6 +43,8 @@ class Game:
         input_state = poll_input()
         if input_state.quit_requested:
             self.session.running = False
+        if input_state.debug_collision_toggled:
+            self.session.debug_collision_enabled = not self.session.debug_collision_enabled
 
         update_movement(self.world, input_state, delta_time)
         apply_game_rules(self.world, self.session, self.spawn_system)
