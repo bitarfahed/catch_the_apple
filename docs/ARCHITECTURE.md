@@ -40,6 +40,7 @@ The loop currently follows this order:
 | Lighting | `catch_the_apple.lighting` applies reusable ambient/directional lighting and ground shadows |
 | Math | `catch_the_apple.math2d` provides `Vector2`, `Transform2D`, and small helpers |
 | Procedural assets | `catch_the_apple.procedural_assets` generates cached apple and basket surfaces |
+| Effects | `catch_the_apple.particles`, `effects`, and `animation` provide pooled particles and squash/stretch components |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
 | Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
 | Assets | No external assets yet |
@@ -57,6 +58,8 @@ Collision debug rendering can be toggled with F1. The overlay visualizes basket 
 Procedural asset rendering currently generates basket and apple surfaces from Pygame primitives and caches them by appearance. No external image assets are required.
 
 Lighting is surface-based and cached. It applies ambient shading, directional diffuse highlights, simple specular overlays, and soft ground shadows without per-frame pixel loops.
+
+Visual effects are simulated outside gameplay rules. Gameplay systems emit lightweight events, effects consume those events, and the renderer draws particles and animation-scaled surfaces.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 

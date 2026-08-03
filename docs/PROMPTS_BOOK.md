@@ -1291,3 +1291,164 @@ Added `LightingConfig`, `DirectionalLight`, and `LightingSystem`. The renderer n
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 10: Generic Particle System & Gameplay Effects
+
+**Date:** 2026-08-03
+
+**Goal:** Introduce a reusable, data-driven particle and lightweight animation system for gameplay effects while preserving gameplay rules.
+
+**Full Prompt Text:**
+
+```text
+Prompt 10 - Generic Particle System & Gameplay Effects
+
+Context
+
+The project now has procedural rendering and a lightweight 2D lighting pipeline.
+
+This prompt introduces a reusable particle system that will become the foundation for all visual gameplay effects.
+
+The focus is architecture first, visual polish second.
+
+Gameplay rules must remain unchanged.
+
+---
+
+Objectives
+
+Implement a generic, data-driven particle system.
+
+The particle system should support:
+
+- Position
+- Velocity
+- Acceleration
+- Rotation
+- Angular velocity
+- Lifetime
+- Age
+- Start and end size
+- Start and end alpha
+- Start and end color
+- Drag
+- Gravity scale
+
+Implement configurable particle emitters.
+
+Different visual effects should be created by emitter configuration rather than by creating separate particle classes.
+
+Create the following gameplay effects using the generic system:
+
+- Apple catch burst
+- Golden sparkle effect (infrastructure only; no Golden Apples yet)
+- Bomb smoke effect (infrastructure only; no Bombs yet)
+- Motion trails for fast-moving objects
+- Basket dash trail
+- Simple squash & stretch animation for:
+  - Basket movement
+  - Apple catch
+
+Squash & Stretch should be implemented as reusable animation components rather than special-case rendering code.
+
+The renderer should remain responsible only for drawing particles.
+
+Particle simulation should remain independent from gameplay logic.
+
+Use object pooling where appropriate to reduce runtime allocations.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 10
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Change gameplay rules.
+- Spawn Golden Apples.
+- Spawn Bombs.
+- Add weather particles.
+- Add environmental particles.
+- Add post-processing.
+- Add camera shake.
+- Add audio.
+
+Keep the particle system generic and reusable.
+
+Avoid per-frame allocations whenever practical.
+
+---
+
+Acceptance Criteria
+
+- A reusable particle engine exists.
+- Particle emitters are data-driven.
+- Gameplay effects reuse the generic system.
+- Motion trails are implemented.
+- Squash & Stretch is reusable.
+- Object pooling is used where beneficial.
+- Gameplay remains unchanged.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Particle architecture decisions
+- Pooling strategy
+- Performance considerations
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/animation.py`
+- `catch_the_apple/effects.py`
+- `catch_the_apple/events.py`
+- `catch_the_apple/particles.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/game.py`
+- `catch_the_apple/rendering.py`
+- `catch_the_apple/systems/game_rules.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added a generic pooled particle engine with configurable particle data and emitter definitions. Added reusable squash/stretch animation components. Gameplay rules now return lightweight gameplay events rather than directly knowing about effects. `VisualEffects` consumes events, emits apple catch bursts, provides golden sparkle and bomb smoke emitter infrastructure, emits motion trails for fast falling objects, emits basket dash trails, and manages reusable squash/stretch state for basket movement and apple catches. The renderer draws particles and applies animation scales, while particle simulation remains outside gameplay logic.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Particle smoke check confirmed pooled emission and update behavior.
+- Catch event smoke check confirmed apple catch burst emission and squash/stretch activation.
+- Particle render cache smoke check confirmed cached particle drawing surfaces.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

@@ -2,6 +2,7 @@ import pygame
 
 from catch_the_apple import config
 from catch_the_apple.collision import build_basket_collision_model
+from catch_the_apple.effects import VisualEffects
 from catch_the_apple.lighting import LightingSystem
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
@@ -14,12 +15,15 @@ class Renderer:
         self.font = pygame.font.SysFont(config.FONT_NAME, config.FONT_SIZE)
         self.assets = ProceduralAssetRenderer()
         self.lighting = LightingSystem()
+        self._particle_surface_cache: dict[tuple[int, tuple[int, int, int], int], pygame.Surface] = {}
 
-    def render(self, world: World, session: GameSession) -> None:
+    def render(self, world: World, session: GameSession, effects: VisualEffects | None = None) -> None:
         self.screen.fill(config.BLUE)
 
         basket_surface = self.assets.get_basket_surface(world.basket.width, world.basket.height)
-        self.screen.blit(self.lighting.apply_lighting(basket_surface), world.basket.rect)
+        basket_surface = self.lighting.apply_lighting(basket_surface)
+        basket_scale = effects.basket_squash.scale if effects is not None else (1.0, 1.0)
+        self.blit_scaled(basket_surface, world.basket.rect, basket_scale)
         for falling_object in world.falling_objects:
             object_surface = self.assets.get_falling_object_surface(
                 falling_object.definition.identifier,
@@ -28,7 +32,12 @@ class Renderer:
             )
             height_factor = self.lighting.estimate_height_factor(falling_object.y, falling_object.size)
             self.render_ground_shadow(falling_object.rect, height_factor)
-            self.screen.blit(self.lighting.apply_lighting(object_surface, height_factor), falling_object.rect)
+            object_surface = self.lighting.apply_lighting(object_surface, height_factor)
+            object_scale = effects.object_scale(falling_object) if effects is not None else (1.0, 1.0)
+            self.blit_scaled(object_surface, falling_object.rect, object_scale)
+
+        if effects is not None:
+            self.render_particles(effects)
 
         if session.debug_collision_enabled:
             self.render_debug_collision_overlay(world)
@@ -37,6 +46,44 @@ class Renderer:
         lives_text = self.font.render(f"Lives: {session.lives}", True, config.WHITE)
         self.screen.blit(score_text, (10, 10))
         self.screen.blit(lives_text, (config.SCREEN_WIDTH - 120, 10))
+
+    def blit_scaled(
+        self,
+        surface: pygame.Surface,
+        rect: pygame.Rect,
+        scale: tuple[float, float],
+    ) -> None:
+        if scale == (1.0, 1.0):
+            self.screen.blit(surface, rect)
+            return
+        width = max(1, int(rect.width * scale[0]))
+        height = max(1, int(rect.height * scale[1]))
+        scaled_surface = pygame.transform.smoothscale(surface, (width, height))
+        scaled_rect = scaled_surface.get_rect(center=rect.center)
+        self.screen.blit(scaled_surface, scaled_rect)
+
+    def render_particles(self, effects: VisualEffects) -> None:
+        for particle in effects.particles.active_particles():
+            if particle.alpha <= 0:
+                continue
+            radius = max(1, int(particle.size / 2))
+            surface = self.get_particle_surface(radius, particle.color, particle.alpha)
+            rect = surface.get_rect(center=(int(particle.position.x), int(particle.position.y)))
+            self.screen.blit(surface, rect)
+
+    def get_particle_surface(
+        self,
+        radius: int,
+        color: tuple[int, int, int],
+        alpha: int,
+    ) -> pygame.Surface:
+        key = (radius, color, alpha)
+        if key not in self._particle_surface_cache:
+            size = radius * 2
+            surface = pygame.Surface((size, size), pygame.SRCALPHA)
+            pygame.draw.circle(surface, (*color, alpha), (radius, radius), radius)
+            self._particle_surface_cache[key] = surface.convert_alpha()
+        return self._particle_surface_cache[key]
 
     def render_ground_shadow(self, object_rect: pygame.Rect, height_factor: float) -> None:
         shadow_surface = self.lighting.get_ground_shadow(object_rect.width, object_rect.height, height_factor)
