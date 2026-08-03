@@ -45,6 +45,9 @@ The loop currently follows this order:
 | Effects | `catch_the_apple.particles`, `effects`, and `animation` provide pooled particles and squash/stretch components |
 | State flow | `catch_the_apple.states` isolates main menu, playing, paused, and game-over behavior |
 | UI | `catch_the_apple.ui` renders HUD, menus, overlays, and lightweight UI animation state |
+| Audio | `catch_the_apple.audio` separates music, sound effects, UI sounds, ambient sounds, and volume settings |
+| Persistence | `catch_the_apple.persistence` stores high score, best combo, settings, and session statistics |
+| Debug tools | `catch_the_apple.debug` defines runtime debug snapshots consumed by the UI overlay |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
 | Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
 | Assets | No external assets yet |
@@ -70,6 +73,8 @@ The environment renderer is independent from gameplay state. It generates cached
 The environment manager coordinates wind, weather presets, and day/night state. It exposes current wind and lighting parameters to rendering, particles, and future gameplay systems through narrow APIs.
 
 Game flow is state-driven. Each state owns its input, update, and render behavior, while shared gameplay simulation remains in the playing state. The HUD is modular and consumes session/world/environment data plus gameplay events for lightweight feedback animations.
+
+Developer tools are isolated from gameplay logic. F2 toggles a debug overlay with runtime state, F1 toggles collision visualization, and M toggles mute. Persistence uses a local JSON save file and falls back safely when the file is missing or corrupted.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 

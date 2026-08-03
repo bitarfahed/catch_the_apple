@@ -21,6 +21,7 @@ The project is intentionally simple at this stage:
 - Procedural parallax environment with sky, clouds, mountains, trees, bushes, and grass
 - Dynamic wind, weather presets, and day/night environment management
 - State-driven game flow with main menu, pause, game over, and animated HUD
+- Audio settings, local persistence, and developer debug overlay
 - Keyboard input with left and right arrow keys
 - Score, lives, collision detection, apple respawn, and basic difficulty scaling
 - No asset pipeline, tests, or scene/state system yet

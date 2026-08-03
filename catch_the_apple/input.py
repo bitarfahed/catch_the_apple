@@ -13,6 +13,10 @@ class InputState:
     start_pressed: bool
     pause_pressed: bool
     restart_pressed: bool
+    debug_overlay_toggled: bool
+    mute_toggled: bool
+    volume_up_pressed: bool
+    volume_down_pressed: bool
 
 
 def poll_input() -> InputState:
@@ -22,6 +26,10 @@ def poll_input() -> InputState:
     start_pressed = False
     pause_pressed = False
     restart_pressed = False
+    debug_overlay_toggled = False
+    mute_toggled = False
+    volume_up_pressed = False
+    volume_down_pressed = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit_requested = True
@@ -35,6 +43,14 @@ def poll_input() -> InputState:
             pause_pressed = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
             restart_pressed = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_F2:
+            debug_overlay_toggled = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+            mute_toggled = True
+        if event.type == pygame.KEYDOWN and event.key in (pygame.K_EQUALS, pygame.K_PLUS):
+            volume_up_pressed = True
+        if event.type == pygame.KEYDOWN and event.key in (pygame.K_MINUS, pygame.K_UNDERSCORE):
+            volume_down_pressed = True
 
     keys = pygame.key.get_pressed()
     return InputState(
@@ -46,4 +62,8 @@ def poll_input() -> InputState:
         start_pressed=start_pressed,
         pause_pressed=pause_pressed,
         restart_pressed=restart_pressed,
+        debug_overlay_toggled=debug_overlay_toggled,
+        mute_toggled=mute_toggled,
+        volume_up_pressed=volume_up_pressed,
+        volume_down_pressed=volume_down_pressed,
     )

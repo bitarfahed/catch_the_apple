@@ -1876,3 +1876,158 @@ Added a lightweight `StateManager` with main menu, playing, paused, and game-ove
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 14: Audio, Persistence & Developer Tools
+
+**Date:** 2026-08-03
+
+**Goal:** Add modular audio infrastructure, local persistence, settings storage, session statistics, and a runtime debug overlay without changing gameplay.
+
+**Full Prompt Text:**
+
+```text
+Prompt 14 - Audio, Persistence & Developer Tools
+
+Context
+
+The project now has a complete gameplay architecture, procedural rendering, dynamic environments, game states, and a polished user interface.
+
+This prompt focuses on usability, persistence, debugging, and developer experience.
+
+No gameplay mechanics should change.
+
+---
+
+Objectives
+
+Implement an Audio System with clear separation between:
+
+- Music
+- Sound effects
+- UI sounds
+- Ambient sounds
+
+Add configurable volume controls:
+
+- Master volume
+- Music volume
+- Effects volume
+- Mute
+
+Implement local persistence for:
+
+- High score
+- Settings
+- Best combo
+- Session statistics
+
+Loading should be robust against missing or corrupted save files.
+
+Implement a Debug Overlay that can be toggled during gameplay.
+
+The overlay should display useful runtime information such as:
+
+- FPS
+- Frame time
+- Active objects
+- Particle count
+- Current game state
+- Current weather
+- Wind information
+- Collision visualization status
+- Debug information useful for future development
+
+Keep all developer tools isolated from gameplay logic.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 14
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Change gameplay rules.
+- Modify physics.
+- Modify collision.
+- Add new gameplay features.
+- Add performance optimizations beyond obvious low-risk improvements.
+
+Keep all systems modular.
+
+---
+
+Acceptance Criteria
+
+- Audio system implemented.
+- Volume settings persist.
+- High scores and settings persist locally.
+- Debug overlay can be toggled.
+- Corrupted save files are handled gracefully.
+- Gameplay behavior remains unchanged.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Audio architecture
+- Persistence strategy
+- Debug architecture
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/audio.py`
+- `catch_the_apple/debug.py`
+- `catch_the_apple/persistence.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/game.py`
+- `catch_the_apple/input.py`
+- `catch_the_apple/session.py`
+- `catch_the_apple/states.py`
+- `catch_the_apple/systems/scoring.py`
+- `catch_the_apple/ui.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added `AudioSystem` and `AudioSettings` with separate registries for music, sound effects, UI sounds, and ambient sounds. Added master, music, effects, and mute settings with runtime controls for mute and master volume. Added `PersistenceStore` with robust JSON loading for high score, best combo, audio settings, and session statistics. Added `DebugSnapshot` and an F2-toggleable debug overlay showing FPS, frame time, active objects, particle count, state, weather, wind, collision visualization status, and audio state. Developer tools remain outside gameplay rules.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Corrupted save smoke check confirmed safe fallback to default save data.
+- Settings persistence smoke check confirmed volume/mute settings save and reload.
+- Session persistence smoke check confirmed high score, best combo, sessions played, and total score save correctly.
+- Debug snapshot smoke check confirmed state, object count, and FPS data are available.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

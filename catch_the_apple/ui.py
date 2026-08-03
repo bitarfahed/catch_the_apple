@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pygame
 
 from catch_the_apple import config
+from catch_the_apple.debug import DebugSnapshot
 from catch_the_apple.dynamic_environment import EnvironmentState
 from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.session import GameSession
@@ -96,7 +97,7 @@ class UI:
         self.render_center_panel(
             screen,
             "Catch the Apple",
-            ("Press Enter to Start", "Arrow keys move  |  Space dashes", "F1 toggles collision debug"),
+            ("Press Enter to Start", "Arrow keys move  |  Space dashes", "F1 collision  |  F2 debug  |  M mute"),
         )
 
     def render_pause(self, screen: pygame.Surface) -> None:
@@ -124,3 +125,24 @@ class UI:
         for index, line in enumerate(lines):
             line_surface = self.font.render(line, True, (230, 238, 244))
             screen.blit(line_surface, line_surface.get_rect(center=(center_x, y + 62 + index * 34)))
+
+    def render_debug_overlay(self, screen: pygame.Surface, snapshot: DebugSnapshot) -> None:
+        lines = (
+            f"FPS: {snapshot.fps:5.1f}",
+            f"Frame: {snapshot.frame_time_ms:5.2f} ms",
+            f"State: {snapshot.current_state}",
+            f"Objects: {snapshot.active_objects}",
+            f"Particles: {snapshot.particle_count}",
+            f"Weather: {snapshot.weather}",
+            f"Wind: {snapshot.wind_strength:5.2f} ({snapshot.wind_direction[0]:.2f}, {snapshot.wind_direction[1]:.2f})",
+            f"Collision debug: {'on' if snapshot.collision_debug_enabled else 'off'}",
+            f"Audio: {'ok' if snapshot.audio_available else 'unavailable'} / {'muted' if snapshot.muted else 'unmuted'}",
+        )
+        width = 292
+        height = 22 + len(lines) * 20
+        panel = pygame.Surface((width, height), pygame.SRCALPHA)
+        panel.fill((5, 10, 14, 190))
+        screen.blit(panel, (14, config.SCREEN_HEIGHT - height - 14))
+        for index, line in enumerate(lines):
+            text = self.small_font.render(line, True, (210, 235, 225))
+            screen.blit(text, (26, config.SCREEN_HEIGHT - height + 2 + index * 20))

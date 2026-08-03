@@ -49,6 +49,7 @@ class PlayingState(GameStateBase):
         input_state = getattr(game, "_current_input_state")
         game.update_playing(input_state, delta_time)
         if game.session.game_over:
+            game.finish_session()
             game.states.change(GameOverState())
 
     def render(self, game: Game, delta_time: float) -> None:
