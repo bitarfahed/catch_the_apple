@@ -734,3 +734,146 @@ Added an `ObjectDefinition` dataclass and registry containing regular apple, gol
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 6: Basket Physics & Advanced Movement
+
+**Date:** 2026-08-03
+
+**Goal:** Replace direct basket position changes with velocity-based movement, acceleration, drag, boundary constraints, and a configurable dash while keeping gameplay stable.
+
+**Full Prompt Text:**
+
+```text
+Prompt 6 - Basket Physics & Advanced Movement
+
+Context
+
+The project now has a modular architecture, a delta-time runtime, scalable world management, a spawn system, and a data-driven gameplay model.
+
+This prompt upgrades the player's movement system from simple position changes to a proper movement model.
+
+The game should still feel familiar, but movement should become smoother and provide a stronger foundation for future gameplay.
+
+---
+
+Objectives
+
+Replace the basket's direct position updates with a velocity-based movement system.
+
+Implement:
+
+- Position
+- Velocity
+- Acceleration
+- Configurable maximum speed
+- Configurable acceleration
+- Configurable deceleration / drag
+- Screen boundary constraints
+
+Add a dash mechanic.
+
+The dash should include:
+
+- Configurable dash speed
+- Dash duration
+- Dash cooldown
+- Clear separation between normal movement and dash movement
+
+Prepare the movement system for future visual effects by exposing:
+
+- Current velocity
+- Current movement direction
+- Current speed
+
+These values will later be used by animation and rendering systems.
+
+Movement tuning should prioritize responsiveness while remaining physically consistent.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 6
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add visual dash effects.
+- Add particles.
+- Add squash/stretch.
+- Add camera shake.
+- Add motion trails.
+- Change collision behavior.
+- Change gameplay scoring.
+- Change spawn behavior.
+- Add new object types.
+
+Avoid overengineering.
+
+---
+
+Acceptance Criteria
+
+- Basket movement is fully velocity-based.
+- Movement uses acceleration and drag.
+- Dash works with configurable duration and cooldown.
+- Movement remains responsive.
+- Future rendering systems can access movement state.
+- Gameplay remains stable.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Movement architecture decisions
+- Dash implementation summary
+- Manual verification performed
+- Confirmation that gameplay remains stable
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- None.
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/config.py`
+- `catch_the_apple/entities.py`
+- `catch_the_apple/input.py`
+- `catch_the_apple/systems/movement.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added `MovementState` to the basket with velocity, acceleration, movement direction, dash timers, and exposed current speed. Basket movement now applies acceleration while input is held, drag when input is released, clamps velocity to a configured maximum speed, integrates position with delta time, and enforces screen boundaries. Space triggers a dash using separate dash speed, duration, and cooldown settings. Falling object movement, collision, scoring, spawning, and object definitions were not changed.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- Focused movement smoke checks confirmed acceleration, drag, dash speed/cooldown, and boundary clamping behavior.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

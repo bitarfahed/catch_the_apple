@@ -13,6 +13,7 @@ The project is intentionally simple at this stage:
 - Structured world/session model with focused gameplay systems
 - Collection-based falling object model with a configurable spawn system
 - Data-driven object definitions with only the regular apple enabled
+- Velocity-based basket movement with acceleration, drag, and dash state
 - Rectangle-based basket and apple rendering
 - Keyboard input with left and right arrow keys
 - Score, lives, collision detection, apple respawn, and basic difficulty scaling
