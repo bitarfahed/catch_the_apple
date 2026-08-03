@@ -43,6 +43,8 @@ The loop currently follows this order:
 | Environment | `catch_the_apple.environment` generates cached procedural parallax background layers |
 | Dynamic environment | `catch_the_apple.dynamic_environment` coordinates wind, weather presets, and day/night lighting state |
 | Effects | `catch_the_apple.particles`, `effects`, and `animation` provide pooled particles and squash/stretch components |
+| State flow | `catch_the_apple.states` isolates main menu, playing, paused, and game-over behavior |
+| UI | `catch_the_apple.ui` renders HUD, menus, overlays, and lightweight UI animation state |
 | Gameplay systems | Movement, spawning, scoring, difficulty progression, and game rules live in `catch_the_apple.systems` |
 | Spawn system | `SpawnSystem` owns seeded random placement, weighted object selection, and the configured active object count |
 | Assets | No external assets yet |
@@ -66,6 +68,8 @@ Visual effects are simulated outside gameplay rules. Gameplay systems emit light
 The environment renderer is independent from gameplay state. It generates cached procedural layers for sky, clouds, mountains, trees, bushes, and grass, then scrolls them by per-layer depth factors for lightweight parallax.
 
 The environment manager coordinates wind, weather presets, and day/night state. It exposes current wind and lighting parameters to rendering, particles, and future gameplay systems through narrow APIs.
+
+Game flow is state-driven. Each state owns its input, update, and render behavior, while shared gameplay simulation remains in the playing state. The HUD is modular and consumes session/world/environment data plus gameplay events for lightweight feedback animations.
 
 The goal is not to create a general game engine. The architecture should serve this game first, while still being clean enough to demonstrate professional Python design.
 

@@ -1733,3 +1733,146 @@ Added a central `EnvironmentManager` coordinating `WindSystem`, configurable wea
 - Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
 
 **Completion Status:** Complete.
+
+### Prompt 13: Game Flow, States & User Interface
+
+**Date:** 2026-08-03
+
+**Goal:** Add reusable state management, main menu, pause, game-over flow, smooth transitions, and a modular animated HUD while preserving gameplay rules.
+
+**Full Prompt Text:**
+
+```text
+Prompt 13 - Game Flow, States & User Interface
+
+Context
+
+The project now has a complete gameplay architecture, procedural rendering, lighting, particles, and a dynamic environment.
+
+This prompt focuses on the player experience by introducing proper game flow and a polished user interface.
+
+The gameplay itself should remain unchanged.
+
+---
+
+Objectives
+
+Implement a reusable State Management system.
+
+At minimum support:
+
+- Main Menu
+- Playing
+- Paused
+- Game Over
+
+The state system should isolate update, input, and rendering logic for each state.
+
+Implement smooth transitions between states (fade or similar lightweight animation).
+
+Implement a polished HUD displaying:
+
+- Score
+- Lives
+- Current combo
+- Dash cooldown/availability
+- Active environmental state (optional)
+- Pause indicator
+
+Improve player feedback with subtle UI animations such as:
+
+- Score pop animation
+- Combo pulse
+- Life loss animation
+- Dash cooldown feedback
+
+Design the UI so future gameplay features can expose information without modifying the core HUD architecture.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to `docs/PROMPTS_BOOK.md`.
+
+Include:
+
+- Prompt Number: 13
+- Title
+- Goal
+- Full prompt text
+- Files created
+- Files modified
+- Short implementation summary
+- Test results
+- Completion status
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Change gameplay rules.
+- Add new object types.
+- Add audio.
+- Add persistence.
+- Add post-processing.
+- Change physics or collision.
+
+Keep the state system lightweight and modular.
+
+---
+
+Acceptance Criteria
+
+- State management implemented.
+- Main Menu, Playing, Pause and Game Over states work correctly.
+- HUD is modular and polished.
+- UI animations are lightweight and responsive.
+- Gameplay behavior remains unchanged.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- State management architecture
+- UI architecture decisions
+- Manual verification performed
+- Confirmation that gameplay behavior was preserved
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `catch_the_apple/states.py`
+- `catch_the_apple/ui.py`
+
+**Files Modified:**
+
+- `README.md`
+- `catch_the_apple/events.py`
+- `catch_the_apple/game.py`
+- `catch_the_apple/input.py`
+- `catch_the_apple/rendering.py`
+- `catch_the_apple/session.py`
+- `catch_the_apple/systems/game_rules.py`
+- `catch_the_apple/systems/scoring.py`
+- `docs/ARCHITECTURE.md`
+- `docs/PROMPTS_BOOK.md`
+
+**Short Implementation Summary:**
+
+Added a lightweight `StateManager` with main menu, playing, paused, and game-over states. Each state owns its input handling, update behavior, and rendering path. The previous gameplay loop now lives in `Game.update_playing`, used only by the playing state. Added fade transitions between states. Added a reusable `UI` layer for main menu, pause overlay, game-over overlay, and HUD rendering. HUD now displays score, lives, combo, dash cooldown/availability, and active weather. UI animations respond to gameplay events with score pop, combo pulse, and life-loss flash feedback.
+
+**Test Results:**
+
+- `python -m compileall main.py catch_the_apple` passed.
+- State smoke check confirmed main menu, start, pause, resume, game-over restart, and session reset paths.
+- Pygame launch smoke check passed using the dummy video driver with an automatic quit event.
+
+**Completion Status:** Complete.

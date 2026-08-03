@@ -12,4 +12,11 @@ class ObjectCaughtEvent:
     color: tuple[int, int, int]
 
 
-GameplayEvent = ObjectCaughtEvent
+@dataclass(frozen=True)
+class ObjectMissedEvent:
+    falling_object: FallingObject
+    position: pygame.Vector2
+    damage: int
+
+
+GameplayEvent = ObjectCaughtEvent | ObjectMissedEvent

@@ -63,6 +63,11 @@ class Renderer:
         self.screen.blit(score_text, (10, 10))
         self.screen.blit(lives_text, (config.SCREEN_WIDTH - 120, 10))
 
+    def render_background(self, environment_state: EnvironmentState, delta_time: float = 0.0) -> None:
+        self.elapsed_time += delta_time
+        self.lighting.set_config(environment_state.lighting)
+        self.environment.render(self.screen, environment_state)
+
     def blit_scaled(
         self,
         surface: pygame.Surface,

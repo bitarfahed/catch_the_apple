@@ -6,9 +6,11 @@ from catch_the_apple.effects import VisualEffects
 from catch_the_apple.input import poll_input
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
+from catch_the_apple.states import MainMenuState, StateManager
 from catch_the_apple.systems.game_rules import apply_game_rules
 from catch_the_apple.systems.movement import update_movement
 from catch_the_apple.systems.spawning import SpawnSystem
+from catch_the_apple.ui import UI
 from catch_the_apple.world import World
 
 
@@ -29,6 +31,8 @@ class Game:
         self.environment_manager = EnvironmentManager()
         self.effects = VisualEffects()
         self.renderer = Renderer(self.screen)
+        self.ui = UI()
+        self.states = StateManager(MainMenuState())
         self.clock = pygame.time.Clock()
 
     def run(self) -> None:
@@ -50,13 +54,28 @@ class Game:
         if input_state.debug_collision_toggled:
             self.session.debug_collision_enabled = not self.session.debug_collision_enabled
 
+        self._current_input_state = input_state
+        self.states.handle_input(self, input_state)
+        self.states.update(self, delta_time)
+
+    def update_playing(self, input_state, delta_time: float) -> None:
         self.environment_manager.update(delta_time)
         update_movement(self.world, input_state, delta_time, self.environment_manager)
         events = apply_game_rules(self.world, self.session, self.spawn_system)
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
         self.effects.update(self.world, delta_time, self.environment_manager)
+        self.ui.handle_events(events)
+        self.ui.update(delta_time)
 
     def render(self, delta_time: float) -> None:
-        self.renderer.render(self.world, self.session, self.effects, delta_time, self.environment_manager.state)
+        self.states.render(self, delta_time)
         pygame.display.flip()
+
+    def reset_play_session(self) -> None:
+        debug_collision_enabled = self.session.debug_collision_enabled
+        self.session = GameSession(debug_collision_enabled=debug_collision_enabled)
+        self.world = World()
+        self.spawn_system = SpawnSystem(config.SPAWN_CONFIG)
+        self.spawn_system.update(self.world)
+        self.effects = VisualEffects()
