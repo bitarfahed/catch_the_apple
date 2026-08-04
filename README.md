@@ -10,7 +10,7 @@ The project remains intentionally focused: it is a game, not a general-purpose e
 - Public SDK surface exposed through `catch_the_apple` and `catch_the_apple.sdk`.
 - Delta-time runtime with separate update and render phases.
 - Structured session, world, entity, input, movement, spawning, scoring, difficulty, and game-rules systems.
-- Data-driven object definitions with the regular apple enabled for normal play.
+- Data-driven object definitions for apples, hazards, bombs, and power-ups.
 - Velocity-based basket movement with acceleration, drag, boundary constraints, and dash state.
 - Composite basket collision with circular falling-object collision and continuous collision detection.
 - Cached procedural apple and basket surfaces.
@@ -62,11 +62,28 @@ catch-the-apple
 | Space | Dash |
 | Enter | Start from menu |
 | Esc or P | Pause/resume |
+| C while paused | Open developer cheat console |
 | R | Restart from game over |
 | F1 | Toggle collision overlay |
 | F2 | Toggle debug overlay |
 | M | Toggle mute |
 | + / - | Adjust master volume |
+
+## Developer Cheat Console
+
+The cheat console is available only while paused. Press `C`, type a code, press `Enter`, then press `P` or `Esc` to resume.
+
+| Code | Super Power |
+|---|---|
+| `MAGNET` | Magnet / Apple Storm |
+| `TIME` | Time Warp |
+| `DASH` | Dash Boost |
+| `WIND` | Wind Control |
+| `WAVE` | Shockwave |
+| `VOID` | Black Hole |
+| `GRAV` | Gravity Control |
+| `GOLD` | Golden Rain |
+| `FREEZE` | Freeze Bombs |
 
 ## Testing
 
@@ -128,8 +145,6 @@ Save data is stored locally in the user's home directory under `.catch_the_apple
 
 ## Known Limitations
 
-- The game currently has one active regular apple during normal play.
-- Future object definitions exist, but special behaviors are intentionally not enabled yet.
 - Audio channel structure and settings exist, but no bundled audio assets are included.
 - The project does not currently include a bundled distributable executable.
 

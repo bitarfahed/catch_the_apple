@@ -4,6 +4,7 @@ import pygame
 
 from catch_the_apple import config
 from catch_the_apple.debug import DebugSnapshot
+from catch_the_apple.developer_console import DeveloperConsole
 from catch_the_apple.difficulty_profiles import DifficultyProfile
 from catch_the_apple.dynamic_environment import EnvironmentState
 from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent, ObjectMissedEvent
@@ -85,6 +86,13 @@ class UI:
             self.render_status_banner(screen, "APPLE STORM", (255, 235, 110))
         elif session.powerups.is_active("speed_boost"):
             self.render_status_banner(screen, "SPEED BOOST", (145, 255, 170))
+        elif session.powerups.active:
+            active = next(iter(session.powerups.active.values()))
+            self.render_status_banner(
+                screen,
+                active.definition.display_name.upper(),
+                active.definition.visual_color,
+            )
 
     def render_dash_status(self, screen: pygame.Surface, world: World) -> None:
         basket = world.basket
@@ -164,7 +172,25 @@ class UI:
 
     def render_pause(self, screen: pygame.Surface) -> None:
         self.render_overlay(screen, alpha=115)
-        self.render_center_panel(screen, "Paused", ("Press P or Esc to Resume", "Press R to Restart"))
+        self.render_center_panel(
+            screen,
+            "Paused",
+            ("Press P or Esc to Resume", "Press R to Restart", "Press C for Developer Console"),
+        )
+
+    def render_developer_console(self, screen: pygame.Surface, console: DeveloperConsole) -> None:
+        self.render_overlay(screen, alpha=150)
+        panel = pygame.Rect(150, 190, 500, 210)
+        pygame.draw.rect(screen, (8, 15, 22), panel, border_radius=6)
+        pygame.draw.rect(screen, (90, 210, 240), panel, 2, border_radius=6)
+        title = self.large_font.render("Developer Console", True, config.WHITE)
+        screen.blit(title, title.get_rect(center=(panel.centerx, panel.y + 36)))
+        prompt = self.font.render(f"> {console.text}", True, (160, 245, 255))
+        screen.blit(prompt, (panel.x + 28, panel.y + 88))
+        message = self.small_font.render(console.message, True, (225, 235, 240))
+        screen.blit(message, (panel.x + 28, panel.y + 132))
+        hint = self.small_font.render("Enter submits  |  Backspace edits  |  P/Esc resumes", True, (180, 195, 205))
+        screen.blit(hint, (panel.x + 28, panel.y + 164))
 
     def render_game_over(self, screen: pygame.Surface, session: GameSession) -> None:
         self.render_overlay(screen, alpha=135)

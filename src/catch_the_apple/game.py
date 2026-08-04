@@ -3,16 +3,20 @@ import pygame
 from catch_the_apple.audio import AudioSystem
 from catch_the_apple import config
 from catch_the_apple.debug import DebugSnapshot
+from catch_the_apple.developer_console import DeveloperConsole
 from catch_the_apple.difficulty_profiles import DEFAULT_DIFFICULTY_PROFILE, DifficultyProfile
 from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.effects import VisualEffects
 from catch_the_apple.input import poll_input
 from catch_the_apple.powerups import (
     PowerUpSystem,
+    apply_black_hole,
     apply_magnet_pull,
+    apply_shockwave,
     basket_speed_scale,
     magnet_active_object_bonus,
     power_up_time_scale,
+    wind_control_scale,
 )
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
@@ -42,6 +46,8 @@ class Game:
         self.world = World()
         self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
         self.power_up_system = PowerUpSystem()
+        self.developer_console = DeveloperConsole()
+        self.spawn_system.power_state = self.session.powerups
         self.spawn_system.update(self.world)
         self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
@@ -96,8 +102,12 @@ class Game:
             delta_time,
             self.environment_manager,
             power_up_time_scale(self.session.powerups),
+            self.session.powerups,
+            wind_control_scale(self.session.powerups),
         )
         apply_magnet_pull(self.world, delta_time, self.session.powerups)
+        apply_black_hole(self.world, delta_time, self.session.powerups)
+        apply_shockwave(self.world, delta_time, self.session.powerups)
         events = apply_game_rules(
             self.world,
             self.session,
@@ -110,6 +120,7 @@ class Game:
             self.selected_profile.spawn_config.max_active_objects
             + magnet_active_object_bonus(self.session.powerups)
         )
+        self.spawn_system.power_state = self.session.powerups
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
         self.effects.update(self.world, delta_time, self.environment_manager)
@@ -133,6 +144,7 @@ class Game:
         self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
         self.power_up_system = PowerUpSystem()
+        self.spawn_system.power_state = self.session.powerups
 
     def create_environment_manager(self) -> EnvironmentManager:
         return EnvironmentManager(
@@ -145,6 +157,17 @@ class Game:
         self.world.basket.max_speed = config.BASKET_MAX_SPEED * speed_scale
         self.world.basket.acceleration_rate = config.BASKET_ACCELERATION * speed_scale
         self.world.basket.dash_speed = config.BASKET_DASH_SPEED * speed_scale
+
+    def activate_cheat_code(self, code: str) -> bool:
+        definition = self.power_up_system.by_cheat_code(code)
+        if definition is None:
+            self.developer_console.message = f"Unknown code: {code.upper()}"
+            return False
+        self.session.powerups.activate(definition)
+        self.spawn_system.power_state = self.session.powerups
+        self.developer_console.message = f"Activated {definition.display_name}"
+        self.developer_console.clear()
+        return True
 
     def finish_session(self) -> None:
         if self.session.finalized:

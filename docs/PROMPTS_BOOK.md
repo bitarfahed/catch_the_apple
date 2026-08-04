@@ -169,6 +169,182 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 
 **Completion Status:** Complete.
 
+## Prompt 22 - Super Powers Framework
+
+**Goal:** Activate the existing gameplay, rendering, physics, particles, weather, lighting, and UI infrastructure through a reusable Super Power framework with gameplay, visual, and mathematical dimensions.
+
+**Full Prompt Text:**
+
+```text
+Prompt 22 - Super Powers Framework
+
+Context
+
+The project already contains the gameplay, rendering, physics, particles, weather, lighting and UI infrastructure.
+
+This prompt focuses on activating these systems through a reusable Super Power framework.
+
+Do not redesign the architecture.
+
+Reuse existing systems whenever possible.
+
+---
+
+Objectives
+
+Implement a generic Super Power framework.
+
+Every Super Power MUST include three equally important aspects:
+
+1. Gameplay
+2. Visual Effect
+3. Mathematical Model
+
+The mathematical model should be meaningful and suitable for explanation in the project documentation.
+
+Implement or integrate support for powers such as:
+
+- Magnet
+- Time Warp
+- Dash Boost
+- Wind Control
+- Shockwave
+- Black Hole
+- Gravity Control
+- Golden Rain
+- Freeze Bombs
+
+Reuse existing gameplay systems whenever possible.
+
+---
+
+Gameplay Synergy
+
+Power-ups should actively cooperate with other gameplay systems.
+
+Examples:
+
+- Magnet -> automatically triggers an Apple Storm for approximately 15 seconds.
+- Wind Control -> temporarily modifies the Wind System.
+- Time Warp -> modifies the simulation time.
+- Freeze Bombs -> temporarily freezes only hazardous objects.
+
+The objective is to create memorable gameplay rather than isolated abilities.
+
+---
+
+Developer Cheat Console
+
+Implement a Developer Cheat Console.
+
+Workflow:
+
+Pause
+-> Developer Console
+-> Enter Cheat Code
+-> Resume Game
+
+Do NOT allow typing during normal gameplay.
+
+The console is intended for:
+
+- Demonstrations
+- Debugging
+- Testing
+- Portfolio presentation
+
+Document every cheat code in README.md.
+
+---
+
+Documentation
+
+Update GRAPHICS_AND_MATH.md.
+
+For every Super Power explain:
+
+- Mathematical idea
+- Algorithms or formulas involved
+- Gameplay effect
+- Visual representation
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Rewrite architecture.
+- Introduce unnecessary abstractions.
+- Replace existing systems.
+
+Build upon the current implementation.
+
+---
+
+Acceptance Criteria
+
+- Generic Super Power framework implemented.
+- Developer Cheat Console implemented.
+- Gameplay synergy implemented.
+- Mathematical documentation added.
+- Cheat codes documented.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Super Power architecture
+- Cheat Console implementation
+- Documentation added
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `src/catch_the_apple/developer_console.py`
+- `src/catch_the_apple/superpowers.py`
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/input.py`
+- `src/catch_the_apple/powerups.py`
+- `src/catch_the_apple/states.py`
+- `src/catch_the_apple/systems/movement.py`
+- `src/catch_the_apple/systems/spawning.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Short Implementation Summary:**
+
+Added a generic Super Power registry and active-state system covering Magnet, Time Warp, Dash Boost, Wind Control, Shockwave, Black Hole, Gravity Control, Golden Rain, and Freeze Bombs. Existing power-up imports now route through the Super Power framework for compatibility. Gameplay systems reuse the active power state to adjust simulation time, wind influence, falling-object motion, spawn weights, magnet pull, black-hole pull, and shockwave forces.
+
+Added a pause-only Developer Cheat Console. The console accepts documented cheat codes, activates matching powers, and keeps normal gameplay typing disabled.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 27 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Manual dummy-video smoke test confirmed Pause -> Developer Console -> enter `void` -> activate Black Hole -> resume.
+
+**Completion Status:** Complete.
+
 ### Prompt 2: Core Runtime
 
 **Date:** 2026-08-01

@@ -4,6 +4,7 @@ from catch_the_apple import config
 from catch_the_apple.entities import FallingObject
 from catch_the_apple.math2d import Transform2D, vec2
 from catch_the_apple.object_definitions import ObjectDefinition, get_spawnable_definitions
+from catch_the_apple.superpowers import SuperPowerState, golden_rain_weight_multiplier
 from catch_the_apple.world import World
 
 
@@ -15,6 +16,7 @@ class SpawnSystem:
         self.random = random.Random(spawn_config.seed)
         self.spawnable_definitions = get_spawnable_definitions(spawn_config.enabled_object_ids)
         self.spawn_weights = dict(spawn_config.spawn_weights)
+        self.power_state: SuperPowerState | None = None
 
     def update(self, world: World) -> None:
         while len(world.falling_objects) < self.max_active_objects:
@@ -35,6 +37,11 @@ class SpawnSystem:
             self.spawnable_definitions,
             weights=[
                 self.spawn_weights.get(definition.identifier, definition.spawn_weight)
+                * (
+                    golden_rain_weight_multiplier(definition.identifier, self.power_state)
+                    if self.power_state is not None
+                    else 1.0
+                )
                 for definition in self.spawnable_definitions
             ],
             k=1,

@@ -90,6 +90,22 @@ The environment renderer procedurally creates and caches parallax layers:
 
 Each layer has a depth factor and scroll speed. The dynamic environment manager supplies wind, weather tint, fog alpha, day/night colors, and lighting parameters.
 
+## Super Powers
+
+Every super power combines gameplay behavior, a visual identity, and a simple mathematical model.
+
+| Power | Mathematical Idea | Gameplay Effect | Visual Representation |
+|---|---|---|---|
+| Magnet | Attractive force: `dx/dt = clamp(k(target_x - x), -vmax, vmax)` | Pulls regular and golden apples toward the basket and starts Apple Storm. | Gold HUD banner, apple storm density, catch particles. |
+| Time Warp | Time scaling: `dt' = s * dt`, where `0 < s < 1` | Slows falling objects and difficulty growth. | Blue HUD banner and power-up burst. |
+| Dash Boost | Velocity scaling: `vmax' = alpha * vmax` and `dash' = alpha * dash` | Raises basket acceleration, max speed, and dash speed. | Green HUD banner and stronger basket motion. |
+| Wind Control | Vector field boost: `wind' = beta * wind + control_bias` | Amplifies sideways wind drift during normal movement. | Cyan HUD label and more visible diagonal trajectories. |
+| Shockwave | Radial impulse: `p' = p + normalize(p-c) * I * falloff(r)` | Pushes falling objects away from the basket. | Bright burst particles and sudden radial separation. |
+| Black Hole | Inverse-distance attraction: `a = G(center - p) / (r^2 + epsilon)` | Draws objects toward screen center. | Violet HUD label and converging object paths. |
+| Gravity Control | Gravity scaling: vertical motion uses `g' = gamma * g` | Reduces falling speed independently of normal Time Warp. | Pale blue HUD label and lighter descent. |
+| Golden Rain | Weighted sampling override: `P(golden)` is multiplied while active | Makes golden apples much more likely and suppresses hazards. | Gold HUD label and frequent glowing apples. |
+| Freeze Bombs | Selective velocity mask: `v_hazard = 0` | Freezes hazardous objects while beneficial objects continue falling. | Ice-blue HUD label and suspended hazards. |
+
 ## Performance Notes
 
 - Most visual assets are cached Pygame surfaces.

@@ -37,6 +37,7 @@ from catch_the_apple.powerups import (
 )
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
+from catch_the_apple.superpowers import SuperPowerSystem
 from catch_the_apple.systems.difficulty import apply_score_progression
 from catch_the_apple.systems.game_rules import apply_game_rules
 from catch_the_apple.systems.movement import update_movement
@@ -60,6 +61,10 @@ def input_state(**overrides: bool) -> InputState:
         "volume_down_pressed": False,
         "mouse_left_clicked": False,
         "mouse_position": (0, 0),
+        "console_requested": False,
+        "console_submit_pressed": False,
+        "text_input": "",
+        "backspace_pressed": False,
     }
     values.update(overrides)
     return InputState(**values)
@@ -133,6 +138,28 @@ class CoreSystemTests(unittest.TestCase):
 
         self.assertEqual(falling_object.definition.identifier, "golden_apple")
 
+    def test_golden_rain_biases_existing_spawn_weights(self) -> None:
+        spawn_system = SpawnSystem(
+            config.SpawnConfig(
+                seed=1,
+                enabled_object_ids=("regular_apple", "golden_apple"),
+                spawn_weights=(("regular_apple", 1.0), ("golden_apple", 0.0)),
+            )
+        )
+        session = GameSession()
+        session.powerups.activate(POWER_UP_DEFINITIONS["golden_rain"])
+        spawn_system.power_state = session.powerups
+
+        self.assertEqual(spawn_system.choose_object_definition().identifier, "regular_apple")
+
+        spawn_system.spawn_weights = {"regular_apple": 0.05, "golden_apple": 0.05}
+        golden_count = sum(
+            1
+            for _ in range(25)
+            if spawn_system.choose_object_definition().identifier == "golden_apple"
+        )
+        self.assertGreater(golden_count, 12)
+
     def test_score_progression_is_profile_based_and_clamped(self) -> None:
         spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
 
@@ -192,6 +219,23 @@ class CoreSystemTests(unittest.TestCase):
         self.assertNotEqual(falling_object.x, start_x)
         self.assertNotEqual(first_wind_velocity, 0.0)
         self.assertGreater(abs(falling_object.wind_velocity.x), abs(first_wind_velocity))
+
+    def test_freeze_bombs_stops_only_hazard_falling_motion(self) -> None:
+        world = World()
+        spawn_system = SpawnSystem(
+            config.SpawnConfig(max_active_objects=2, enabled_object_ids=("regular_apple",))
+        )
+        spawn_system.update(world)
+        world.falling_objects[0].definition = OBJECT_DEFINITIONS["bomb"]
+        world.falling_objects[1].definition = OBJECT_DEFINITIONS["regular_apple"]
+        session = GameSession()
+        session.powerups.activate(POWER_UP_DEFINITIONS["freeze_bombs"])
+        start_positions = [falling_object.y for falling_object in world.falling_objects]
+
+        update_movement(world, input_state(), 0.1, power_state=session.powerups)
+
+        self.assertEqual(world.falling_objects[0].y, start_positions[0])
+        self.assertGreater(world.falling_objects[1].y, start_positions[1])
 
     def test_catch_rule_updates_score_combo_and_emits_event(self) -> None:
         world = World()
@@ -316,6 +360,13 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(session.score, 0)
         self.assertTrue(session.powerups.active)
         self.assertIsInstance(events[0], ObjectCaughtEvent)
+
+    def test_super_power_cheat_codes_resolve_definitions(self) -> None:
+        system = SuperPowerSystem(seed=1)
+
+        self.assertEqual(system.by_cheat_code("MAGNET").identifier, "magnet")
+        self.assertEqual(system.by_cheat_code("void").identifier, "black_hole")
+        self.assertIsNone(system.by_cheat_code("NOPE"))
 
     def test_magnet_only_pulls_regular_and_golden_apples(self) -> None:
         world = World()

@@ -19,6 +19,10 @@ class InputState:
     volume_down_pressed: bool
     mouse_left_clicked: bool
     mouse_position: tuple[int, int]
+    console_requested: bool
+    console_submit_pressed: bool
+    text_input: str
+    backspace_pressed: bool
 
 
 def poll_input() -> InputState:
@@ -33,6 +37,10 @@ def poll_input() -> InputState:
     volume_up_pressed = False
     volume_down_pressed = False
     mouse_left_clicked = False
+    console_requested = False
+    console_submit_pressed = False
+    text_input = ""
+    backspace_pressed = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit_requested = True
@@ -46,6 +54,12 @@ def poll_input() -> InputState:
             pause_pressed = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
             restart_pressed = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+            console_requested = True
+        if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+            console_submit_pressed = True
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
+            backspace_pressed = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_F2:
             debug_overlay_toggled = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
@@ -56,6 +70,8 @@ def poll_input() -> InputState:
             volume_down_pressed = True
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_left_clicked = True
+        if event.type == pygame.TEXTINPUT:
+            text_input += event.text
 
     keys = pygame.key.get_pressed()
     return InputState(
@@ -73,4 +89,8 @@ def poll_input() -> InputState:
         volume_down_pressed=volume_down_pressed,
         mouse_left_clicked=mouse_left_clicked,
         mouse_position=pygame.mouse.get_pos(),
+        console_requested=console_requested,
+        console_submit_pressed=console_submit_pressed,
+        text_input=text_input,
+        backspace_pressed=backspace_pressed,
     )

@@ -82,7 +82,10 @@ class PlayingState(GameStateBase):
 
 class PausedState(GameStateBase):
     def handle_input(self, game: Game, input_state: InputState) -> None:
-        if input_state.restart_pressed:
+        if input_state.console_requested:
+            game.developer_console.clear()
+            game.states.change(DeveloperConsoleState())
+        elif input_state.restart_pressed:
             game.reset_play_session()
             game.states.change(PlayingState())
         elif input_state.pause_pressed:
@@ -96,6 +99,31 @@ class PausedState(GameStateBase):
         game.renderer.render(game.world, game.session, game.effects, delta_time, game.environment_manager.state)
         game.ui.render_hud(game.screen, game.session, game.world, game.environment_manager.state)
         game.ui.render_pause(game.screen)
+
+
+class DeveloperConsoleState(GameStateBase):
+    def enter(self, game: Game) -> None:
+        game.developer_console.clear()
+
+    def handle_input(self, game: Game, input_state: InputState) -> None:
+        if input_state.pause_pressed:
+            game.states.change(PlayingState())
+            return
+        if input_state.backspace_pressed:
+            game.developer_console.backspace()
+        if input_state.text_input:
+            game.developer_console.add_text(input_state.text_input)
+        if input_state.console_submit_pressed and game.developer_console.text:
+            game.activate_cheat_code(game.developer_console.text)
+
+    def update(self, game: Game, delta_time: float) -> None:
+        game.environment_manager.update(delta_time)
+        game.ui.update(delta_time)
+
+    def render(self, game: Game, delta_time: float) -> None:
+        game.renderer.render(game.world, game.session, game.effects, delta_time, game.environment_manager.state)
+        game.ui.render_hud(game.screen, game.session, game.world, game.environment_manager.state)
+        game.ui.render_developer_console(game.screen, game.developer_console)
 
 
 class GameOverState(GameStateBase):
@@ -120,9 +148,11 @@ class StateManager:
     transition_alpha: float = 255.0
     transition_speed: float = 900.0
 
-    def change(self, state: GameStateBase) -> None:
+    def change(self, state: GameStateBase, game: Game | None = None) -> None:
         self.current = state
         self.transition_alpha = 255.0
+        if game is not None:
+            self.current.enter(game)
 
     def handle_input(self, game: Game, input_state: InputState) -> None:
         self.current.handle_input(game, input_state)
