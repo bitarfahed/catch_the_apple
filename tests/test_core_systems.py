@@ -36,6 +36,7 @@ from catch_the_apple.powerups import (
     power_up_time_scale,
 )
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
+from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.superpowers import SuperPowerSystem
 from catch_the_apple.systems.difficulty import apply_score_progression
@@ -121,6 +122,7 @@ class CoreSystemTests(unittest.TestCase):
         self.assertLess(DIFFICULTY_PROFILES[0].spawn_config.object_speed, INTERMEDIATE.spawn_config.object_speed)
         self.assertGreater(EXPERT.spawn_config.max_active_objects, INTERMEDIATE.spawn_config.max_active_objects)
         self.assertGreater(EXPERT.wind_config.strength, INTERMEDIATE.wind_config.strength)
+        self.assertGreater(INTERMEDIATE.gameplay_wind_scale, 3.0)
         self.assertIn("golden_apple", EXPERT.spawn_config.enabled_object_ids)
         self.assertIn("rotten_apple", EXPERT.spawn_config.enabled_object_ids)
         self.assertIn("bomb", EXPERT.spawn_config.enabled_object_ids)
@@ -466,6 +468,22 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(basket.get_size(), (100, 20))
         self.assertIs(lit_first, lit_second)
         self.assertGreater(shadow.get_width(), 0)
+
+    def test_renderer_uses_dedicated_night_palette_for_readability(self) -> None:
+        screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+        renderer = Renderer(screen)
+
+        self.assertEqual(
+            renderer.object_color_for_environment("regular_apple", config.RED, 1.0),
+            (210, 255, 255),
+        )
+        self.assertEqual(
+            renderer.object_color_for_environment("bomb", (32, 32, 32), 1.0),
+            (96, 12, 24),
+        )
+        dusk_color = renderer.object_color_for_environment("golden_apple", (255, 215, 0), 0.5)
+
+        self.assertGreater(dusk_color[1], 215)
 
     def test_environment_renderer_caches_parallax_layers(self) -> None:
         manager = EnvironmentManager("clear")

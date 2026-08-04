@@ -169,6 +169,171 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 
 **Completion Status:** Complete.
 
+## Prompt 23 - Visual Readability & Environmental Polish
+
+**Goal:** Improve gameplay readability and environmental polish by strengthening night object identity, wind visibility, and gameplay feedback while reusing existing systems.
+
+**Full Prompt Text:**
+
+```text
+Prompt 23 - Visual Readability & Environmental Polish
+
+Context
+
+The project already contains lighting, procedural rendering, weather and environmental systems.
+
+Playtesting shows that some gameplay elements are difficult to distinguish and some environmental effects remain too subtle.
+
+This prompt focuses on visual readability and environmental polish.
+
+Reuse existing systems.
+
+---
+
+Objectives
+
+Improve gameplay readability.
+
+1. Night Palette
+
+Create a dedicated night color palette.
+
+Do not simply darken the screen.
+
+At minimum:
+
+- Regular Apple -> glowing white or light cyan
+- Golden Apple -> bright glowing gold
+- Bomb -> dark red with red glow
+- Rotten Apple -> dark green or purple
+
+The objective is immediate visual recognition.
+
+---
+
+2. Wind
+
+Strengthen the Wind System.
+
+Wind should continuously influence object trajectories through the existing physics model.
+
+Movement should feel physically natural rather than artificially displaced.
+
+---
+
+3. Gameplay Visibility
+
+Ensure every important gameplay feature clearly communicates itself visually.
+
+Examples include:
+
+- Wind changes
+- Day/Night transitions
+- Magnet activation
+- Time Warp
+- Apple Storm
+- Super Power activation
+
+Players should immediately understand what is happening without reading instructions.
+
+---
+
+4. Guiding Principle
+
+Every gameplay feature should satisfy all three:
+
+- Gameplay value
+- Clear visual feedback
+- Demonstrable mathematical or algorithmic model
+
+Avoid purely cosmetic effects that provide no engineering or gameplay value.
+
+---
+
+Documentation
+
+Update GRAPHICS_AND_MATH.md where necessary to reflect new mathematical models or visual techniques.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add new gameplay mechanics.
+- Rewrite rendering architecture.
+- Replace existing systems.
+
+Focus on improving the quality of existing features.
+
+---
+
+Acceptance Criteria
+
+- Night palette greatly improves readability.
+- Wind influence is clearly visible.
+- Gameplay events are visually obvious.
+- Existing systems are reused.
+- GRAPHICS_AND_MATH.md updated.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Visual design decisions
+- Gameplay readability improvements
+- Documentation updates
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/difficulty_profiles.py`
+- `src/catch_the_apple/dynamic_environment.py`
+- `src/catch_the_apple/procedural_assets.py`
+- `src/catch_the_apple/rendering.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Visual Design Decisions:**
+
+Added an environment-aware object palette that interpolates objects toward dedicated night colors instead of simply darkening the entire screen. Regular apples become light cyan, golden apples become bright gold, bombs become dark red, rotten apples become deep purple, and power-ups become bright cyan. Cached glow surfaces now reinforce important object identity, especially at night and during active powers.
+
+The day/night cycle now uses a more distinct night sky palette and stronger ambient, directional, and shadow contrast. The HUD now includes day/night status and a wind vector indicator so environmental changes are visible during play.
+
+**Gameplay Readability Improvements:**
+
+Wind influence was strengthened by increasing profile gameplay wind scales and the existing wind response value. Falling objects still move through the smoothed wind-velocity model, so trajectories curve continuously instead of jumping sideways.
+
+Super Power feedback continues to use HUD banners and active-power labels, with object glows becoming stronger during Magnet and Time Warp states.
+
+**Documentation Updates:**
+
+`docs/GRAPHICS_AND_MATH.md` now documents the night palette interpolation formula and the eased wind-velocity update model.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 28 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.
+
 ## Prompt 22 - Super Powers Framework
 
 **Goal:** Activate the existing gameplay, rendering, physics, particles, weather, lighting, and UI infrastructure through a reusable Super Power framework with gameplay, visual, and mathematical dimensions.

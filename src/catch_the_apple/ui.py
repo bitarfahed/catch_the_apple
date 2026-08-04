@@ -75,11 +75,10 @@ class UI:
         screen.blit(combo_text, (170, 65))
 
         self.render_dash_status(screen, world)
-        weather_text = self.small_font.render(environment.weather.name, True, (225, 235, 240))
-        screen.blit(weather_text, (config.SCREEN_WIDTH - weather_text.get_width() - 18, 14))
+        self.render_environment_status(screen, environment)
         for index, label in enumerate(session.powerups.labels()):
             power_text = self.small_font.render(label, True, (160, 245, 255))
-            screen.blit(power_text, (config.SCREEN_WIDTH - power_text.get_width() - 18, 78 + index * 21))
+            screen.blit(power_text, (config.SCREEN_WIDTH - power_text.get_width() - 18, 112 + index * 21))
         if session.powerups.is_active("slow_motion"):
             self.render_status_banner(screen, "SLOW MOTION", (100, 230, 255))
         elif session.powerups.is_active("magnet"):
@@ -93,6 +92,37 @@ class UI:
                 active.definition.display_name.upper(),
                 active.definition.visual_color,
             )
+
+    def render_environment_status(self, screen: pygame.Surface, environment: EnvironmentState) -> None:
+        x = config.SCREEN_WIDTH - 170
+        y = 12
+        panel = pygame.Surface((154, 88), pygame.SRCALPHA)
+        panel.fill((8, 15, 22, 128))
+        screen.blit(panel, (x - 8, y - 2))
+
+        daylight_label = "DAY" if environment.day_night.ambient >= 0.56 else "NIGHT"
+        daylight_color = (255, 226, 132) if daylight_label == "DAY" else (180, 220, 255)
+        phase_text = self.small_font.render(daylight_label, True, daylight_color)
+        screen.blit(phase_text, (x, y))
+
+        weather_text = self.small_font.render(environment.weather.name, True, (225, 235, 240))
+        screen.blit(weather_text, (x, y + 22))
+
+        wind = environment.wind.velocity
+        wind_strength = min(1.0, wind.length() / 34.0)
+        arrow_center = (x + 27, y + 64)
+        arrow_length = 22 + int(24 * wind_strength)
+        direction = wind.normalize() if wind.length_squared() > 0.0 else pygame.Vector2(1.0, 0.0)
+        end = (
+            int(arrow_center[0] + direction.x * arrow_length),
+            int(arrow_center[1] + direction.y * arrow_length),
+        )
+        wind_color = (130, 235, 255) if wind_strength < 0.65 else (255, 235, 125)
+        pygame.draw.circle(screen, (28, 44, 54), arrow_center, 17)
+        pygame.draw.line(screen, wind_color, arrow_center, end, 3)
+        pygame.draw.circle(screen, wind_color, end, 4)
+        label = self.small_font.render(f"Wind {int(environment.wind.strength)}", True, wind_color)
+        screen.blit(label, (x + 54, y + 55))
 
     def render_dash_status(self, screen: pygame.Surface, world: World) -> None:
         basket = world.basket

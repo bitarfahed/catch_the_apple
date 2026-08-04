@@ -23,7 +23,7 @@ class ProceduralAppleRenderer:
         base_color: tuple[int, int, int],
     ) -> pygame.Surface:
         if identifier == "bomb":
-            return self._create_bomb_surface(size)
+            return self._create_bomb_surface(size, base_color)
         if identifier == "power_up":
             return self._create_power_up_surface(size)
 
@@ -97,10 +97,13 @@ class ProceduralAppleRenderer:
 
         return surface.convert_alpha()
 
-    def _create_bomb_surface(self, size: int) -> pygame.Surface:
+    def _create_bomb_surface(self, size: int, base_color: tuple[int, int, int]) -> pygame.Surface:
         surface = pygame.Surface((size, size), pygame.SRCALPHA)
-        pygame.draw.circle(surface, (18, 20, 24), (size // 2, int(size * 0.58)), int(size * 0.34))
-        pygame.draw.circle(surface, (72, 78, 84), (int(size * 0.38), int(size * 0.46)), int(size * 0.12))
+        shadow_color = scale_color(base_color, 0.42)
+        highlight_color = blend_color(base_color, (255, 110, 95), 0.34)
+        pygame.draw.circle(surface, shadow_color, (size // 2 + 1, int(size * 0.59) + 2), int(size * 0.35))
+        pygame.draw.circle(surface, base_color, (size // 2, int(size * 0.58)), int(size * 0.34))
+        pygame.draw.circle(surface, highlight_color, (int(size * 0.38), int(size * 0.46)), int(size * 0.12))
         pygame.draw.rect(surface, (58, 45, 32), pygame.Rect(size * 0.48, size * 0.13, size * 0.12, size * 0.20))
         pygame.draw.arc(
             surface,

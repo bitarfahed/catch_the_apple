@@ -66,6 +66,20 @@ The basket surface includes:
 
 Procedural surfaces are cached by size and appearance so they are generated only when needed.
 
+Object rendering uses an environment-aware readability palette. During night,
+object colors interpolate toward dedicated gameplay colors instead of simply
+darkening:
+
+- Regular apples move toward light cyan.
+- Golden apples move toward bright gold.
+- Bombs move toward dark red.
+- Rotten apples move toward deep purple.
+- Power-ups move toward bright cyan.
+
+The interpolation is controlled by a night factor derived from ambient light:
+`night = clamp((0.58 - ambient) / 0.40, 0, 1)`. This keeps transitions smooth
+while preserving immediate object recognition.
+
 ## Lighting and Shadows
 
 The lighting system is surface-based and intentionally inexpensive:
@@ -90,6 +104,12 @@ The environment renderer procedurally creates and caches parallax layers:
 
 Each layer has a depth factor and scroll speed. The dynamic environment manager supplies wind, weather tint, fog alpha, day/night colors, and lighting parameters.
 
+Wind applies to gameplay as an eased velocity target rather than a direct
+position offset. Falling objects move toward the current wind vector with:
+`wind_velocity += (target_wind - wind_velocity) * response * dt`, then their
+positions advance by `wind_velocity * dt`. This produces smooth diagonal paths
+and visible gust changes without abrupt sideways jumps.
+
 ## Super Powers
 
 Every super power combines gameplay behavior, a visual identity, and a simple mathematical model.
@@ -99,7 +119,7 @@ Every super power combines gameplay behavior, a visual identity, and a simple ma
 | Magnet | Attractive force: `dx/dt = clamp(k(target_x - x), -vmax, vmax)` | Pulls regular and golden apples toward the basket and starts Apple Storm. | Gold HUD banner, apple storm density, catch particles. |
 | Time Warp | Time scaling: `dt' = s * dt`, where `0 < s < 1` | Slows falling objects and difficulty growth. | Blue HUD banner and power-up burst. |
 | Dash Boost | Velocity scaling: `vmax' = alpha * vmax` and `dash' = alpha * dash` | Raises basket acceleration, max speed, and dash speed. | Green HUD banner and stronger basket motion. |
-| Wind Control | Vector field boost: `wind' = beta * wind + control_bias` | Amplifies sideways wind drift during normal movement. | Cyan HUD label and more visible diagonal trajectories. |
+| Wind Control | Vector field boost: `wind' = beta * wind + control_bias` | Amplifies sideways wind drift during normal movement. | Cyan HUD label, HUD wind vector, and stronger diagonal trajectories. |
 | Shockwave | Radial impulse: `p' = p + normalize(p-c) * I * falloff(r)` | Pushes falling objects away from the basket. | Bright burst particles and sudden radial separation. |
 | Black Hole | Inverse-distance attraction: `a = G(center - p) / (r^2 + epsilon)` | Draws objects toward screen center. | Violet HUD label and converging object paths. |
 | Gravity Control | Gravity scaling: vertical motion uses `g' = gamma * g` | Reduces falling speed independently of normal Time Warp. | Pale blue HUD label and lighter descent. |

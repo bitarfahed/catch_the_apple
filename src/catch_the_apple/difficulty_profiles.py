@@ -44,7 +44,7 @@ BEGINNER = DifficultyProfile(
         gust_frequency=0.18,
         direction_sway=0.10,
     ),
-    gameplay_wind_scale=0.55,
+    gameplay_wind_scale=3.2,
 )
 
 INTERMEDIATE = DifficultyProfile(
@@ -75,7 +75,7 @@ INTERMEDIATE = DifficultyProfile(
         gust_frequency=0.24,
         direction_sway=0.16,
     ),
-    gameplay_wind_scale=0.70,
+    gameplay_wind_scale=3.8,
 )
 
 EXPERT = DifficultyProfile(
@@ -106,7 +106,7 @@ EXPERT = DifficultyProfile(
         gust_frequency=0.30,
         direction_sway=0.22,
     ),
-    gameplay_wind_scale=0.82,
+    gameplay_wind_scale=4.4,
 )
 
 DIFFICULTY_PROFILES = (BEGINNER, INTERMEDIATE, EXPERT)

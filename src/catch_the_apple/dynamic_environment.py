@@ -142,11 +142,11 @@ class DayNightCycle:
     def state(self) -> DayNightState:
         daylight = (math.sin(self.progress * math.tau - math.pi / 2) + 1.0) / 2.0
         daylight = smoothstep(daylight)
-        sky_top = blend_color((4, 8, 32), (100, 190, 250), daylight)
-        sky_bottom = blend_color((12, 18, 52), (90, 160, 220), daylight)
-        ambient = 0.18 + daylight * 0.72
-        directional = 0.04 + daylight * 0.62
-        shadow = 0.10 + daylight * 0.45
+        sky_top = blend_color((2, 9, 38), (102, 198, 255), daylight)
+        sky_bottom = blend_color((10, 18, 70), (112, 176, 228), daylight)
+        ambient = 0.24 + daylight * 0.68
+        directional = 0.08 + daylight * 0.66
+        shadow = 0.20 + daylight * 0.43
         angle = self.progress * math.tau
         sun_position = (int(400 + math.cos(angle - math.pi / 2) * 330), int(350 + math.sin(angle - math.pi / 2) * 260))
         moon_position = (int(400 + math.cos(angle + math.pi / 2) * 330), int(350 + math.sin(angle + math.pi / 2) * 260))
@@ -218,7 +218,7 @@ class EnvironmentManager:
 
     @property
     def wind_response(self) -> float:
-        return 2.8
+        return 3.7
 
     def particle_wind_velocity(self) -> Vector2:
         return self.state.wind.velocity * self.state.weather.particle_wind_scale
