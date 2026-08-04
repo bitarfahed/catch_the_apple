@@ -43,7 +43,7 @@ from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.states import DeveloperConsoleState, PausedState, PlayingState
-from catch_the_apple.superpowers import SuperPowerSystem
+from catch_the_apple.superpowers import SuperPowerState, SuperPowerSystem
 from catch_the_apple.systems.difficulty import apply_score_progression
 from catch_the_apple.systems.game_rules import apply_game_rules
 from catch_the_apple.systems.movement import update_movement
@@ -299,21 +299,54 @@ class CoreSystemTests(unittest.TestCase):
         self.assertFalse(session.game_over)
         self.assertIsInstance(events[0], ObjectCaughtEvent)
 
-    def test_miss_rule_reduces_lives_resets_combo_and_sets_game_over(self) -> None:
+    def test_missing_regular_apple_reduces_score_without_life_loss(self) -> None:
         world = World()
-        session = GameSession(lives=1, score=4, combo=2, best_combo=2)
+        session = GameSession(lives=3, score=4, combo=2, best_combo=2, has_earned_score=True)
         spawn_system = SpawnSystem(config.SpawnConfig(seed=2))
         spawn_system.update(world)
         falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["regular_apple"]
         falling_object.y = config.SCREEN_HEIGHT + 1
         falling_object.previous_position.update(falling_object.transform.position)
 
         events = apply_game_rules(world, session, spawn_system)
 
-        self.assertEqual(session.lives, 0)
+        self.assertEqual(session.score, 2)
+        self.assertEqual(session.lives, 3)
         self.assertEqual(session.combo, 0)
-        self.assertTrue(session.game_over)
+        self.assertFalse(session.game_over)
         self.assertIsInstance(events[0], ObjectMissedEvent)
+
+    def test_missing_regular_apple_to_zero_ends_game_after_points_were_earned(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=1, has_earned_score=True)
+        spawn_system = SpawnSystem(config.SpawnConfig(seed=2))
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["regular_apple"]
+        falling_object.y = config.SCREEN_HEIGHT + 1
+
+        apply_game_rules(world, session, spawn_system)
+
+        self.assertEqual(session.score, 0)
+        self.assertEqual(session.lives, 3)
+        self.assertTrue(session.game_over)
+
+    def test_lives_reaching_zero_still_ends_game(self) -> None:
+        world = World()
+        session = GameSession(lives=1, score=3, has_earned_score=True)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["bomb"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        apply_game_rules(world, session, spawn_system, INTERMEDIATE.difficulty_config)
+
+        self.assertEqual(session.lives, 0)
+        self.assertTrue(session.game_over)
 
     def test_apple_storm_missed_bonus_apples_do_not_cost_lives(self) -> None:
         world = World()
@@ -864,7 +897,7 @@ class CoreSystemTests(unittest.TestCase):
                 )
             )
         world.falling_objects = objects
-        state = CheatState()
+        state = SuperPowerState()
         power = POWER_UP_DEFINITIONS["magnet"]
         state.activate(power)
 
@@ -876,6 +909,38 @@ class CoreSystemTests(unittest.TestCase):
         self.assertLess(after["golden_apple"], before["golden_apple"])
         self.assertEqual(after["rotten_apple"], before["rotten_apple"])
         self.assertEqual(after["bomb"], before["bomb"])
+        self.assertNotEqual(objects[0].magnet_velocity.x, 0.0)
+        self.assertNotEqual(objects[1].magnet_velocity.x, 0.0)
+        self.assertEqual(objects[2].magnet_velocity.x, 0.0)
+        self.assertEqual(objects[3].magnet_velocity.x, 0.0)
+
+        state.update(power.duration + 0.1)
+        self.assertFalse(state.is_active("magnet"))
+        previous_velocity = objects[0].magnet_velocity.x
+        apply_magnet_pull(world, 0.2, state)
+        self.assertLess(abs(objects[0].magnet_velocity.x), abs(previous_velocity))
+
+    def test_power_up_pickup_can_activate_magnet_during_gameplay(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+        game.power_up_system = PowerUpSystem(seed=1)
+        falling_object = game.world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["power_up"]
+        falling_object.x = game.world.basket.x + game.world.basket.width / 2 - falling_object.radius
+        falling_object.y = game.world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        events = apply_game_rules(
+            game.world,
+            game.session,
+            game.spawn_system,
+            game.selected_profile.difficulty_config,
+            game.power_up_system,
+        )
+
+        self.assertTrue(game.session.powerups.is_active("magnet"))
+        self.assertEqual(events[0].object_identifier, "power_up")
 
     def test_insane_cheat_scales_apples_and_adjusts_golden_score(self) -> None:
         game = Game()

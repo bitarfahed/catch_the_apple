@@ -70,6 +70,16 @@ catch-the-apple
 | M | Toggle mute |
 | + / - | Adjust master volume |
 
+## Core Rules
+
+- Catching Regular Apples increases score.
+- Missing Regular Apples reduces score by 2 and never removes lives.
+- Catching Rotten Apples reduces score by 2 and never removes lives.
+- Missing Golden Apples, Rotten Apples, or Bombs has no penalty.
+- Bomb collisions reduce lives unless a protective effect is active.
+- Score is allowed to be 0 only before the player has earned points; returning to 0 later ends the game.
+- Lives reaching 0 also ends the game.
+
 ## Developer Cheat Console
 
 The cheat console is available only while paused. Press `C`, type a code, and press `Enter`. Press `Esc` to return to Pause, then press `Esc` again to resume. Temporary cheats can be entered again to disable them early. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.

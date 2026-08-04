@@ -202,13 +202,19 @@ def golden_rain_weight_multiplier(identifier: str, state: SuperPowerState) -> fl
 
 def apply_magnet_pull(world, delta_time: float, state: SuperPowerState) -> None:
     if not state.is_active("magnet"):
+        for falling_object in world.falling_objects:
+            falling_object.magnet_velocity.x *= max(0.0, 1.0 - 7.0 * delta_time)
         return
     basket_center_x = world.basket.rect.centerx
     for falling_object in world.falling_objects:
         if falling_object.definition.identifier not in {"regular_apple", "golden_apple"}:
+            falling_object.magnet_velocity.update(0.0, 0.0)
             continue
         offset = basket_center_x - falling_object.center.x
-        falling_object.x += clamp(offset * 2.6 * delta_time, -260.0 * delta_time, 260.0 * delta_time)
+        acceleration = clamp(offset * 18.0, -1800.0, 1800.0)
+        falling_object.magnet_velocity.x += acceleration * delta_time
+        falling_object.magnet_velocity.x = clamp(falling_object.magnet_velocity.x, -360.0, 360.0)
+        falling_object.x += falling_object.magnet_velocity.x * delta_time
 
 
 def apply_black_hole(world, delta_time: float, state: SuperPowerState) -> None:

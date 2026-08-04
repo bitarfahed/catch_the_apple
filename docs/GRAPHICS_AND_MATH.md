@@ -138,7 +138,7 @@ Every super power combines gameplay behavior, a visual identity, and a simple ma
 
 | Power | Mathematical Idea | Gameplay Effect | Visual Representation |
 |---|---|---|---|
-| Magnet | Attractive force: `dx/dt = clamp(k(target_x - x), -vmax, vmax)` | Pulls regular and golden apples toward the basket and starts Apple Storm. | Gold HUD banner, apple storm density, catch particles. |
+| Magnet | Smooth attractive force: `a = clamp(k(target_x - x), -amax, amax)`, `v = clamp(v + a dt, -vmax, vmax)` | Pulls only regular and golden apples toward the basket and starts Apple Storm. | Gold HUD banner, apple storm density, glow, and apple-only trail particles. |
 | Time Warp | Time scaling: `dt' = s * dt`, where `0 < s < 1` | Slows falling objects and difficulty growth. | Blue HUD banner and power-up burst. |
 | Dash Boost | Velocity scaling: `vmax' = alpha * vmax` and `dash' = alpha * dash` | Raises basket acceleration, max speed, and dash speed. | Green HUD banner and stronger basket motion. |
 | Wind Control | Vector field boost: `wind' = beta * wind + control_bias` | Amplifies sideways wind drift during normal movement. | Cyan HUD label, HUD wind vector, and stronger diagonal trajectories. |

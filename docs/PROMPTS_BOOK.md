@@ -4526,3 +4526,80 @@ Append this prompt to docs/PROMPTS_BOOK.md.
 - `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
 
 **Completion Status:** Complete.
+
+## Prompt 31 - Correct Miss Rules, Dual Game-Over Conditions & Magnet Restoration
+
+**Goal:** Correct Regular Apple miss behavior, preserve all object-specific penalties, enforce both game-over conditions, and restore Magnet as a reachable, visible, velocity-based Super Power.
+
+**Full Prompt Text:**
+
+```text
+Prompt 31 - Correct Miss Rules, Dual Game-Over Conditions & Magnet Restoration
+
+Context
+
+Recent playtesting shows that the previous prompt did not fully implement the required gameplay rules.
+
+Do not redesign the architecture.
+
+Reuse the existing score, lives, object-type, spawn, physics and Super Power systems.
+
+Objectives
+
+1. Missing Regular Apples
+2. Game-Over Conditions
+3. Preserve Existing Object Rules
+4. Magnet Super Power
+5. Verification
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/entities.py`
+- `src/catch_the_apple/superpowers.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/spawning.py`
+- `tests/test_core_systems.py`
+
+**Root Causes Found:**
+
+- Regular Apple misses still used object `damage`, so they removed lives instead of subtracting score.
+- Game over was only partially centralized and did not consistently apply both lives and score-zero conditions.
+- Magnet attraction directly changed object position rather than using a smooth velocity/force state.
+- Existing Magnet tests did not exercise a normal gameplay Power-Up pickup path.
+
+**Implementation Summary:**
+
+- Missing a Regular Apple now subtracts exactly 2 score, clamps at zero, resets combo, and never reduces lives.
+- Golden Apple, Rotten Apple, and Bomb misses remain penalty-free.
+- Catching Rotten Apples subtracts exactly 2 score and never reduces lives.
+- Bomb collisions remain the lives-damaging hazard path.
+- `GameSession.has_earned_score` continues to distinguish initial score zero from returning to zero after earning points.
+- Game-over checks now cover both lives reaching zero and score returning to zero after points were earned.
+- Falling objects now track `magnet_velocity`; Magnet applies clamped acceleration and velocity to only regular and golden apples, clears hazards, and decays after expiry.
+- Spawn reset clears Magnet velocity.
+- Tests now verify Magnet activation through an actual Power-Up catch using the normal gameplay rule path.
+
+**Verification Summary:**
+
+- Runtime verification confirmed Regular Apple misses reduce score from 5 to 3, leave lives at 3, and do not end the game.
+- Runtime verification confirmed initial score zero continues, returning to score zero after earning points ends the game, and lives reaching zero ends the game.
+- Runtime verification confirmed Golden Apple, Rotten Apple, and Bomb misses leave score/lives unchanged.
+- Runtime verification confirmed Rotten Apple catches reduce score from 5 to 3 with no life loss.
+- Runtime verification caught a normal `power_up` object with `PowerUpSystem(seed=1)`, activated Magnet, observed HUD/status/glow in a rendered gameplay frame, pulled only regular and golden apples using Magnet velocity, emitted particles, expired Magnet, and observed velocity decay afterward.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 56 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.

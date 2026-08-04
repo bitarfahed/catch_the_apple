@@ -40,24 +40,23 @@ def apply_game_rules(
             continue
         if falling_object.y > config.SCREEN_HEIGHT:
             missed_position = falling_object.center
-            miss_damage = definition.damage if definition.category != "hazard" else 0
             storm_bonus_object = (
                 session.powerups.is_active("magnet")
                 and definition.identifier in {"regular_apple", "golden_apple"}
             )
-            if not storm_bonus_object and miss_damage > 0:
-                lose_life(session, miss_damage)
+            if definition.identifier == "regular_apple" and not storm_bonus_object:
+                subtract_score(session, 2)
             spawn_system.reset_falling_object(falling_object)
             events.append(
                 ObjectMissedEvent(
                     falling_object=falling_object,
                     position=missed_position,
-                    damage=0 if storm_bonus_object else miss_damage,
+                    damage=0,
                     object_identifier=definition.identifier,
                 )
             )
-            if session.lives <= 0:
-                session.game_over = True
+            update_game_over_conditions(session)
+            continue
 
         collision = detect_basket_collision(world.basket, falling_object)
         if collision.caught:
@@ -74,7 +73,7 @@ def apply_game_rules(
                         object_identifier=definition.identifier,
                     )
                 )
-                update_score_loss_condition(session)
+                update_game_over_conditions(session)
                 continue
 
             if definition.identifier == "bomb":
@@ -85,8 +84,6 @@ def apply_game_rules(
                 damage = 0 if shielded else definition.damage
                 if damage > 0:
                     lose_life(session, damage)
-                if session.lives <= 0:
-                    session.game_over = True
                 spawn_system.reset_falling_object(falling_object)
                 events.append(
                     ObjectMissedEvent(
@@ -96,6 +93,7 @@ def apply_game_rules(
                         object_identifier=definition.identifier,
                     )
                 )
+                update_game_over_conditions(session)
                 continue
 
             if definition.category == "power_up" and power_up_system is not None:
@@ -123,7 +121,7 @@ def apply_game_rules(
                     object_identifier=definition.identifier,
                 )
             )
-        update_score_loss_condition(session)
+        update_game_over_conditions(session)
     return events
 
 
@@ -133,7 +131,9 @@ def score_value_for_object(session: GameSession, definition: ObjectDefinition) -
     return definition.score_value
 
 
-def update_score_loss_condition(session: GameSession) -> None:
+def update_game_over_conditions(session: GameSession) -> None:
+    if session.lives <= 0:
+        session.game_over = True
     if session.has_earned_score and session.score <= 0:
         session.score = 0
         session.game_over = True
