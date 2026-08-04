@@ -2607,3 +2607,156 @@ Wind now includes subtle direction sway and profile-specific strength. Falling o
 - `uv --version` still fails in this shell due the local `uv.exe` launcher issue, so Ruff was not executed.
 
 **Completion Status:** Complete.
+
+## Prompt 19 - Gameplay Expansion & Power-up Integration
+
+**Goal:** Activate the existing multi-object and power-up infrastructure to create richer gameplay while reusing current spawning, difficulty, effects, particle, UI, and gameplay systems.
+
+**Full Prompt Text:**
+
+```text
+Prompt 19 - Gameplay Expansion & Power-up Integration
+
+Context
+
+The project already contains infrastructure for multiple object types, spawning, particles, effects, UI, and gameplay systems.
+
+Currently the game mostly uses the regular apple.
+
+This prompt focuses on activating and integrating existing infrastructure into richer gameplay.
+
+Reuse existing systems whenever possible.
+
+Avoid architectural changes.
+
+---
+
+Objectives
+
+Expand gameplay using the existing architecture.
+
+Implement:
+
+1. Object Types
+
+Enable and balance:
+
+- Golden Apple
+- Rotten Apple
+- Bomb
+
+Each object should reuse the existing object-definition system.
+
+Avoid hardcoded special cases.
+
+2. Power-Ups
+
+Implement gameplay power-ups using the existing framework.
+
+Examples include:
+
+- Magnet
+- Slow Motion
+- Basket Speed Boost
+
+Power-ups should have configurable duration and clean lifecycle management.
+
+3. Gameplay Synergy
+
+Power-ups should influence other gameplay systems rather than acting independently.
+
+Examples:
+
+- Magnet activates an Apple Storm for approximately 15 seconds.
+- Slow Motion temporarily modifies the Difficulty System.
+- Basket Speed Boost cooperates naturally with Dash.
+- Future power-ups should be easy to add without changing core systems.
+
+Use existing Spawn, Difficulty, Effects and Particle systems wherever possible.
+
+4. Gameplay Balancing
+
+Adjust spawn probabilities and durations so gameplay remains fair and enjoyable.
+
+Avoid overwhelming the player.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Rewrite existing architecture.
+- Replace existing systems.
+- Add unnecessary abstractions.
+- Change rendering architecture.
+- Change physics architecture.
+
+Build on the existing infrastructure.
+
+---
+
+Acceptance Criteria
+
+- Multiple object types are fully integrated.
+- Power-ups function correctly.
+- Gameplay systems interact naturally.
+- Existing architecture is reused.
+- Gameplay remains balanced.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Gameplay integration decisions
+- Balancing decisions
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `src/catch_the_apple/powerups.py`
+
+**Files Modified:**
+
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/difficulty_profiles.py`
+- `src/catch_the_apple/effects.py`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/session.py`
+- `src/catch_the_apple/systems/difficulty.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/movement.py`
+- `src/catch_the_apple/systems/spawning.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Gameplay Integration Decisions:**
+
+Enabled golden apples, rotten apples, bombs, and the existing `power_up` object through profile-specific spawn weights. `SpawnSystem.reset_falling_object` now reselects object definitions so spawn probabilities continue to matter throughout a session. Hazards use the existing damage/life system, golden apples use existing score values, and power-up catches activate a data-driven `PowerUpState`.
+
+Power-ups are integrated as reusable definitions rather than new falling-object types. Magnet lasts 15 seconds and cooperates with spawn and movement systems by increasing active objects and pulling catchable objects toward the basket. Slow Motion scales falling-object time and difficulty growth. Speed Boost scales basket max speed, acceleration, and dash speed.
+
+**Balancing Decisions:**
+
+Beginner keeps hazards and power-ups rare. Intermediate uses a balanced mix with modest hazard presence and power-up availability. Expert increases hazards and power-ups while preserving regular apples as the majority. Magnet raises active objects by two only while active, making Apple Storm temporary and bounded.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 21 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Dummy-runtime smoke check passed: Expert + Magnet raised active objects to 4 through the real `Game.update_playing` path.
+
+**Completion Status:** Complete.

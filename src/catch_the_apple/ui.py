@@ -76,6 +76,9 @@ class UI:
         self.render_dash_status(screen, world)
         weather_text = self.small_font.render(environment.weather.name, True, (225, 235, 240))
         screen.blit(weather_text, (config.SCREEN_WIDTH - weather_text.get_width() - 18, 14))
+        for index, label in enumerate(session.powerups.labels()):
+            power_text = self.small_font.render(label, True, (160, 245, 255))
+            screen.blit(power_text, (config.SCREEN_WIDTH - power_text.get_width() - 18, 78 + index * 21))
 
     def render_dash_status(self, screen: pygame.Surface, world: World) -> None:
         basket = world.basket

@@ -11,12 +11,13 @@ class SpawnSystem:
     def __init__(self, spawn_config: config.SpawnConfig) -> None:
         self.config = spawn_config
         self.current_object_speed = spawn_config.object_speed
+        self.max_active_objects = spawn_config.max_active_objects
         self.random = random.Random(spawn_config.seed)
         self.spawnable_definitions = get_spawnable_definitions(spawn_config.enabled_object_ids)
         self.spawn_weights = dict(spawn_config.spawn_weights)
 
     def update(self, world: World) -> None:
-        while len(world.falling_objects) < self.config.max_active_objects:
+        while len(world.falling_objects) < self.max_active_objects:
             world.add_falling_object(self.create_falling_object())
 
     def create_falling_object(self) -> FallingObject:
@@ -40,6 +41,7 @@ class SpawnSystem:
         )[0]
 
     def reset_falling_object(self, falling_object: FallingObject) -> None:
+        falling_object.definition = self.choose_object_definition()
         falling_object.x = self.random_falling_object_x(falling_object.definition)
         falling_object.y = self.config.spawn_y
         falling_object.speed = self.current_object_speed

@@ -7,6 +7,13 @@ from catch_the_apple.difficulty_profiles import DEFAULT_DIFFICULTY_PROFILE, Diff
 from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.effects import VisualEffects
 from catch_the_apple.input import poll_input
+from catch_the_apple.powerups import (
+    PowerUpSystem,
+    apply_magnet_pull,
+    basket_speed_scale,
+    magnet_active_object_bonus,
+    power_up_time_scale,
+)
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.states import MainMenuState, StateManager
@@ -34,6 +41,7 @@ class Game:
         self.session = GameSession()
         self.world = World()
         self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
+        self.power_up_system = PowerUpSystem()
         self.spawn_system.update(self.world)
         self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
@@ -80,14 +88,28 @@ class Game:
 
     def update_playing(self, input_state, delta_time: float) -> None:
         self.environment_manager.update(delta_time)
-        update_movement(self.world, input_state, delta_time, self.environment_manager)
+        self.session.powerups.update(delta_time)
+        self.apply_power_up_modifiers()
+        update_movement(
+            self.world,
+            input_state,
+            delta_time,
+            self.environment_manager,
+            power_up_time_scale(self.session.powerups),
+        )
+        apply_magnet_pull(self.world, delta_time, self.session.powerups)
         events = apply_game_rules(
             self.world,
             self.session,
             self.spawn_system,
             self.selected_profile.difficulty_config,
+            self.power_up_system,
         )
         self.persistence.record_events(events)
+        self.spawn_system.max_active_objects = (
+            self.selected_profile.spawn_config.max_active_objects
+            + magnet_active_object_bonus(self.session.powerups)
+        )
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
         self.effects.update(self.world, delta_time, self.environment_manager)
@@ -110,12 +132,19 @@ class Game:
         self.spawn_system.update(self.world)
         self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
+        self.power_up_system = PowerUpSystem()
 
     def create_environment_manager(self) -> EnvironmentManager:
         return EnvironmentManager(
             wind_config=self.selected_profile.wind_config,
             gameplay_wind_scale=self.selected_profile.gameplay_wind_scale,
         )
+
+    def apply_power_up_modifiers(self) -> None:
+        speed_scale = basket_speed_scale(self.session.powerups)
+        self.world.basket.max_speed = config.BASKET_MAX_SPEED * speed_scale
+        self.world.basket.acceleration_rate = config.BASKET_ACCELERATION * speed_scale
+        self.world.basket.dash_speed = config.BASKET_DASH_SPEED * speed_scale
 
     def finish_session(self) -> None:
         if self.session.finalized:

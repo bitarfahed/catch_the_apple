@@ -28,6 +28,7 @@ from catch_the_apple.math2d import Transform2D, clamp, vec2
 from catch_the_apple.object_definitions import OBJECT_DEFINITIONS
 from catch_the_apple.particles import EmitterConfig, ParticleSystem
 from catch_the_apple.persistence import PersistenceStore
+from catch_the_apple.powerups import PowerUpSystem, difficulty_growth_scale
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.systems.difficulty import apply_score_progression
@@ -109,7 +110,22 @@ class CoreSystemTests(unittest.TestCase):
         self.assertLess(DIFFICULTY_PROFILES[0].spawn_config.object_speed, INTERMEDIATE.spawn_config.object_speed)
         self.assertGreater(EXPERT.spawn_config.max_active_objects, INTERMEDIATE.spawn_config.max_active_objects)
         self.assertGreater(EXPERT.wind_config.strength, INTERMEDIATE.wind_config.strength)
-        self.assertEqual(EXPERT.spawn_config.enabled_object_ids, ("regular_apple",))
+        self.assertIn("golden_apple", EXPERT.spawn_config.enabled_object_ids)
+        self.assertIn("rotten_apple", EXPERT.spawn_config.enabled_object_ids)
+        self.assertIn("bomb", EXPERT.spawn_config.enabled_object_ids)
+        self.assertIn("power_up", EXPERT.spawn_config.enabled_object_ids)
+
+    def test_spawn_reset_reselects_object_definition_from_weights(self) -> None:
+        spawn_config = config.SpawnConfig(
+            enabled_object_ids=("regular_apple", "golden_apple"),
+            spawn_weights=(("regular_apple", 0.0), ("golden_apple", 1.0)),
+        )
+        spawn_system = SpawnSystem(spawn_config)
+        falling_object = spawn_system.create_falling_object()
+
+        spawn_system.reset_falling_object(falling_object)
+
+        self.assertEqual(falling_object.definition.identifier, "golden_apple")
 
     def test_score_progression_is_profile_based_and_clamped(self) -> None:
         spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
@@ -126,6 +142,12 @@ class CoreSystemTests(unittest.TestCase):
         spawn_system.current_object_speed = INTERMEDIATE.difficulty_config.max_object_speed
         apply_score_progression(10, spawn_system, INTERMEDIATE.difficulty_config)
         self.assertEqual(spawn_system.current_object_speed, INTERMEDIATE.difficulty_config.max_object_speed)
+
+    def test_slow_motion_scales_difficulty_growth(self) -> None:
+        session = GameSession()
+        session.powerups.activate(PowerUpSystem(seed=1).definitions[1])
+
+        self.assertLess(difficulty_growth_scale(session.powerups), 1.0)
 
     def test_movement_uses_velocity_acceleration_drag_and_dash_state(self) -> None:
         world = World()
@@ -197,6 +219,48 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(session.combo, 0)
         self.assertTrue(session.game_over)
         self.assertIsInstance(events[0], ObjectMissedEvent)
+
+    def test_hazard_collision_costs_life_without_awarding_score(self) -> None:
+        world = World()
+        session = GameSession(lives=3)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["bomb"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        events = apply_game_rules(world, session, spawn_system)
+
+        self.assertEqual(session.score, 0)
+        self.assertEqual(session.lives, 2)
+        self.assertEqual(session.combo, 0)
+        self.assertIsInstance(events[0], ObjectMissedEvent)
+
+    def test_power_up_collision_activates_reusable_power_up_state(self) -> None:
+        world = World()
+        session = GameSession()
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        power_up_system = PowerUpSystem(seed=1)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["power_up"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        events = apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            power_up_system,
+        )
+
+        self.assertEqual(session.score, 0)
+        self.assertTrue(session.powerups.active)
+        self.assertIsInstance(events[0], ObjectCaughtEvent)
 
     def test_continuous_collision_detection_catches_fast_vertical_sweep(self) -> None:
         world = World()

@@ -22,8 +22,15 @@ BEGINNER = DifficultyProfile(
     description="Relaxed speed, gentle growth, light wind.",
     spawn_config=config.SpawnConfig(
         max_active_objects=1,
+        enabled_object_ids=("regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up"),
         object_speed=240.0,
-        spawn_weights=(("regular_apple", 1.0),),
+        spawn_weights=(
+            ("regular_apple", 0.82),
+            ("golden_apple", 0.10),
+            ("rotten_apple", 0.04),
+            ("bomb", 0.02),
+            ("power_up", 0.02),
+        ),
     ),
     difficulty_config=config.DifficultyConfig(
         score_interval=6,
@@ -46,8 +53,15 @@ INTERMEDIATE = DifficultyProfile(
     description="Balanced pace with steady difficulty growth.",
     spawn_config=config.SpawnConfig(
         max_active_objects=1,
+        enabled_object_ids=("regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up"),
         object_speed=285.0,
-        spawn_weights=(("regular_apple", 1.0),),
+        spawn_weights=(
+            ("regular_apple", 0.74),
+            ("golden_apple", 0.10),
+            ("rotten_apple", 0.07),
+            ("bomb", 0.04),
+            ("power_up", 0.05),
+        ),
     ),
     difficulty_config=config.DifficultyConfig(
         score_interval=5,
@@ -70,8 +84,15 @@ EXPERT = DifficultyProfile(
     description="Faster start, stronger wind, two active apples.",
     spawn_config=config.SpawnConfig(
         max_active_objects=2,
+        enabled_object_ids=("regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up"),
         object_speed=330.0,
-        spawn_weights=(("regular_apple", 1.0),),
+        spawn_weights=(
+            ("regular_apple", 0.66),
+            ("golden_apple", 0.10),
+            ("rotten_apple", 0.10),
+            ("bomb", 0.06),
+            ("power_up", 0.08),
+        ),
     ),
     difficulty_config=config.DifficultyConfig(
         score_interval=4,

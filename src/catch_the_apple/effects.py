@@ -4,7 +4,7 @@ import pygame
 
 from catch_the_apple.animation import SquashStretch
 from catch_the_apple.dynamic_environment import EnvironmentManager
-from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent
+from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.math2d import vec2
 from catch_the_apple.particles import EmitterConfig, ParticleSystem
 from catch_the_apple.world import World
@@ -100,7 +100,11 @@ class VisualEffects:
         for event in events:
             if isinstance(event, ObjectCaughtEvent):
                 self.particles.emit(event.position, APPLE_CATCH_BURST)
+                if event.color[0] > 240 and event.color[1] > 180:
+                    self.particles.emit(event.position, GOLDEN_SPARKLE)
                 self.object_squash_for(event.falling_object).trigger(0.18)
+            if isinstance(event, ObjectMissedEvent) and event.damage > 0:
+                self.particles.emit(event.position, BOMB_SMOKE)
 
     def update(
         self,

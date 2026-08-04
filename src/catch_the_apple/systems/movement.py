@@ -10,8 +10,10 @@ def update_movement(
     input_state: InputState,
     delta_time: float,
     environment_manager: EnvironmentManager | None = None,
+    falling_time_scale: float = 1.0,
 ) -> None:
     update_basket_movement(world, input_state, delta_time)
+    falling_delta_time = delta_time * falling_time_scale
 
     for falling_object in world.falling_objects:
         falling_object.previous_position.update(falling_object.transform.position)
@@ -20,10 +22,10 @@ def update_movement(
             smoothing = environment_manager.wind_response
             falling_object.wind_velocity.x += (
                 target_wind.x - falling_object.wind_velocity.x
-            ) * min(1.0, smoothing * delta_time)
-            falling_object.x += falling_object.wind_velocity.x * delta_time
+            ) * min(1.0, smoothing * falling_delta_time)
+            falling_object.x += falling_object.wind_velocity.x * falling_delta_time
             falling_object.x = clamp(falling_object.x, 0.0, config.SCREEN_WIDTH - falling_object.size)
-        falling_object.y += falling_object.speed * delta_time
+        falling_object.y += falling_object.speed * falling_delta_time
 
 
 def update_basket_movement(world: World, input_state: InputState, delta_time: float) -> None:

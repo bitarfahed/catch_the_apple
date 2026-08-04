@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from catch_the_apple import config
+from catch_the_apple.powerups import PowerUpState
 
 
 @dataclass
@@ -14,3 +15,4 @@ class GameSession:
     finalized: bool = False
     debug_collision_enabled: bool = False
     debug_overlay_enabled: bool = False
+    powerups: PowerUpState = field(default_factory=PowerUpState)
