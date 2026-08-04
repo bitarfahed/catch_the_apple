@@ -26,6 +26,13 @@ class CheatState:
     def deactivate(self, identifier: str) -> None:
         self.active.pop(identifier, None)
 
+    def toggle(self, definition: CheatDefinition, value: float | None = None) -> bool:
+        if self.is_active(definition.identifier):
+            self.deactivate(definition.identifier)
+            return False
+        self.activate(definition, value)
+        return True
+
     def update(self, delta_time: float) -> None:
         expired: list[str] = []
         for identifier, active in self.active.items():
@@ -91,5 +98,11 @@ CHEAT_DEFINITIONS = {
         "Fahed Mode",
         20.0,
         "Scaling and collision geometry: basket width expands and apples auto-collect.",
+    ),
+    "insane": CheatDefinition(
+        "insane",
+        "Insane Mode",
+        20.0,
+        "Random scaling: regular apples sample scale in [3, 6], while golden apples use scale 10.",
     ),
 }

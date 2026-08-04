@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from array import array
+from dataclasses import dataclass
 import math
 
 import pygame
@@ -57,7 +57,10 @@ class AudioSystem:
         self._play(self.sound_effects.get(identifier), self.settings.effects_volume)
 
     def play_object_effect(self, identifier: str, caught: bool = True) -> None:
-        if not caught and identifier in {"bomb", "rotten_apple"}:
+        if not caught and identifier == "bomb":
+            self.play_effect("bomb_explosion")
+            return
+        if not caught and identifier == "rotten_apple":
             self.play_effect(identifier)
             return
         self.play_effect(identifier)
@@ -96,6 +99,7 @@ class AudioSystem:
             "golden_apple": make_chime((659.25, 987.77), 0.12, 0.42),
             "rotten_apple": make_tone(185.0, 0.12, 0.36),
             "bomb": make_tone(92.5, 0.16, 0.48),
+            "bomb_explosion": make_explosion(0.24, 0.62),
             "power_up": make_chime((440.0, 880.0), 0.14, 0.42),
             "player_name": make_chime((783.99, 1046.5), 0.16, 0.44),
         }
@@ -118,12 +122,21 @@ def make_tone(frequency: float, duration: float, volume: float) -> pygame.mixer.
     for index in range(sample_count):
         progress = index / max(1, sample_count - 1)
         envelope = max(0.0, 1.0 - progress)
-        value = int(math.sin(math.tau * frequency * index / sample_rate) * 32767 * volume * envelope)
+        value = int(
+            math.sin(math.tau * frequency * index / sample_rate)
+            * 32767
+            * volume
+            * envelope
+        )
         samples.append(value)
     return pygame.mixer.Sound(buffer=samples.tobytes())
 
 
-def make_chime(frequencies: tuple[float, ...], duration: float, volume: float) -> pygame.mixer.Sound:
+def make_chime(
+    frequencies: tuple[float, ...],
+    duration: float,
+    volume: float,
+) -> pygame.mixer.Sound:
     sample_rate = 44100
     sample_count = int(sample_rate * duration)
     samples = array("h")
@@ -135,4 +148,18 @@ def make_chime(frequencies: tuple[float, ...], duration: float, volume: float) -
             for frequency in frequencies
         ) / len(frequencies)
         samples.append(int(signal * 32767 * volume * envelope))
+    return pygame.mixer.Sound(buffer=samples.tobytes())
+
+
+def make_explosion(duration: float, volume: float) -> pygame.mixer.Sound:
+    sample_rate = 44100
+    sample_count = int(sample_rate * duration)
+    samples = array("h")
+    for index in range(sample_count):
+        progress = index / max(1, sample_count - 1)
+        envelope = max(0.0, 1.0 - progress) ** 2
+        frequency = 82.0 - 48.0 * progress
+        rumble = math.sin(math.tau * frequency * index / sample_rate)
+        crackle = 0.35 if (index * 37) % 101 < 47 else -0.35
+        samples.append(int((0.72 * rumble + 0.28 * crackle) * 32767 * volume * envelope))
     return pygame.mixer.Sound(buffer=samples.tobytes())

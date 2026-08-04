@@ -72,7 +72,7 @@ catch-the-apple
 
 ## Developer Cheat Console
 
-The cheat console is available only while paused. Press `C`, type a code, press `Enter`, then press `P` or `Esc` to resume. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.
+The cheat console is available only while paused. Press `C`, type a code, and press `Enter`. Press `P` or `Esc` to return to Pause, then press `P` or `Esc` again to resume. Temporary cheats can be entered again to disable them early. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.
 
 | Code | Effect |
 |---|---|
@@ -93,6 +93,7 @@ The cheat console is available only while paused. Press `C`, type a code, press 
 | `cycle` | Temporarily enables wrap-around basket movement |
 | `flip <angle>` | Rotates the gameplay world by an angle from 0 to 360 degrees |
 | `fahed` | Temporarily expands the basket, auto-collects apples, blocks hazards, and shows strong effects |
+| `insane` | Temporarily spawns giant regular apples and huge golden apples; golden apples are worth 3 during the effect |
 
 ## Testing
 

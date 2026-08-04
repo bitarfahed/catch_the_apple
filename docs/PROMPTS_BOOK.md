@@ -4375,3 +4375,80 @@ Append this prompt to docs/PROMPTS_BOOK.md.
 - `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
 
 **Completion Status:** Complete with verification limitation: audible sound output was not verified because the runtime used dummy audio.
+
+## Prompt 29 - Gameplay Fixes, Cheat Improvements & Insane Mode
+
+**Goal:** Repair gameplay integrations for Magnet, rain, cheat toggles, console input, bomb audio, night palette readability, and add the Insane cheat without redesigning the architecture.
+
+**Full Prompt Text:**
+
+```text
+Prompt 29 - Gameplay Fixes, Cheat Improvements & Insane Mode
+
+Context
+
+Recent playtesting identified several gameplay issues and missing integrations.
+
+Do NOT redesign the architecture.
+
+Reuse the existing gameplay, rendering, particle, weather and Super Power systems.
+
+The objective is to improve the existing implementation.
+
+Objectives
+
+1. Magnet Super Power
+2. Wind Cheat
+3. Toggle Behavior
+4. Pause / Cheat Console
+5. Bomb Sound
+6. Night Palette
+7. Insane Cheat
+8. Final Verification
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/audio.py`
+- `src/catch_the_apple/cheats.py`
+- `src/catch_the_apple/effects.py`
+- `src/catch_the_apple/entities.py`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/rendering.py`
+- `src/catch_the_apple/states.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/spawning.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Implementation Summary:**
+
+- Magnet now has stronger visual feedback through glow and apple-only trail particles while retaining filtering that attracts only regular and golden apples.
+- Temporary developer cheats now share toggle behavior through `CheatState.toggle`.
+- The console now returns to Pause instead of resuming gameplay directly, allowing full commands such as `flip 180` without gameplay shortcut conflicts.
+- The `wind` cheat forces Rain immediately and toggles it off cleanly.
+- Bomb collisions now route to a distinct generated explosion sound.
+- `insane` was added as a timed cheat. It scales regular apples randomly between 3x and 6x per spawn, scales golden apples to 10x, keeps hazards normal-sized, and makes golden apples worth 3 points only while active.
+- Documentation was updated for cheat workflow, toggle behavior, and the Insane scale model.
+
+**Verification Summary:**
+
+- Runtime verification exercised Magnet filtering, rain particles, cheat toggles, full console command input, flip angles, bomb explosion routing, night palette colors, Insane scaling/scoring, and existing Super Power activation/expiration.
+- A focused visual sheet was generated and inspected for day/night regular apple colors, Magnet glow, rain particles, and Insane object scale.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 48 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- `uv run ruff check .` was run and failed on a broad existing Ruff backlog, including pre-existing import-order, E402, and line-length issues outside this prompt's scope.
+
+**Completion Status:** Complete with verification limitation: generated bomb explosion playback was routed and mixer-compatible, but audible sound could not be personally heard in the dummy-audio environment.

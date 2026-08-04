@@ -1,7 +1,7 @@
 import pygame
 
-from catch_the_apple.audio import AudioSystem
 from catch_the_apple import config
+from catch_the_apple.audio import AudioSystem
 from catch_the_apple.cheats import CHEAT_DEFINITIONS
 from catch_the_apple.debug import DebugSnapshot
 from catch_the_apple.developer_console import DeveloperConsole
@@ -10,6 +10,7 @@ from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.effects import VisualEffects
 from catch_the_apple.events import ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.input import poll_input
+from catch_the_apple.persistence import PersistenceStore
 from catch_the_apple.powerups import (
     PowerUpSystem,
     apply_black_hole,
@@ -23,7 +24,6 @@ from catch_the_apple.powerups import (
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.states import MainMenuState, StateManager
-from catch_the_apple.persistence import PersistenceStore
 from catch_the_apple.systems.game_rules import apply_game_rules
 from catch_the_apple.systems.movement import update_movement
 from catch_the_apple.systems.spawning import SpawnSystem
@@ -53,6 +53,7 @@ class Game:
         self.power_up_system = PowerUpSystem()
         self.developer_console = DeveloperConsole()
         self.spawn_system.power_state = self.session.powerups
+        self.spawn_system.cheat_state = self.session.cheats
         self.spawn_system.update(self.world)
         self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
@@ -129,9 +130,12 @@ class Game:
             + magnet_active_object_bonus(self.session.powerups)
         )
         self.spawn_system.power_state = self.session.powerups
+        self.spawn_system.cheat_state = self.session.cheats
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
         self.handle_audio_events(events)
+        if self.session.powerups.is_active("magnet"):
+            self.effects.emit_magnet_trails(self.world)
         if self.session.cheats.is_active("fahed"):
             self.effects.emit_basket_dash_trail(self.world)
         self.effects.update(self.world, delta_time, self.environment_manager)
@@ -188,6 +192,7 @@ class Game:
         self.effects = VisualEffects()
         self.power_up_system = PowerUpSystem()
         self.spawn_system.power_state = self.session.powerups
+        self.spawn_system.cheat_state = self.session.cheats
 
     def create_environment_manager(self) -> EnvironmentManager:
         return EnvironmentManager(
@@ -197,7 +202,11 @@ class Game:
 
     def apply_power_up_modifiers(self) -> None:
         speed_scale = basket_speed_scale(self.session.powerups)
-        target_width = int(config.SCREEN_WIDTH * 0.92) if self.session.cheats.is_active("fahed") else config.BASKET_WIDTH
+        target_width = (
+            int(config.SCREEN_WIDTH * 0.92)
+            if self.session.cheats.is_active("fahed")
+            else config.BASKET_WIDTH
+        )
         if self.world.basket.width != target_width:
             center_x = self.world.basket.rect.centerx
             self.world.basket.width = target_width
@@ -261,13 +270,32 @@ class Game:
             self.developer_console.message = "Sound restored"
             self.developer_console.clear()
             return True
+        if command == "shield" and self.session.cheats.is_active("shield"):
+            self.toggle_cheat(command)
+            self.audio.play_ui("cheat")
+            self.developer_console.message = "Disabled Shield"
+            self.developer_console.clear()
+            return True
         if command == "shield" and self.session.score < 5:
             self.audio.play_ui("error")
             self.developer_console.message = "Shield needs 5 score"
             return True
         if command == "shield":
-            self.session.score -= 5
+            if self.toggle_cheat(command):
+                self.session.score -= 5
+                self.developer_console.message = "Activated Shield"
+            else:
+                self.developer_console.message = "Disabled Shield"
+            self.audio.play_ui("cheat")
+            self.developer_console.clear()
+            return True
         if command == "flip":
+            if self.session.cheats.is_active("flip"):
+                self.session.cheats.deactivate("flip")
+                self.audio.play_ui("cheat")
+                self.developer_console.message = "Disabled Flip"
+                self.developer_console.clear()
+                return True
             if len(parts) != 2:
                 self.developer_console.message = "Usage: flip <angle>"
                 self.audio.play_ui("error")
@@ -290,13 +318,29 @@ class Game:
         definition = CHEAT_DEFINITIONS.get(command)
         if definition is None:
             return False
-        self.session.cheats.activate(definition)
-        if command == "wind":
-            self.environment_manager.set_weather("rain")
+        activated = self.toggle_cheat(command)
         self.audio.play_ui("cheat")
-        self.developer_console.message = f"Activated {definition.display_name}"
+        action = "Activated" if activated else "Disabled"
+        self.developer_console.message = f"{action} {definition.display_name}"
         self.developer_console.clear()
         return True
+
+    def toggle_cheat(self, command: str) -> bool:
+        definition = CHEAT_DEFINITIONS[command]
+        activated = self.session.cheats.toggle(definition)
+        if command == "wind":
+            self.environment_manager.set_weather("rain" if activated else "clear")
+            self._cheat_rain_was_active = activated
+        if command == "insane" and activated:
+            self.effects.emit_basket_dash_trail(self.world)
+        if command == "insane" and not activated:
+            self.restore_normal_object_scales()
+        return activated
+
+    def restore_normal_object_scales(self) -> None:
+        for falling_object in self.world.falling_objects:
+            falling_object.scale = 1.0
+            falling_object.x = min(falling_object.x, config.SCREEN_WIDTH - falling_object.size)
 
     def finish_session(self) -> None:
         if self.session.finalized:

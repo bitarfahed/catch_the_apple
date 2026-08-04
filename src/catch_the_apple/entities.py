@@ -114,6 +114,7 @@ class FallingObject:
     transform: Transform2D
     definition: ObjectDefinition
     speed: float = config.APPLE_INITIAL_SPEED
+    scale: float = 1.0
     previous_position: pygame.Vector2 = field(default_factory=pygame.Vector2)
     wind_velocity: pygame.Vector2 = field(default_factory=pygame.Vector2)
 
@@ -122,7 +123,7 @@ class FallingObject:
 
     @property
     def size(self) -> int:
-        return self.definition.collision_size
+        return max(1, int(self.definition.collision_size * self.scale))
 
     @property
     def x(self) -> float:

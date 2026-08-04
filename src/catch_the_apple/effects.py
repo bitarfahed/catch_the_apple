@@ -1,7 +1,5 @@
 from dataclasses import dataclass, field
 
-import pygame
-
 from catch_the_apple.animation import SquashStretch
 from catch_the_apple import config
 from catch_the_apple.dynamic_environment import EnvironmentManager
@@ -194,6 +192,11 @@ class VisualEffects:
         for falling_object in world.falling_objects:
             if falling_object.speed > 260.0:
                 self.particles.emit(falling_object.center, MOTION_TRAIL)
+
+    def emit_magnet_trails(self, world: World) -> None:
+        for falling_object in world.falling_objects:
+            if falling_object.definition.identifier in {"regular_apple", "golden_apple"}:
+                self.particles.emit(falling_object.center, GOLDEN_SPARKLE)
 
     def emit_basket_dash_trail(self, world: World) -> None:
         basket = world.basket

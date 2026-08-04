@@ -90,6 +90,8 @@ class UI:
             self.render_status_banner(screen, "SPEED BOOST", (145, 255, 170))
         elif session.cheats.is_active("fahed"):
             self.render_status_banner(screen, "FAHED MODE", (245, 255, 255))
+        elif session.cheats.is_active("insane"):
+            self.render_status_banner(screen, "INSANE MODE", (255, 115, 80))
         elif session.cheats.is_active("shield"):
             self.render_status_banner(screen, "SHIELD", (120, 245, 255))
         elif session.cheats.is_active("easy"):
@@ -236,7 +238,7 @@ class UI:
         self.render_center_panel(
             screen,
             "Paused",
-            ("Press P or Esc to Resume", "Press R to Restart", "Press C for Developer Console"),
+            ("Press P or Esc to Resume", "Press C for Developer Console", "Close the window to Exit"),
         )
 
     def render_developer_console(self, screen: pygame.Surface, console: DeveloperConsole) -> None:

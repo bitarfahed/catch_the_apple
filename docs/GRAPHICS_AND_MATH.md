@@ -148,7 +148,8 @@ Every super power combines gameplay behavior, a visual identity, and a simple ma
 
 Developer cheats use the same pause-only console as Super Powers. Temporary
 cheats live in `CheatState`, update by delta time, and expire back to normal
-gameplay settings.
+gameplay settings. Entering an active temporary cheat again toggles it off and
+restores the normal state immediately.
 
 | Cheat | Mathematical Concept | Algorithm | Gameplay Effect | Visual Effect |
 |---|---|---|---|---|
@@ -160,6 +161,7 @@ gameplay settings.
 | `cycle` | Modulo arithmetic | Basket position wraps with `x = (x + width) mod (screen_width + width) - width`. | Exiting one side re-enters from the other. | Cycle countdown. |
 | `flip <angle>` | Rotation matrix | Gameplay world is rendered to a surface and rotated around the playfield center. | World orientation changes temporarily. | The world visibly rotates while HUD remains readable. |
 | `fahed` | Scaling and collision geometry | Basket width scales to most of the screen; regular and golden apples auto-collect; hazard damage is masked. | Powerful demo mode with safe auto-catches. | Wide glowing basket, particles, motion trail, and countdown. |
+| `insane` | Random scale sampling | Regular apples sample `scale ~ U(3, 6)` per spawn; golden apples use `scale = 10`. | Regular apples stay worth 1 point; golden apples are worth 3 points while active. | Insane Mode banner, giant apples, glow, and activation particles. |
 
 ## Performance Notes
 

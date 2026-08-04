@@ -164,7 +164,15 @@ class Renderer:
         base_alpha = {
             "regular_apple": 118,
         }.get(identifier, 0)
+        if session.powerups.is_active("magnet") and identifier in {"regular_apple", "golden_apple"}:
+            base_alpha = max(base_alpha, 150)
+        if session.cheats.is_active("insane") and identifier in {"regular_apple", "golden_apple"}:
+            base_alpha = max(base_alpha, 135)
         alpha = int(base_alpha * night_factor)
+        if session.powerups.is_active("magnet") and identifier in {"regular_apple", "golden_apple"}:
+            alpha = max(alpha, 105)
+        if session.cheats.is_active("insane") and identifier in {"regular_apple", "golden_apple"}:
+            alpha = max(alpha, 95)
         if alpha <= 0:
             return
         glow_size = int(rect.width * 1.65)

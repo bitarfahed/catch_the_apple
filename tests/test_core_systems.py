@@ -22,6 +22,7 @@ from catch_the_apple.game import Game, is_valid_player_name
 from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.difficulty_profiles import DIFFICULTY_PROFILES, EXPERT, INTERMEDIATE
 from catch_the_apple.dynamic_environment import EnvironmentManager, WEATHER_PRESETS
+from catch_the_apple.entities import FallingObject
 from catch_the_apple.environment import ProceduralEnvironmentRenderer
 from catch_the_apple.events import ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.input import InputState
@@ -40,7 +41,7 @@ from catch_the_apple.powerups import (
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
-from catch_the_apple.states import DeveloperConsoleState, MainMenuState, PausedState, PlayingState
+from catch_the_apple.states import DeveloperConsoleState, PausedState, PlayingState
 from catch_the_apple.superpowers import SuperPowerSystem
 from catch_the_apple.systems.difficulty import apply_score_progression
 from catch_the_apple.systems.game_rules import apply_game_rules
@@ -692,6 +693,9 @@ class CoreSystemTests(unittest.TestCase):
         self.assertTrue(game.session.cheats.is_active("easy"))
 
         game.states.handle_input(game, input_state(pause_pressed=True))
+        self.assertIsInstance(game.states.current, PausedState)
+
+        game.states.handle_input(game, input_state(pause_pressed=True))
         self.assertIsInstance(game.states.current, PlayingState)
 
     def test_typing_cheat_codes_during_active_gameplay_is_ignored(self) -> None:
@@ -703,6 +707,129 @@ class CoreSystemTests(unittest.TestCase):
 
         self.assertIsInstance(game.states.current, PlayingState)
         self.assertFalse(game.session.cheats.is_active("easy"))
+
+    def test_console_accepts_full_flip_command_without_resuming_gameplay(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+
+        game.states.handle_input(game, input_state(pause_pressed=True))
+        game.states.handle_input(game, input_state(console_requested=True))
+        game.states.handle_input(game, input_state(text_input="flip 180"))
+        game.states.handle_input(game, input_state(console_submit_pressed=True))
+
+        self.assertIsInstance(game.states.current, DeveloperConsoleState)
+        self.assertEqual(game.session.cheats.value("flip"), 180.0)
+
+    def test_temporary_developer_cheats_toggle_off(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+        game.session.score = 6
+
+        for code, identifier in (
+            ("easy", "easy"),
+            ("wind", "wind"),
+            ("cycle", "cycle"),
+            ("fahed", "fahed"),
+            ("insane", "insane"),
+        ):
+            with self.subTest(code=code):
+                self.assertTrue(game.activate_cheat_code(code))
+                self.assertTrue(game.session.cheats.is_active(identifier))
+                self.assertTrue(game.activate_cheat_code(code))
+                self.assertFalse(game.session.cheats.is_active(identifier))
+
+        self.assertTrue(game.activate_cheat_code("shield"))
+        self.assertTrue(game.session.cheats.is_active("shield"))
+        self.assertTrue(game.activate_cheat_code("shield"))
+        self.assertFalse(game.session.cheats.is_active("shield"))
+
+    def test_wind_cheat_emits_visible_rain_particles(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+
+        self.assertTrue(game.activate_cheat_code("wind"))
+        game.update_playing(input_state(), 0.1)
+
+        self.assertEqual(game.environment_manager.state.weather.name, "Rain")
+        self.assertGreater(sum(1 for _ in game.effects.particles.active_particles()), 0)
+
+    def test_magnet_attracts_only_regular_and_golden_apples(self) -> None:
+        world = World()
+        basket_center = world.basket.rect.centerx
+        objects = []
+        for index, identifier in enumerate(
+            ("regular_apple", "golden_apple", "rotten_apple", "bomb")
+        ):
+            definition = OBJECT_DEFINITIONS[identifier]
+            objects.append(
+                FallingObject(
+                    transform=Transform2D(vec2(40.0 + index * 45.0, 100.0)),
+                    definition=definition,
+                )
+            )
+        world.falling_objects = objects
+        state = CheatState()
+        power = POWER_UP_DEFINITIONS["magnet"]
+        state.activate(power)
+
+        before = {obj.definition.identifier: abs(basket_center - obj.center.x) for obj in objects}
+        apply_magnet_pull(world, 0.2, state)
+        after = {obj.definition.identifier: abs(basket_center - obj.center.x) for obj in objects}
+
+        self.assertLess(after["regular_apple"], before["regular_apple"])
+        self.assertLess(after["golden_apple"], before["golden_apple"])
+        self.assertEqual(after["rotten_apple"], before["rotten_apple"])
+        self.assertEqual(after["bomb"], before["bomb"])
+
+    def test_insane_cheat_scales_apples_and_adjusts_golden_score(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+        game.activate_cheat_code("insane")
+
+        regular_scales = [
+            game.spawn_system.scale_for_definition(OBJECT_DEFINITIONS["regular_apple"])
+            for _ in range(8)
+        ]
+        self.assertTrue(all(3.0 <= scale <= 6.0 for scale in regular_scales))
+        self.assertGreater(len(set(round(scale, 2) for scale in regular_scales)), 1)
+        self.assertEqual(
+            game.spawn_system.scale_for_definition(OBJECT_DEFINITIONS["golden_apple"]),
+            10.0,
+        )
+        self.assertEqual(game.spawn_system.scale_for_definition(OBJECT_DEFINITIONS["bomb"]), 1.0)
+
+        golden = FallingObject(
+            transform=Transform2D(vec2(game.world.basket.x, game.world.basket.y)),
+            definition=OBJECT_DEFINITIONS["golden_apple"],
+            scale=10.0,
+        )
+        game.world.falling_objects = [golden]
+        apply_game_rules(
+            game.world,
+            game.session,
+            game.spawn_system,
+            game.selected_profile.difficulty_config,
+            game.power_up_system,
+        )
+        self.assertEqual(game.session.score, 3)
+
+        self.assertTrue(game.activate_cheat_code("insane"))
+        self.assertFalse(game.session.cheats.is_active("insane"))
+
+    def test_bomb_collision_uses_distinct_explosion_sound(self) -> None:
+        from catch_the_apple.audio import AudioSystem
+
+        audio = AudioSystem(AudioSettings())
+        played: list[str] = []
+        audio.play_effect = played.append
+
+        audio.play_object_effect("bomb", caught=False)
+
+        self.assertEqual(played, ["bomb_explosion"])
 
     def test_all_documented_super_power_cheats_activate_and_expire(self) -> None:
         game = Game()
@@ -733,7 +860,15 @@ class CoreSystemTests(unittest.TestCase):
         if not audio.available:
             self.skipTest("pygame mixer unavailable in this environment")
 
-        expected = {"regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up", "player_name"}
+        expected = {
+            "regular_apple",
+            "golden_apple",
+            "rotten_apple",
+            "bomb",
+            "bomb_explosion",
+            "power_up",
+            "player_name",
+        }
         self.assertTrue(expected.issubset(audio.sound_effects))
         self.assertTrue({"confirm", "error", "cheat"}.issubset(audio.ui_sounds))
 

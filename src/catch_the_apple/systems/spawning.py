@@ -1,6 +1,7 @@
 import random
 
 from catch_the_apple import config
+from catch_the_apple.cheats import CheatState
 from catch_the_apple.entities import FallingObject
 from catch_the_apple.math2d import Transform2D, vec2
 from catch_the_apple.object_definitions import ObjectDefinition, get_spawnable_definitions
@@ -17,6 +18,7 @@ class SpawnSystem:
         self.spawnable_definitions = get_spawnable_definitions(spawn_config.enabled_object_ids)
         self.spawn_weights = dict(spawn_config.spawn_weights)
         self.power_state: SuperPowerState | None = None
+        self.cheat_state: CheatState | None = None
 
     def update(self, world: World) -> None:
         while len(world.falling_objects) < self.max_active_objects:
@@ -24,12 +26,14 @@ class SpawnSystem:
 
     def create_falling_object(self) -> FallingObject:
         definition = self.choose_object_definition()
+        scale = self.scale_for_definition(definition)
         return FallingObject(
             transform=Transform2D(
-                position=vec2(self.random_falling_object_x(definition), self.config.spawn_y)
+                position=vec2(self.random_falling_object_x(definition, scale), self.config.spawn_y)
             ),
             definition=definition,
             speed=self.current_object_speed,
+            scale=scale,
         )
 
     def choose_object_definition(self) -> ObjectDefinition:
@@ -49,12 +53,26 @@ class SpawnSystem:
 
     def reset_falling_object(self, falling_object: FallingObject) -> None:
         falling_object.definition = self.choose_object_definition()
-        falling_object.x = self.random_falling_object_x(falling_object.definition)
+        falling_object.scale = self.scale_for_definition(falling_object.definition)
+        falling_object.x = self.random_falling_object_x(falling_object.definition, falling_object.scale)
         falling_object.y = self.config.spawn_y
         falling_object.speed = self.current_object_speed
         falling_object.wind_velocity.update(0.0, 0.0)
         falling_object.previous_position.update(falling_object.transform.position)
 
-    def random_falling_object_x(self, definition: ObjectDefinition) -> int:
-        max_x = min(self.config.x_max, config.SCREEN_WIDTH - definition.collision_size)
+    def random_falling_object_x(self, definition: ObjectDefinition, scale: float = 1.0) -> int:
+        size = self.size_for_definition(definition, scale)
+        max_x = min(self.config.x_max, config.SCREEN_WIDTH - size)
         return self.random.randint(self.config.x_min, max_x)
+
+    def size_for_definition(self, definition: ObjectDefinition, scale: float = 1.0) -> int:
+        return max(1, int(definition.collision_size * scale))
+
+    def scale_for_definition(self, definition: ObjectDefinition) -> float:
+        if self.cheat_state is None or not self.cheat_state.is_active("insane"):
+            return 1.0
+        if definition.identifier == "regular_apple":
+            return self.random.uniform(3.0, 6.0)
+        if definition.identifier == "golden_apple":
+            return 10.0
+        return 1.0

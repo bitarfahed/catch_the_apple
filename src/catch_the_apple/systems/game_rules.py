@@ -1,6 +1,7 @@
 from catch_the_apple import config
 from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent, ObjectMissedEvent
+from catch_the_apple.object_definitions import ObjectDefinition
 from catch_the_apple.powerups import PowerUpSystem, difficulty_growth_scale
 from catch_the_apple.session import GameSession
 from catch_the_apple.systems.difficulty import apply_score_progression
@@ -24,8 +25,9 @@ def apply_game_rules(
             and definition.identifier in {"regular_apple", "golden_apple"}
         ):
             caught_position = falling_object.center
-            if definition.score_value > 0:
-                add_score(session, definition.score_value)
+            score_value = score_value_for_object(session, definition)
+            if score_value > 0:
+                add_score(session, score_value)
             spawn_system.reset_falling_object(falling_object)
             events.append(
                 ObjectCaughtEvent(
@@ -86,8 +88,10 @@ def apply_game_rules(
                 session.powerups.activate(power_up_system.choose_power_up())
             elif definition.category == "extra_life":
                 session.lives = min(config.INITIAL_LIVES, session.lives + 1)
-            elif definition.score_value > 0:
-                add_score(session, definition.score_value)
+            else:
+                score_value = score_value_for_object(session, definition)
+                if score_value > 0:
+                    add_score(session, score_value)
 
             spawn_system.reset_falling_object(falling_object)
             if apply_score_progression(
@@ -106,3 +110,9 @@ def apply_game_rules(
                 )
             )
     return events
+
+
+def score_value_for_object(session: GameSession, definition: ObjectDefinition) -> int:
+    if session.cheats.is_active("insane") and definition.identifier == "golden_apple":
+        return 3
+    return definition.score_value

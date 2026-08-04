@@ -111,7 +111,7 @@ class DeveloperConsoleState(GameStateBase):
 
     def handle_input(self, game: Game, input_state: InputState) -> None:
         if input_state.pause_pressed:
-            game.states.change(PlayingState())
+            game.states.change(PausedState())
             return
         if input_state.backspace_pressed:
             game.developer_console.backspace()
