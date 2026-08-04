@@ -4251,3 +4251,127 @@ Miss damage now comes from the object definition category. Hazards use zero miss
 - `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
 
 **Completion Status:** Complete.
+
+## Prompt 28 - Verification-First Regression Audit
+
+**Goal:** Verify previously implemented gameplay, visual, audio, and developer features through actual runtime behavior before reporting success.
+
+**Full Prompt Text:**
+
+```text
+Prompt 28 - Verification-First Regression Audit
+
+Context
+
+The previous implementation attempted to restore several gameplay features, but playtesting shows that many of them are still missing or non-functional.
+
+For this prompt, implementation is secondary.
+
+Verification is the primary objective.
+
+Do not assume a feature works simply because code exists.
+
+Do not report success unless the feature has been verified during actual gameplay.
+
+Objectives
+
+Perform a complete regression audit of the repository.
+
+For every feature below:
+
+1. Locate the implementation.
+2. Verify that it is connected to the gameplay.
+3. Verify that it can actually be triggered.
+4. Verify that the expected visual effects occur.
+5. Verify that gameplay behaves correctly.
+6. If any verification fails, repair the integration.
+7. Repeat verification until the feature actually works.
+
+Features to verify:
+
+- Super Powers
+- Player Name object
+- Cheat Console
+- Every documented Cheat Code
+- Sound System
+- Night Palette
+- Wind
+- Rain
+- Day/Night cycle
+- Apple Storm
+- Magnet
+- Slow Motion
+- Dash Boost
+- Golden Apple
+- Rotten Apple
+- Bomb
+- Particle effects
+- Lighting
+
+Cheat Console
+
+The required workflow is:
+
+Pause -> Developer Console -> Enter Cheat Code -> Resume Game
+
+Verify this exact workflow.
+
+Night Palette
+
+Verify that:
+
+Day:
+- Regular Apple is red.
+
+Night:
+- Regular Apple becomes white/light.
+
+Do not consider this task complete until it is visually verified.
+
+Player Name
+
+Verify that typed characters are actually rendered correctly.
+
+If rectangles appear instead of characters, identify the root cause and fix it.
+
+Sound
+
+Verify that sounds are actually audible during gameplay.
+
+Do not report success simply because audio files are loaded.
+
+Reporting Rules
+
+For every feature produce one of ONLY these statuses:
+
+- VERIFIED WORKING
+- FIXED AND VERIFIED
+- FAILED TO VERIFY
+
+Never report "implemented".
+
+Never assume functionality from reading code.
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `docs/PROMPTS_BOOK.md`
+
+**Verification Summary:**
+
+- Runtime gameplay verifier exercised start flow, pause flow, Developer Console flow, all documented cheat codes, all Super Power cheat codes, miss/collision rules, player-name catch/miss behavior, wind drift, rain particles, day/night ambient changes, particle effects, lighting surfaces, Magnet, Apple Storm, Slow Motion, Dash Boost, and generated audio playback calls.
+- Visual screenshots were generated and inspected for player-name text rendering and nighttime regular apple appearance.
+- Sound generation and mixer playback calls were verified under SDL dummy audio, but audible output could not be honestly verified in the automated environment.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 42 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete with verification limitation: audible sound output was not verified because the runtime used dummy audio.
