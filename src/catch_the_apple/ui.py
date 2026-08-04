@@ -22,7 +22,7 @@ class UIAnimations:
             if isinstance(event, ObjectCaughtEvent):
                 self.score_pop = 0.28
                 self.combo_pulse = 0.25
-            if isinstance(event, ObjectMissedEvent):
+            if isinstance(event, ObjectMissedEvent) and event.damage > 0:
                 self.life_flash = 0.35
 
     def update(self, delta_time: float) -> None:
@@ -79,6 +79,12 @@ class UI:
         for index, label in enumerate(session.powerups.labels()):
             power_text = self.small_font.render(label, True, (160, 245, 255))
             screen.blit(power_text, (config.SCREEN_WIDTH - power_text.get_width() - 18, 78 + index * 21))
+        if session.powerups.is_active("slow_motion"):
+            self.render_status_banner(screen, "SLOW MOTION", (100, 230, 255))
+        elif session.powerups.is_active("magnet"):
+            self.render_status_banner(screen, "APPLE STORM", (255, 235, 110))
+        elif session.powerups.is_active("speed_boost"):
+            self.render_status_banner(screen, "SPEED BOOST", (145, 255, 170))
 
     def render_dash_status(self, screen: pygame.Surface, world: World) -> None:
         basket = world.basket
@@ -172,6 +178,20 @@ class UI:
         overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, alpha))
         screen.blit(overlay, (0, 0))
+
+    def render_status_banner(
+        self,
+        screen: pygame.Surface,
+        label: str,
+        color: tuple[int, int, int],
+    ) -> None:
+        text = self.large_font.render(label, True, color)
+        glow = self.large_font.render(label, True, (255, 255, 255))
+        x = config.SCREEN_WIDTH // 2
+        y = 38
+        glow.set_alpha(90)
+        screen.blit(glow, glow.get_rect(center=(x + 2, y + 2)))
+        screen.blit(text, text.get_rect(center=(x, y)))
 
     def render_center_panel(self, screen: pygame.Surface, title: str, lines: tuple[str, ...]) -> None:
         title_surface = self.title_font.render(title, True, config.WHITE)

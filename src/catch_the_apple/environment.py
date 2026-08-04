@@ -73,7 +73,7 @@ class ProceduralEnvironmentRenderer:
         for y in range(half_height):
             t = y / max(1, half_height - 1)
             color = blend_color(environment.day_night.sky_top, environment.day_night.sky_bottom, t)
-            pygame.draw.line(sky_overlay, (*color, 80), (0, y), (self.width, y))
+            pygame.draw.line(sky_overlay, (*color, 135), (0, y), (self.width, y))
         tint = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         tint.fill((*environment.weather.visual_tint, 28))
         target.blit(sky_overlay, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)
@@ -82,12 +82,19 @@ class ProceduralEnvironmentRenderer:
             fog = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
             fog.fill((220, 230, 230, environment.weather.fog_alpha))
             target.blit(fog, (0, 0))
+        night_alpha = int(max(0.0, 0.55 - environment.day_night.ambient) * 210)
+        if night_alpha > 0:
+            night = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            night.fill((6, 10, 32, night_alpha))
+            target.blit(night, (0, 0))
 
     def _draw_sun_and_moon(self, target: pygame.Surface, environment: EnvironmentState) -> None:
-        daylight_alpha = int(environment.day_night.directional_intensity * 260)
-        moon_alpha = int((1.0 - environment.day_night.ambient) * 190)
-        pygame.draw.circle(target, (255, 231, 145, daylight_alpha), environment.day_night.sun_position, 22)
-        pygame.draw.circle(target, (215, 225, 245, moon_alpha), environment.day_night.moon_position, 14)
+        daylight_alpha = int(environment.day_night.directional_intensity * 330)
+        moon_alpha = int((1.0 - environment.day_night.ambient) * 260)
+        pygame.draw.circle(target, (255, 231, 145, daylight_alpha), environment.day_night.sun_position, 30)
+        pygame.draw.circle(target, (255, 245, 185, max(0, daylight_alpha // 3)), environment.day_night.sun_position, 45, 2)
+        pygame.draw.circle(target, (215, 225, 245, moon_alpha), environment.day_night.moon_position, 22)
+        pygame.draw.circle(target, (170, 190, 235, max(0, moon_alpha // 3)), environment.day_night.moon_position, 36, 2)
 
     def _create_mountain_layer(self) -> pygame.Surface:
         surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)

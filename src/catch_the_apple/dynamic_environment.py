@@ -142,11 +142,11 @@ class DayNightCycle:
     def state(self) -> DayNightState:
         daylight = (math.sin(self.progress * math.tau - math.pi / 2) + 1.0) / 2.0
         daylight = smoothstep(daylight)
-        sky_top = blend_color((24, 36, 84), (92, 174, 235), daylight)
-        sky_bottom = blend_color((42, 54, 96), (76, 145, 204), daylight)
-        ambient = 0.34 + daylight * 0.50
-        directional = 0.12 + daylight * 0.40
-        shadow = 0.16 + daylight * 0.24
+        sky_top = blend_color((4, 8, 32), (100, 190, 250), daylight)
+        sky_bottom = blend_color((12, 18, 52), (90, 160, 220), daylight)
+        ambient = 0.18 + daylight * 0.72
+        directional = 0.04 + daylight * 0.62
+        shadow = 0.10 + daylight * 0.45
         angle = self.progress * math.tau
         sun_position = (int(400 + math.cos(angle - math.pi / 2) * 330), int(350 + math.sin(angle - math.pi / 2) * 260))
         moon_position = (int(400 + math.cos(angle + math.pi / 2) * 330), int(350 + math.sin(angle + math.pi / 2) * 260))

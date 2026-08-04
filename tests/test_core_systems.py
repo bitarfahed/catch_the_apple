@@ -28,7 +28,13 @@ from catch_the_apple.math2d import Transform2D, clamp, vec2
 from catch_the_apple.object_definitions import OBJECT_DEFINITIONS
 from catch_the_apple.particles import EmitterConfig, ParticleSystem
 from catch_the_apple.persistence import PersistenceStore
-from catch_the_apple.powerups import PowerUpSystem, difficulty_growth_scale
+from catch_the_apple.powerups import (
+    POWER_UP_DEFINITIONS,
+    PowerUpSystem,
+    apply_magnet_pull,
+    difficulty_growth_scale,
+    power_up_time_scale,
+)
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
 from catch_the_apple.systems.difficulty import apply_score_progression
@@ -145,9 +151,10 @@ class CoreSystemTests(unittest.TestCase):
 
     def test_slow_motion_scales_difficulty_growth(self) -> None:
         session = GameSession()
-        session.powerups.activate(PowerUpSystem(seed=1).definitions[1])
+        session.powerups.activate(POWER_UP_DEFINITIONS["slow_motion"])
 
         self.assertLess(difficulty_growth_scale(session.powerups), 1.0)
+        self.assertLess(power_up_time_scale(session.powerups), 0.6)
 
     def test_movement_uses_velocity_acceleration_drag_and_dash_state(self) -> None:
         world = World()
@@ -220,6 +227,29 @@ class CoreSystemTests(unittest.TestCase):
         self.assertTrue(session.game_over)
         self.assertIsInstance(events[0], ObjectMissedEvent)
 
+    def test_apple_storm_missed_bonus_apples_do_not_cost_lives(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=5, combo=2)
+        session.powerups.activate(POWER_UP_DEFINITIONS["magnet"])
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["golden_apple"]
+        falling_object.y = config.SCREEN_HEIGHT + 1
+
+        events = apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertEqual(session.lives, 3)
+        self.assertEqual(session.score, 5)
+        self.assertEqual(session.combo, 2)
+        self.assertEqual(events[0].damage, 0)
+
     def test_hazard_collision_costs_life_without_awarding_score(self) -> None:
         world = World()
         session = GameSession(lives=3)
@@ -261,6 +291,24 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(session.score, 0)
         self.assertTrue(session.powerups.active)
         self.assertIsInstance(events[0], ObjectCaughtEvent)
+
+    def test_magnet_only_pulls_regular_and_golden_apples(self) -> None:
+        world = World()
+        spawn_system = SpawnSystem(
+            config.SpawnConfig(max_active_objects=4, enabled_object_ids=("regular_apple",))
+        )
+        spawn_system.update(world)
+        identifiers = ("regular_apple", "golden_apple", "rotten_apple", "bomb")
+        for falling_object, identifier in zip(world.falling_objects, identifiers, strict=True):
+            falling_object.definition = OBJECT_DEFINITIONS[identifier]
+            falling_object.x = 50.0
+        session = GameSession()
+        session.powerups.activate(POWER_UP_DEFINITIONS["magnet"])
+
+        apply_magnet_pull(world, 0.25, session.powerups)
+
+        moved = [falling_object.x > 50.0 for falling_object in world.falling_objects]
+        self.assertEqual(moved, [True, True, False, False])
 
     def test_continuous_collision_detection_catches_fast_vertical_sweep(self) -> None:
         world = World()

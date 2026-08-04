@@ -39,12 +39,12 @@ BEGINNER = DifficultyProfile(
     ),
     wind_config=WindConfig(
         direction=vec2(1.0, 0.08),
-        strength=5.0,
-        gust_strength=2.0,
+        strength=8.0,
+        gust_strength=3.5,
         gust_frequency=0.18,
-        direction_sway=0.08,
+        direction_sway=0.10,
     ),
-    gameplay_wind_scale=0.28,
+    gameplay_wind_scale=0.55,
 )
 
 INTERMEDIATE = DifficultyProfile(
@@ -70,12 +70,12 @@ INTERMEDIATE = DifficultyProfile(
     ),
     wind_config=WindConfig(
         direction=vec2(1.0, 0.12),
-        strength=9.0,
-        gust_strength=3.5,
+        strength=16.0,
+        gust_strength=6.5,
         gust_frequency=0.24,
-        direction_sway=0.12,
+        direction_sway=0.16,
     ),
-    gameplay_wind_scale=0.35,
+    gameplay_wind_scale=0.70,
 )
 
 EXPERT = DifficultyProfile(
@@ -101,12 +101,12 @@ EXPERT = DifficultyProfile(
     ),
     wind_config=WindConfig(
         direction=vec2(1.0, 0.16),
-        strength=14.0,
-        gust_strength=5.0,
+        strength=24.0,
+        gust_strength=8.0,
         gust_frequency=0.30,
-        direction_sway=0.18,
+        direction_sway=0.22,
     ),
-    gameplay_wind_scale=0.42,
+    gameplay_wind_scale=0.82,
 )
 
 DIFFICULTY_PROFILES = (BEGINNER, INTERMEDIATE, EXPERT)

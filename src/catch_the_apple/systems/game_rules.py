@@ -18,15 +18,21 @@ def apply_game_rules(
 ) -> list[GameplayEvent]:
     events: list[GameplayEvent] = []
     for falling_object in list(world.falling_objects):
+        definition = falling_object.definition
         if falling_object.y > config.SCREEN_HEIGHT:
             missed_position = falling_object.center
-            lose_life(session, falling_object.definition.damage)
+            storm_bonus_object = (
+                session.powerups.is_active("magnet")
+                and definition.identifier in {"regular_apple", "golden_apple"}
+            )
+            if not storm_bonus_object:
+                lose_life(session, definition.damage)
             spawn_system.reset_falling_object(falling_object)
             events.append(
                 ObjectMissedEvent(
                     falling_object=falling_object,
                     position=missed_position,
-                    damage=falling_object.definition.damage,
+                    damage=0 if storm_bonus_object else definition.damage,
                 )
             )
             if session.lives <= 0:
@@ -35,8 +41,9 @@ def apply_game_rules(
         collision = detect_basket_collision(world.basket, falling_object)
         if collision.caught:
             caught_position = falling_object.center
-            if falling_object.definition.category == "hazard":
-                lose_life(session, falling_object.definition.damage)
+            definition = falling_object.definition
+            if definition.category == "hazard":
+                lose_life(session, definition.damage)
                 if session.lives <= 0:
                     session.game_over = True
                 spawn_system.reset_falling_object(falling_object)
@@ -44,15 +51,15 @@ def apply_game_rules(
                     ObjectMissedEvent(
                         falling_object=falling_object,
                         position=caught_position,
-                        damage=falling_object.definition.damage,
+                        damage=definition.damage,
                     )
                 )
                 continue
 
-            if falling_object.definition.category == "power_up" and power_up_system is not None:
+            if definition.category == "power_up" and power_up_system is not None:
                 session.powerups.activate(power_up_system.choose_power_up())
-            elif falling_object.definition.score_value > 0:
-                add_score(session, falling_object.definition.score_value)
+            elif definition.score_value > 0:
+                add_score(session, definition.score_value)
 
             spawn_system.reset_falling_object(falling_object)
             if apply_score_progression(
@@ -66,7 +73,7 @@ def apply_game_rules(
                 ObjectCaughtEvent(
                     falling_object=falling_object,
                     position=caught_position,
-                    color=falling_object.definition.color,
+                    color=definition.color,
                 )
             )
     return events

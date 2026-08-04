@@ -69,11 +69,11 @@ class PowerUpSystem:
 
 
 def power_up_time_scale(state: PowerUpState) -> float:
-    return 0.68 if state.is_active("slow_motion") else 1.0
+    return 0.48 if state.is_active("slow_motion") else 1.0
 
 
 def difficulty_growth_scale(state: PowerUpState) -> float:
-    return 0.55 if state.is_active("slow_motion") else 1.0
+    return 0.40 if state.is_active("slow_motion") else 1.0
 
 
 def basket_speed_scale(state: PowerUpState) -> float:
@@ -81,7 +81,7 @@ def basket_speed_scale(state: PowerUpState) -> float:
 
 
 def magnet_active_object_bonus(state: PowerUpState) -> int:
-    return 2 if state.is_active("magnet") else 0
+    return 5 if state.is_active("magnet") else 0
 
 
 def apply_magnet_pull(world, delta_time: float, state: PowerUpState) -> None:
@@ -89,7 +89,7 @@ def apply_magnet_pull(world, delta_time: float, state: PowerUpState) -> None:
         return
     basket_center_x = world.basket.rect.centerx
     for falling_object in world.falling_objects:
-        if "catchable" not in falling_object.definition.tags:
+        if falling_object.definition.identifier not in {"regular_apple", "golden_apple"}:
             continue
         offset = basket_center_x - falling_object.center.x
-        falling_object.x += clamp(offset * 1.65 * delta_time, -150.0 * delta_time, 150.0 * delta_time)
+        falling_object.x += clamp(offset * 2.6 * delta_time, -260.0 * delta_time, 260.0 * delta_time)

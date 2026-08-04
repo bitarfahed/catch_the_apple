@@ -2760,3 +2760,231 @@ Beginner keeps hazards and power-ups rare. Intermediate uses a balanced mix with
 - Dummy-runtime smoke check passed: Expert + Magnet raised active objects to 4 through the real `Game.update_playing` path.
 
 **Completion Status:** Complete.
+
+## Prompt 20 - Gameplay Visibility, Feedback & Feature Completion
+
+**Goal:** Make the existing gameplay systems visibly readable and functionally complete by improving wind, object identity, slow motion, Apple Storm, magnet targeting, and day/night visibility without changing architecture.
+
+**Full Prompt Text:**
+
+```text
+Prompt 20 - Gameplay Visibility, Feedback & Feature Completion
+
+Context
+
+The project already contains the required gameplay systems and infrastructure.
+
+However, recent playtesting revealed that several implemented systems are either too subtle, not correctly integrated, or difficult for the player to notice.
+
+This prompt is **NOT** about adding new architecture.
+
+Its purpose is to finish and polish the existing gameplay systems so they are immediately visible, enjoyable and functionally correct.
+
+Reuse the existing architecture whenever possible.
+
+---
+
+Objectives
+
+Improve the following systems.
+
+1. Wind
+
+The Wind System currently has little or no noticeable gameplay effect.
+
+Increase its influence so falling objects naturally drift sideways, producing smooth diagonal trajectories.
+
+Avoid artificial position jumps.
+
+Wind should feel alive while remaining fair.
+
+---
+
+2. Object Visual Identity
+
+Players must instantly distinguish between:
+
+- Regular Apple
+- Golden Apple
+- Rotten Apple
+- Bomb
+- Power-ups
+
+Improve procedural rendering using clearly different:
+
+- silhouettes
+- colors
+- highlights
+- glow
+- particles
+- animations
+- visual effects
+
+Recognition should require no conscious effort.
+
+---
+
+3. Slow Motion Power-up
+
+The Slow Motion power-up currently feels absent or too weak.
+
+Improve it so that:
+
+- the pickup is visually obvious
+- activation feedback is immediate
+- HUD displays remaining duration
+- the slowdown is clearly noticeable
+- gameplay returns smoothly to normal afterwards
+
+Reuse the existing timing system.
+
+---
+
+4. Apple Storm
+
+Complete the Apple Storm feature.
+
+During Apple Storm:
+
+- many apples should spawn simultaneously
+- the event should feel exciting and rewarding
+- the player should not lose lives
+- the player should not lose score
+- missed apples during the storm should not be punished
+
+Apple Storm should be a bonus event rather than a punishment.
+
+---
+
+5. Magnet Integration
+
+When Magnet is active during Apple Storm:
+
+ONLY
+
+- Regular Apples
+- Golden Apples
+
+should be attracted toward the basket.
+
+The following MUST NOT be attracted:
+
+- Rotten Apples
+- Bombs
+
+Their trajectories should remain governed only by physics and wind.
+
+---
+
+6. Day / Night Visibility
+
+The Day/Night system currently has little visual impact.
+
+Increase the visible difference between day and night by improving:
+
+- sky colors
+- ambient lighting
+- directional lighting
+- shadow intensity
+- sun/moon visibility
+- background colors
+- environmental atmosphere
+
+Transitions should remain smooth.
+
+---
+
+General Goal
+
+Prioritize gameplay readability.
+
+Every major gameplay mechanic should communicate itself visually without requiring explanation.
+
+Players should immediately notice when:
+
+- wind changes
+- day becomes night
+- Apple Storm begins
+- Slow Motion activates
+- Magnet activates
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Rewrite architecture.
+- Introduce new gameplay systems.
+- Change collision architecture.
+- Replace existing rendering pipeline.
+
+Reuse existing systems and improve their integration.
+
+---
+
+Acceptance Criteria
+
+- Wind is clearly noticeable.
+- Object types are immediately recognizable.
+- Slow Motion is visually and mechanically obvious.
+- Apple Storm is exciting and non-punishing.
+- Magnet only attracts beneficial apples.
+- Day/Night transition is clearly visible.
+- Gameplay readability is significantly improved.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Gameplay polish decisions
+- Balancing decisions
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/difficulty_profiles.py`
+- `src/catch_the_apple/dynamic_environment.py`
+- `src/catch_the_apple/effects.py`
+- `src/catch_the_apple/environment.py`
+- `src/catch_the_apple/powerups.py`
+- `src/catch_the_apple/procedural_assets.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Gameplay Polish Decisions:**
+
+Increased profile wind strength and gameplay wind scale while keeping the existing eased wind velocity path, so objects drift visibly without snapping. Procedural object visuals now use distinct silhouettes: normal apples remain red fruit, golden apples glow with star highlights, rotten apples are misshapen with spots, bombs are dark circles with fuse/spark, and power-ups are glowing blue diamonds.
+
+Slow Motion now scales falling time more strongly, slows difficulty growth more clearly, emits a power-up burst, appears in the HUD duration list, and shows a large status banner. Apple Storm now spawns many apples by increasing Magnet's active object bonus, and missed regular/golden apples during Magnet are non-punishing. Magnet attraction is restricted to regular and golden apples only.
+
+Day/night contrast was increased with darker night sky colors, brighter daylight, stronger ambient/directional lighting differences, stronger shadow contrast, a night overlay, and larger sun/moon drawing.
+
+**Balancing Decisions:**
+
+Magnet now adds five temporary active objects so Apple Storm is obvious. Slow Motion uses a 0.48 falling-time scale and 0.40 difficulty-growth scale so it is immediately noticeable while still temporary. Wind was increased by profile, with Beginner remaining softer than Intermediate and Expert.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 23 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Dummy gameplay render smoke passed with Expert, Magnet, and Slow Motion active: `PlayingState`, 7 active objects, HUD power-up labels rendered.
+
+**Completion Status:** Complete.

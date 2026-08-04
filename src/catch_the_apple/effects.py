@@ -88,6 +88,22 @@ BASKET_DASH_TRAIL = EmitterConfig(
     drag=1.8,
 )
 
+POWERUP_BURST = EmitterConfig(
+    count=24,
+    speed_min=70.0,
+    speed_max=210.0,
+    lifetime_min=0.30,
+    lifetime_max=0.70,
+    start_size=5.0,
+    end_size=1.0,
+    start_alpha=240,
+    end_alpha=0,
+    start_color=(90, 235, 255),
+    end_color=(245, 255, 255),
+    drag=1.4,
+    gravity_scale=-0.08,
+)
+
 
 @dataclass
 class VisualEffects:
@@ -99,9 +115,12 @@ class VisualEffects:
     def handle_events(self, events: list[GameplayEvent]) -> None:
         for event in events:
             if isinstance(event, ObjectCaughtEvent):
-                self.particles.emit(event.position, APPLE_CATCH_BURST)
                 if event.color[0] > 240 and event.color[1] > 180:
                     self.particles.emit(event.position, GOLDEN_SPARKLE)
+                elif event.color[2] > 180:
+                    self.particles.emit(event.position, POWERUP_BURST)
+                else:
+                    self.particles.emit(event.position, APPLE_CATCH_BURST)
                 self.object_squash_for(event.falling_object).trigger(0.18)
             if isinstance(event, ObjectMissedEvent) and event.damage > 0:
                 self.particles.emit(event.position, BOMB_SMOKE)

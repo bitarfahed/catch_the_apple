@@ -13,15 +13,31 @@ class ProceduralAppleRenderer:
     ) -> pygame.Surface:
         key = (identifier, size, base_color)
         if key not in self._cache:
-            self._cache[key] = self._create_surface(size, base_color)
+            self._cache[key] = self._create_surface(identifier, size, base_color)
         return self._cache[key]
 
-    def _create_surface(self, size: int, base_color: tuple[int, int, int]) -> pygame.Surface:
+    def _create_surface(
+        self,
+        identifier: str,
+        size: int,
+        base_color: tuple[int, int, int],
+    ) -> pygame.Surface:
+        if identifier == "bomb":
+            return self._create_bomb_surface(size)
+        if identifier == "power_up":
+            return self._create_power_up_surface(size)
+
         surface = pygame.Surface((size, size), pygame.SRCALPHA)
         body_rect = pygame.Rect(size * 0.12, size * 0.22, size * 0.76, size * 0.70)
 
-        shadow_color = scale_color(base_color, 0.68)
-        light_color = blend_color(base_color, (255, 255, 255), 0.24)
+        if identifier == "golden_apple":
+            glow_rect = pygame.Rect(size * 0.02, size * 0.10, size * 0.96, size * 0.86)
+            pygame.draw.ellipse(surface, (255, 218, 60, 92), glow_rect)
+        if identifier == "rotten_apple":
+            body_rect = pygame.Rect(size * 0.10, size * 0.26, size * 0.78, size * 0.64)
+
+        shadow_color = scale_color(base_color, 0.58 if identifier == "rotten_apple" else 0.68)
+        light_color = blend_color(base_color, (255, 255, 255), 0.36 if identifier == "golden_apple" else 0.24)
         highlight_color = (255, 245, 230, 130)
 
         pygame.draw.ellipse(surface, shadow_color, body_rect.move(1, 2))
@@ -64,7 +80,67 @@ class ProceduralAppleRenderer:
             1,
         )
 
+        if identifier == "golden_apple":
+            self._draw_star(surface, (int(size * 0.72), int(size * 0.36)), max(4, size // 5))
+            pygame.draw.circle(surface, (255, 250, 150, 130), (int(size * 0.34), int(size * 0.42)), max(2, size // 9))
+        if identifier == "rotten_apple":
+            pygame.draw.circle(surface, (72, 105, 38), (int(size * 0.33), int(size * 0.55)), max(3, size // 8))
+            pygame.draw.circle(surface, (44, 58, 32), (int(size * 0.64), int(size * 0.68)), max(2, size // 10))
+            pygame.draw.arc(
+                surface,
+                (220, 210, 140),
+                pygame.Rect(size * 0.18, size * 0.18, size * 0.62, size * 0.42),
+                0.1,
+                2.5,
+                2,
+            )
+
         return surface.convert_alpha()
+
+    def _create_bomb_surface(self, size: int) -> pygame.Surface:
+        surface = pygame.Surface((size, size), pygame.SRCALPHA)
+        pygame.draw.circle(surface, (18, 20, 24), (size // 2, int(size * 0.58)), int(size * 0.34))
+        pygame.draw.circle(surface, (72, 78, 84), (int(size * 0.38), int(size * 0.46)), int(size * 0.12))
+        pygame.draw.rect(surface, (58, 45, 32), pygame.Rect(size * 0.48, size * 0.13, size * 0.12, size * 0.20))
+        pygame.draw.arc(
+            surface,
+            (210, 150, 70),
+            pygame.Rect(size * 0.52, size * 0.00, size * 0.32, size * 0.28),
+            1.2,
+            3.5,
+            2,
+        )
+        self._draw_star(surface, (int(size * 0.80), int(size * 0.10)), max(3, size // 7), (255, 105, 45))
+        return surface.convert_alpha()
+
+    def _create_power_up_surface(self, size: int) -> pygame.Surface:
+        surface = pygame.Surface((size, size), pygame.SRCALPHA)
+        points = [
+            (size * 0.50, size * 0.04),
+            (size * 0.92, size * 0.50),
+            (size * 0.50, size * 0.96),
+            (size * 0.08, size * 0.50),
+        ]
+        pygame.draw.circle(surface, (65, 235, 255, 70), (size // 2, size // 2), int(size * 0.48))
+        pygame.draw.polygon(surface, (38, 170, 230), points)
+        pygame.draw.polygon(surface, (155, 245, 255), points, 2)
+        pygame.draw.circle(surface, (235, 255, 255, 190), (size // 2, size // 2), int(size * 0.16))
+        pygame.draw.line(surface, (255, 255, 255, 180), (size * 0.32, size * 0.38), (size * 0.68, size * 0.62), 2)
+        pygame.draw.line(surface, (255, 255, 255, 180), (size * 0.68, size * 0.38), (size * 0.32, size * 0.62), 2)
+        return surface.convert_alpha()
+
+    def _draw_star(
+        self,
+        surface: pygame.Surface,
+        center: tuple[int, int],
+        radius: int,
+        color: tuple[int, int, int] = (255, 255, 190),
+    ) -> None:
+        x, y = center
+        pygame.draw.line(surface, color, (x - radius, y), (x + radius, y), 2)
+        pygame.draw.line(surface, color, (x, y - radius), (x, y + radius), 2)
+        pygame.draw.line(surface, color, (x - radius // 2, y - radius // 2), (x + radius // 2, y + radius // 2), 1)
+        pygame.draw.line(surface, color, (x + radius // 2, y - radius // 2), (x - radius // 2, y + radius // 2), 1)
 
 
 class ProceduralBasketRenderer:
