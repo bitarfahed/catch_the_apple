@@ -80,6 +80,11 @@ The interpolation is controlled by a night factor derived from ambient light:
 `night = clamp((0.58 - ambient) / 0.40, 0, 1)`. This keeps transitions smooth
 while preserving immediate object recognition.
 
+The rare player-name object reuses the falling-object system and renders as a
+glowing text badge. It is gameplay-visible because the rendered label is the
+validated player name, and mathematically it follows the same position,
+collision, wind, and delta-time update path as other falling objects.
+
 ## Lighting and Shadows
 
 The lighting system is surface-based and intentionally inexpensive:
@@ -109,6 +114,18 @@ position offset. Falling objects move toward the current wind vector with:
 `wind_velocity += (target_wind - wind_velocity) * response * dt`, then their
 positions advance by `wind_velocity * dt`. This produces smooth diagonal paths
 and visible gust changes without abrupt sideways jumps.
+
+Rain is a visual weather event. It reuses the pooled particle system and weather
+state, but it does not modify gameplay wind, object speed, collision, scoring,
+or difficulty. This keeps the weather readable without making the game less fair.
+
+## Generated Audio
+
+Gameplay sound effects are generated in memory with short decaying sine waves.
+Simple tones and two-tone chimes distinguish regular apples, golden apples,
+rotten apples, bombs, power-ups, and the extra-life name object without external
+audio assets. Each waveform uses a linear decay envelope so sounds remain brief
+and unobtrusive.
 
 ## Super Powers
 

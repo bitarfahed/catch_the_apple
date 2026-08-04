@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import pygame
 
 from catch_the_apple.animation import SquashStretch
+from catch_the_apple import config
 from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.math2d import vec2
@@ -104,6 +105,40 @@ POWERUP_BURST = EmitterConfig(
     gravity_scale=-0.08,
 )
 
+EXTRA_LIFE_BURST = EmitterConfig(
+    count=30,
+    speed_min=60.0,
+    speed_max=180.0,
+    lifetime_min=0.35,
+    lifetime_max=0.85,
+    start_size=5.0,
+    end_size=1.0,
+    start_alpha=245,
+    end_alpha=0,
+    start_color=(245, 255, 255),
+    end_color=(120, 245, 255),
+    drag=1.0,
+    gravity_scale=-0.16,
+)
+
+RAIN_STREAKS = EmitterConfig(
+    count=8,
+    speed_min=260.0,
+    speed_max=420.0,
+    lifetime_min=0.35,
+    lifetime_max=0.55,
+    start_size=2.0,
+    end_size=1.0,
+    start_alpha=105,
+    end_alpha=0,
+    start_color=(170, 215, 245),
+    end_color=(120, 170, 220),
+    drag=0.0,
+    gravity_scale=0.10,
+    angular_velocity_min=0.0,
+    angular_velocity_max=0.0,
+)
+
 
 @dataclass
 class VisualEffects:
@@ -111,11 +146,14 @@ class VisualEffects:
     basket_squash: SquashStretch = field(default_factory=lambda: SquashStretch(0.16, 0.08))
     object_squash: dict[int, SquashStretch] = field(default_factory=dict)
     _trail_timer: float = 0.0
+    _rain_timer: float = 0.0
 
     def handle_events(self, events: list[GameplayEvent]) -> None:
         for event in events:
             if isinstance(event, ObjectCaughtEvent):
-                if event.color[0] > 240 and event.color[1] > 180:
+                if event.object_identifier == "player_name":
+                    self.particles.emit(event.position, EXTRA_LIFE_BURST)
+                elif event.color[0] > 240 and event.color[1] > 180:
                     self.particles.emit(event.position, GOLDEN_SPARKLE)
                 elif event.color[2] > 180:
                     self.particles.emit(event.position, POWERUP_BURST)
@@ -146,6 +184,9 @@ class VisualEffects:
             self.emit_motion_trails(world)
             self._trail_timer = 0.045
 
+        if environment_manager is not None and environment_manager.state.weather.name == "Rain":
+            self.emit_rain(delta_time)
+
         wind = environment_manager.particle_wind_velocity() if environment_manager is not None else vec2()
         self.particles.update(delta_time, wind)
 
@@ -158,6 +199,14 @@ class VisualEffects:
         basket = world.basket
         position = vec2(basket.rect.centerx, basket.rect.centery)
         self.particles.emit(position, BASKET_DASH_TRAIL)
+
+    def emit_rain(self, delta_time: float) -> None:
+        self._rain_timer = max(0.0, self._rain_timer - delta_time)
+        if self._rain_timer > 0.0:
+            return
+        for x in range(20, config.SCREEN_WIDTH, 120):
+            self.particles.emit(vec2(float(x), -10.0), RAIN_STREAKS)
+        self._rain_timer = 0.08
 
     def object_squash_for(self, falling_object: object) -> SquashStretch:
         key = id(falling_object)

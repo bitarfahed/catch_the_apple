@@ -49,6 +49,9 @@ class Renderer:
                 falling_object.definition.color,
                 night_factor,
             )
+            if falling_object.definition.identifier == "player_name":
+                self.render_player_name_object(falling_object.rect, session.player_name)
+                continue
             object_surface = self.assets.get_falling_object_surface(
                 falling_object.definition.identifier,
                 falling_object.size,
@@ -139,6 +142,20 @@ class Renderer:
         glow_surface = self.get_glow_surface(max(rect.width + 8, glow_size), color, alpha)
         glow_rect = glow_surface.get_rect(center=rect.center)
         self.screen.blit(glow_surface, glow_rect)
+
+    def render_player_name_object(self, rect: pygame.Rect, player_name: str) -> None:
+        label = (player_name or "LIFE")[: config.PLAYER_NAME_MAX_LENGTH]
+        glow_surface = self.get_glow_surface(rect.width * 3, (245, 255, 255), 120)
+        self.screen.blit(glow_surface, glow_surface.get_rect(center=rect.center))
+
+        badge = pygame.Surface((max(82, rect.width * 3), 34), pygame.SRCALPHA)
+        badge_rect = badge.get_rect()
+        pygame.draw.rect(badge, (15, 28, 42, 230), badge_rect, border_radius=8)
+        pygame.draw.rect(badge, (245, 255, 255), badge_rect, 2, border_radius=8)
+        pygame.draw.circle(badge, (120, 245, 255, 120), (12, badge_rect.centery), 8)
+        text = self.font.render(label, True, (245, 255, 255))
+        badge.blit(text, text.get_rect(center=badge_rect.center))
+        self.screen.blit(badge, badge.get_rect(center=rect.center))
 
     def get_glow_surface(
         self,

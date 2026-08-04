@@ -169,6 +169,248 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 
 **Completion Status:** Complete.
 
+## Prompt 25 - Unified Gameplay Experience
+
+**Goal:** Simplify the player-facing flow into one balanced mode while integrating the player-name object, generated sounds, visual rain, and feature reachability through existing systems.
+
+**Full Prompt Text:**
+
+```text
+Prompt 25 - Unified Gameplay Experience
+
+Context
+
+The project already contains the required gameplay, rendering, UI, weather, particle, lighting and gameplay infrastructure.
+
+This prompt simplifies the player experience while enriching the actual gameplay.
+
+Do not perform major architectural refactors.
+
+Reuse existing systems whenever possible.
+
+---
+
+Objectives
+
+1. Single Game Mode
+
+Remove the Beginner / Intermediate / Expert game modes.
+
+Use one well-balanced difficulty curve throughout the game.
+
+Reuse the existing Difficulty System instead of replacing it.
+
+---
+
+2. Start Screen
+
+Before gameplay begins, display a simple start screen asking the player to enter a player name.
+
+Requirements:
+
+- One word only.
+- No spaces.
+- Reasonable maximum length.
+- Validation before the game starts.
+
+Store the player name for later gameplay use.
+
+---
+
+3. Player Name Object
+
+The player's name should occasionally appear as a rare falling object.
+
+Requirements:
+
+- Extremely rare spawn.
+- Distinct visual appearance.
+- Clear particle effects.
+- Clearly recognizable.
+
+When caught:
+
+- Grant one additional life.
+- Maximum lives = 3.
+
+When missed:
+
+- No penalty.
+- No score reduction.
+- No life reduction.
+
+Reuse the existing object system instead of creating a special case.
+
+---
+
+4. Sound System
+
+Implement a lightweight sound system.
+
+At minimum provide sounds for:
+
+- Regular Apple
+- Golden Apple
+- Rotten Apple
+- Bomb
+- Power-up
+- Extra Life (Player Name)
+
+Use pleasant and easily distinguishable sounds.
+
+---
+
+5. Night Mode Fix
+
+Correct the Night Palette.
+
+During daytime:
+
+- Regular Apples remain red.
+
+During nighttime:
+
+- Regular Apples become bright white/light glowing white.
+
+Golden Apples remain gold.
+
+Bombs remain unchanged.
+
+Rotten Apples remain unchanged.
+
+Transitions should remain smooth.
+
+---
+
+6. Rain
+
+Implement rain as a purely visual environmental effect.
+
+Rain must:
+
+- Not change gameplay.
+- Not modify physics.
+- Not change difficulty.
+- Not reduce visibility.
+
+Reuse the existing particle and weather systems.
+
+---
+
+7. Feature Verification
+
+Verify that every currently implemented gameplay event and Super Power actually activates during normal gameplay.
+
+This includes (where implemented):
+
+- Magnet
+- Apple Storm
+- Slow Motion
+- Dash Boost
+- Player Name object
+- Weather events
+- Wind effects
+- Any existing gameplay-triggered Super Powers
+
+If an event exists in the codebase but is unreachable, incorrectly configured, or practically never triggered, fix its integration without redesigning the architecture.
+
+The goal is that every implemented feature can actually be experienced during normal play.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add new gameplay systems.
+- Rewrite existing architecture.
+- Replace rendering systems.
+- Replace the object framework.
+
+Reuse existing infrastructure.
+
+---
+
+Acceptance Criteria
+
+- Only one balanced game mode exists.
+- Start screen works correctly.
+- Player Name object functions correctly.
+- Sounds work correctly.
+- Night palette behaves correctly.
+- Rain is visual only.
+- All existing Super Powers and gameplay events can actually trigger during normal gameplay.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Gameplay integration changes
+- Sound implementation
+- Feature verification performed
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/audio.py`
+- `src/catch_the_apple/config.py`
+- `src/catch_the_apple/difficulty_profiles.py`
+- `src/catch_the_apple/dynamic_environment.py`
+- `src/catch_the_apple/effects.py`
+- `src/catch_the_apple/events.py`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/object_definitions.py`
+- `src/catch_the_apple/rendering.py`
+- `src/catch_the_apple/session.py`
+- `src/catch_the_apple/states.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Gameplay Integration Changes:**
+
+The difficulty selection flow was removed from normal play. The project now uses a single `Standard` difficulty profile with the existing Difficulty System, spawn system, and wind configuration. Backward-compatible profile aliases remain so older imports continue to work.
+
+The main menu now validates a one-word alphanumeric player name before starting. The name is stored in `GameSession`.
+
+Added `player_name` as a rare data-driven falling object. It uses the normal spawn collection, movement, collision, miss, and catch systems. Catching it grants one life up to the configured maximum of 3. Missing it has no penalty.
+
+Weather now cycles during normal play, including Rain. Rain uses the existing particle/weather path and does not modify gameplay physics, scoring, collision, difficulty, or visibility.
+
+**Sound Implementation:**
+
+The existing Audio System now generates short in-memory sine/chime effects for regular apples, golden apples, rotten apples, bombs, power-ups, and the player-name extra-life object. Gameplay events carry a stable object identifier so audio can play the correct sound even after the falling object is reset.
+
+**Feature Verification:**
+
+Regression tests verify single-mode configuration, rare player-name spawn data, capped extra-life behavior, missed golden/name objects, night palette behavior, weather cycling to Rain, wind reachability, generated object sounds, and positive normal-game Super Power selection weights.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 33 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Manual dummy smoke confirmed invalid spaced names stay on the start screen, valid `Ada7` starts play, catching the player-name object grants a capped life, and weather reaches Rain.
+
+**Completion Status:** Complete.
+
 ## Prompt 24 - Night Palette Fix & Golden Apple Rule
 
 **Goal:** Narrow the night palette behavior so only regular apples change at night, and ensure missed golden apples do not reduce lives.

@@ -34,6 +34,7 @@ def apply_game_rules(
                     falling_object=falling_object,
                     position=missed_position,
                     damage=0 if storm_bonus_object else miss_damage,
+                    object_identifier=definition.identifier,
                 )
             )
             if session.lives <= 0:
@@ -53,12 +54,15 @@ def apply_game_rules(
                         falling_object=falling_object,
                         position=caught_position,
                         damage=definition.damage,
+                        object_identifier=definition.identifier,
                     )
                 )
                 continue
 
             if definition.category == "power_up" and power_up_system is not None:
                 session.powerups.activate(power_up_system.choose_power_up())
+            elif definition.category == "extra_life":
+                session.lives = min(config.INITIAL_LIVES, session.lives + 1)
             elif definition.score_value > 0:
                 add_score(session, definition.score_value)
 
@@ -75,6 +79,7 @@ def apply_game_rules(
                     falling_object=falling_object,
                     position=caught_position,
                     color=definition.color,
+                    object_identifier=definition.identifier,
                 )
             )
     return events

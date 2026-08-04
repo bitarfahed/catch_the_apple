@@ -6,6 +6,7 @@ from catch_the_apple.powerups import PowerUpState
 
 @dataclass
 class GameSession:
+    player_name: str = ""
     score: int = 0
     lives: int = config.INITIAL_LIVES
     combo: int = 0

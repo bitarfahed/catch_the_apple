@@ -10,15 +10,16 @@ The project remains intentionally focused: it is a game, not a general-purpose e
 - Public SDK surface exposed through `catch_the_apple` and `catch_the_apple.sdk`.
 - Delta-time runtime with separate update and render phases.
 - Structured session, world, entity, input, movement, spawning, scoring, difficulty, and game-rules systems.
-- Data-driven object definitions for apples, hazards, bombs, and power-ups.
+- Data-driven object definitions for apples, hazards, bombs, power-ups, and rare extra-life name objects.
 - Velocity-based basket movement with acceleration, drag, boundary constraints, and dash state.
 - Composite basket collision with circular falling-object collision and continuous collision detection.
 - Cached procedural apple and basket surfaces.
 - Lightweight ambient and directional lighting with soft ground shadows.
 - Generic pooled particle system, motion trails, and reusable squash/stretch animation.
 - Procedural parallax environment with sky, clouds, mountains, trees, bushes, and grass.
-- Dynamic wind, weather presets, and smooth day/night lighting state.
-- Main menu, playing, paused, and game-over states with a modular HUD.
+- Dynamic wind, visual rain, weather presets, and smooth day/night lighting state.
+- Player-name start screen, playing, paused, and game-over states with a modular HUD.
+- Lightweight generated sound effects for gameplay objects.
 - Local persistence for high score, best combo, settings, and session statistics.
 - Debug overlay and collision visualization toggles.
 - Headless automated tests for core systems.
@@ -60,7 +61,7 @@ catch-the-apple
 | Left Arrow | Move basket left |
 | Right Arrow | Move basket right |
 | Space | Dash |
-| Enter | Start from menu |
+| Enter | Submit player name / start from menu |
 | Esc or P | Pause/resume |
 | C while paused | Open developer cheat console |
 | R | Restart from game over |

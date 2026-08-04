@@ -7,6 +7,7 @@ from catch_the_apple.developer_console import DeveloperConsole
 from catch_the_apple.difficulty_profiles import DEFAULT_DIFFICULTY_PROFILE, DifficultyProfile
 from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.effects import VisualEffects
+from catch_the_apple.events import ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.input import poll_input
 from catch_the_apple.powerups import (
     PowerUpSystem,
@@ -42,6 +43,8 @@ class Game:
         self.persistence = PersistenceStore()
         self.audio = AudioSystem(self.persistence.data.settings)
         self.selected_profile = DEFAULT_DIFFICULTY_PROFILE
+        self.player_name_input = ""
+        self.name_error = ""
         self.session = GameSession()
         self.world = World()
         self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
@@ -123,9 +126,35 @@ class Game:
         self.spawn_system.power_state = self.session.powerups
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
+        self.handle_audio_events(events)
         self.effects.update(self.world, delta_time, self.environment_manager)
         self.ui.handle_events(events)
         self.ui.update(delta_time)
+
+    def append_player_name_text(self, text: str) -> None:
+        if any(not character.isalnum() for character in text):
+            self.name_error = "Use one word with no spaces"
+            return
+        if not text:
+            return
+        self.player_name_input = (self.player_name_input + text)[: config.PLAYER_NAME_MAX_LENGTH]
+        self.name_error = ""
+
+    def backspace_player_name(self) -> None:
+        self.player_name_input = self.player_name_input[:-1]
+        self.name_error = ""
+
+    def start_named_session(self) -> bool:
+        name = self.player_name_input.strip()
+        if not is_valid_player_name(name):
+            self.name_error = "Enter one word using letters or numbers"
+            return False
+        from catch_the_apple.states import PlayingState
+
+        self.reset_play_session()
+        self.session.player_name = name
+        self.states.change(PlayingState())
+        return True
 
     def render(self, delta_time: float) -> None:
         self.states.render(self, delta_time)
@@ -137,7 +166,11 @@ class Game:
         debug_collision_enabled = self.session.debug_collision_enabled
         if profile is not None:
             self.selected_profile = profile
-        self.session = GameSession(debug_collision_enabled=debug_collision_enabled)
+        player_name = self.session.player_name or self.player_name_input.strip()
+        self.session = GameSession(
+            player_name=player_name,
+            debug_collision_enabled=debug_collision_enabled,
+        )
         self.world = World()
         self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
         self.spawn_system.update(self.world)
@@ -157,6 +190,13 @@ class Game:
         self.world.basket.max_speed = config.BASKET_MAX_SPEED * speed_scale
         self.world.basket.acceleration_rate = config.BASKET_ACCELERATION * speed_scale
         self.world.basket.dash_speed = config.BASKET_DASH_SPEED * speed_scale
+
+    def handle_audio_events(self, events: list[ObjectCaughtEvent | ObjectMissedEvent]) -> None:
+        for event in events:
+            if isinstance(event, ObjectCaughtEvent):
+                self.audio.play_object_effect(event.object_identifier, caught=True)
+            elif isinstance(event, ObjectMissedEvent) and event.damage > 0:
+                self.audio.play_object_effect(event.object_identifier, caught=False)
 
     def activate_cheat_code(self, code: str) -> bool:
         definition = self.power_up_system.by_cheat_code(code)
@@ -190,3 +230,7 @@ class Game:
             audio_available=self.audio.available,
             muted=self.audio.settings.muted,
         )
+
+
+def is_valid_player_name(name: str) -> bool:
+    return 1 <= len(name) <= config.PLAYER_NAME_MAX_LENGTH and name.isalnum()

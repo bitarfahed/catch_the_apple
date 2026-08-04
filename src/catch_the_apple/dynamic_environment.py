@@ -194,19 +194,33 @@ class EnvironmentManager:
         self.gameplay_wind_scale_override = gameplay_wind_scale
         self.wind = WindSystem(wind_config or self.weather.wind)
         self.day_night = DayNightCycle()
+        self._weather_order = ("clear", "light_wind", "rain", "falling_leaves", "strong_wind", "fog")
+        self._weather_index = self._weather_order.index(weather_name)
+        self._weather_timer = 0.0
+        self._weather_interval = 24.0
         self.state = self._build_state()
 
     def set_weather(self, weather_name: str) -> None:
         self.weather = WEATHER_PRESETS[weather_name]
+        self._weather_index = self._weather_order.index(weather_name)
         self.wind = WindSystem(self.wind_config_override or self.weather.wind)
         self.state = self._build_state()
 
     def update(self, delta_time: float) -> EnvironmentState:
         self.elapsed_time += delta_time
+        self.update_weather_cycle(delta_time)
         self.wind.update(self.elapsed_time)
         self.day_night.update(delta_time)
         self.state = self._build_state()
         return self.state
+
+    def update_weather_cycle(self, delta_time: float) -> None:
+        self._weather_timer += delta_time
+        while self._weather_timer >= self._weather_interval:
+            self._weather_timer -= self._weather_interval
+            self._weather_index = (self._weather_index + 1) % len(self._weather_order)
+            self.weather = WEATHER_PRESETS[self._weather_order[self._weather_index]]
+            self.wind = WindSystem(self.wind_config_override or self.weather.wind)
 
     def gameplay_wind_velocity(self) -> Vector2:
         scale = (

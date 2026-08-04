@@ -17,6 +17,7 @@ import pygame
 
 from catch_the_apple import __version__, config, get_version
 from catch_the_apple.audio import AudioSettings
+from catch_the_apple.game import is_valid_player_name
 from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.difficulty_profiles import DIFFICULTY_PROFILES, EXPERT, INTERMEDIATE
 from catch_the_apple.dynamic_environment import EnvironmentManager, WEATHER_PRESETS
@@ -100,7 +101,7 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(__version__, pyproject["project"]["version"])
 
     def test_object_registry_contains_only_regular_apple_in_spawn_config(self) -> None:
-        expected_ids = {"regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up"}
+        expected_ids = {"regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up", "player_name"}
 
         self.assertEqual(set(OBJECT_DEFINITIONS), expected_ids)
         self.assertEqual(config.SPAWN_CONFIG.enabled_object_ids, ("regular_apple",))
@@ -115,13 +116,13 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(first.x, second.x)
         self.assertEqual(first.y, config.SPAWN_CONFIG.spawn_y)
 
-    def test_difficulty_profiles_adjust_existing_spawn_and_wind_config(self) -> None:
+    def test_single_difficulty_profile_adjusts_existing_spawn_and_wind_config(self) -> None:
         profile_names = [profile.display_name for profile in DIFFICULTY_PROFILES]
 
-        self.assertEqual(profile_names, ["Beginner", "Intermediate", "Expert"])
-        self.assertLess(DIFFICULTY_PROFILES[0].spawn_config.object_speed, INTERMEDIATE.spawn_config.object_speed)
-        self.assertGreater(EXPERT.spawn_config.max_active_objects, INTERMEDIATE.spawn_config.max_active_objects)
-        self.assertGreater(EXPERT.wind_config.strength, INTERMEDIATE.wind_config.strength)
+        self.assertEqual(profile_names, ["Standard"])
+        self.assertIs(EXPERT, INTERMEDIATE)
+        self.assertIn("player_name", INTERMEDIATE.spawn_config.enabled_object_ids)
+        self.assertLess(INTERMEDIATE.spawn_config.spawn_weights[-1][1], 0.01)
         self.assertGreater(INTERMEDIATE.gameplay_wind_scale, 3.0)
         self.assertIn("golden_apple", EXPERT.spawn_config.enabled_object_ids)
         self.assertIn("rotten_apple", EXPERT.spawn_config.enabled_object_ids)
@@ -344,6 +345,30 @@ class CoreSystemTests(unittest.TestCase):
         self.assertFalse(session.game_over)
         self.assertEqual(events[0].damage, 0)
 
+    def test_player_name_object_grants_capped_extra_life_and_has_no_miss_penalty(self) -> None:
+        world = World()
+        session = GameSession(player_name="Ada", lives=2)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["player_name"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        events = apply_game_rules(world, session, spawn_system, INTERMEDIATE.difficulty_config)
+
+        self.assertEqual(session.lives, 3)
+        self.assertEqual(events[0].object_identifier, "player_name")
+
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["player_name"]
+        falling_object.y = config.SCREEN_HEIGHT + 1
+        events = apply_game_rules(world, session, spawn_system, INTERMEDIATE.difficulty_config)
+
+        self.assertEqual(session.lives, 3)
+        self.assertEqual(events[0].damage, 0)
+
     def test_hazard_collision_costs_life_without_awarding_score(self) -> None:
         world = World()
         session = GameSession(lives=3)
@@ -392,6 +417,7 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(system.by_cheat_code("MAGNET").identifier, "magnet")
         self.assertEqual(system.by_cheat_code("void").identifier, "black_hole")
         self.assertIsNone(system.by_cheat_code("NOPE"))
+        self.assertTrue(all(definition.spawn_weight > 0.0 for definition in system.definitions))
 
     def test_magnet_only_pulls_regular_and_golden_apples(self) -> None:
         world = World()
@@ -514,6 +540,12 @@ class CoreSystemTests(unittest.TestCase):
             (255, 215, 0),
         )
 
+    def test_player_name_validation_accepts_one_alphanumeric_word(self) -> None:
+        self.assertTrue(is_valid_player_name("Ada7"))
+        self.assertFalse(is_valid_player_name(""))
+        self.assertFalse(is_valid_player_name("Ada Lovelace"))
+        self.assertFalse(is_valid_player_name("NameThatIsTooLong"))
+
     def test_environment_renderer_caches_parallax_layers(self) -> None:
         manager = EnvironmentManager("clear")
         renderer = ProceduralEnvironmentRenderer(160, 120, seed=9)
@@ -525,6 +557,28 @@ class CoreSystemTests(unittest.TestCase):
 
         self.assertIs(first_layers, renderer.layers)
         self.assertEqual([layer.name for layer in first_layers], ["sky", "mountains", "trees", "bushes", "grass"])
+
+    def test_weather_cycle_reaches_rain_without_changing_gameplay_wind_override(self) -> None:
+        manager = EnvironmentManager(
+            wind_config=INTERMEDIATE.wind_config,
+            gameplay_wind_scale=INTERMEDIATE.gameplay_wind_scale,
+        )
+        initial_velocity = manager.gameplay_wind_velocity().length()
+
+        manager.update(48.1)
+
+        self.assertEqual(manager.state.weather.name, "Rain")
+        self.assertGreater(manager.gameplay_wind_velocity().length(), initial_velocity * 0.5)
+
+    def test_audio_system_generates_distinct_object_effects_when_available(self) -> None:
+        from catch_the_apple.audio import AudioSystem
+
+        audio = AudioSystem(AudioSettings())
+        if not audio.available:
+            self.skipTest("pygame mixer unavailable in this environment")
+
+        expected = {"regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up", "player_name"}
+        self.assertTrue(expected.issubset(audio.sound_effects))
 
 
 if __name__ == "__main__":

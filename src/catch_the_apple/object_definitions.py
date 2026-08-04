@@ -77,6 +77,18 @@ OBJECT_DEFINITIONS = {
         tags=("catchable", "power_up"),
         future_behaviors=("temporary_effect",),
     ),
+    "player_name": ObjectDefinition(
+        identifier="player_name",
+        display_name="Player Name",
+        category="extra_life",
+        score_value=0,
+        damage=0,
+        spawn_weight=0.0,
+        collision_size=config.APPLE_SIZE + 8,
+        color=(245, 255, 255),
+        tags=("catchable", "extra_life", "rare"),
+        future_behaviors=("extra_life",),
+    ),
 }
 
 

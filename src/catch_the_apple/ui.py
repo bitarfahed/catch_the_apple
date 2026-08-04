@@ -149,6 +149,28 @@ class UI:
             ("Press Enter or Click to Start", "Choose difficulty with the mouse", "F1 collision  |  F2 debug  |  M mute"),
         )
 
+    def render_name_entry(self, screen: pygame.Surface, name: str, error: str) -> None:
+        center_x = config.SCREEN_WIDTH // 2
+        title = self.title_font.render("Catch the Apple", True, config.WHITE)
+        screen.blit(title, title.get_rect(center=(center_x, 150)))
+
+        prompt = self.font.render("Enter player name", True, (230, 238, 244))
+        screen.blit(prompt, prompt.get_rect(center=(center_x, 220)))
+
+        input_rect = pygame.Rect(center_x - 150, 255, 300, 48)
+        pygame.draw.rect(screen, (8, 15, 22), input_rect, border_radius=6)
+        pygame.draw.rect(screen, (120, 220, 240), input_rect, 2, border_radius=6)
+        display_name = name or "NAME"
+        color = config.WHITE if name else (120, 145, 155)
+        name_text = self.large_font.render(display_name, True, color)
+        screen.blit(name_text, name_text.get_rect(center=input_rect.center))
+
+        hint = self.small_font.render("One word, letters or numbers only. Enter starts.", True, (210, 225, 232))
+        screen.blit(hint, hint.get_rect(center=(center_x, 330)))
+        if error:
+            error_text = self.small_font.render(error, True, (255, 125, 125))
+            screen.blit(error_text, error_text.get_rect(center=(center_x, 360)))
+
     def render_difficulty_selection(
         self,
         screen: pygame.Surface,

@@ -28,8 +28,12 @@ class GameStateBase:
 
 class MainMenuState(GameStateBase):
     def handle_input(self, game: Game, input_state: InputState) -> None:
+        if input_state.backspace_pressed:
+            game.backspace_player_name()
+        if input_state.text_input:
+            game.append_player_name_text(input_state.text_input)
         if input_state.start_pressed or input_state.mouse_left_clicked:
-            game.states.change(DifficultySelectionState())
+            game.start_named_session()
 
     def update(self, game: Game, delta_time: float) -> None:
         game.environment_manager.update(delta_time)
@@ -37,7 +41,7 @@ class MainMenuState(GameStateBase):
 
     def render(self, game: Game, delta_time: float) -> None:
         game.renderer.render_background(game.environment_manager.state, delta_time)
-        game.ui.render_menu(game.screen)
+        game.ui.render_name_entry(game.screen, game.player_name_input, game.name_error)
 
 
 class DifficultySelectionState(GameStateBase):
