@@ -21,7 +21,7 @@ def apply_game_rules(
         definition = falling_object.definition
         if falling_object.y > config.SCREEN_HEIGHT:
             missed_position = falling_object.center
-            miss_damage = 0 if definition.category == "hazard" else definition.damage
+            miss_damage = definition.damage if definition.category != "hazard" else 0
             storm_bonus_object = (
                 session.powerups.is_active("magnet")
                 and definition.identifier in {"regular_apple", "golden_apple"}

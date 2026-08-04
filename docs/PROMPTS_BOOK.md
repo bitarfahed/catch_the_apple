@@ -169,6 +169,123 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 
 **Completion Status:** Complete.
 
+## Prompt 24 - Night Palette Fix & Golden Apple Rule
+
+**Goal:** Narrow the night palette behavior so only regular apples change at night, and ensure missed golden apples do not reduce lives.
+
+**Full Prompt Text:**
+
+```text
+Prompt 24 - Night Palette Fix & Golden Apple Rule
+
+Context
+
+Recent playtesting identified two gameplay issues.
+
+Both should be fixed by reusing the existing systems.
+
+Do not redesign the rendering or gameplay architecture.
+
+---
+
+Objectives
+
+1. Night Palette Fix
+
+The current day/night transition darkens the environment, but the colors of the gameplay objects remain unchanged.
+
+Update the Night Palette behavior so that:
+
+- During daytime, object colors remain exactly as they are today.
+- During nighttime only, Regular Apples change their appearance to bright white (or a very light glowing white) to improve visibility.
+- Golden Apples remain gold.
+- Rotten Apples remain unchanged.
+- Bombs remain unchanged.
+
+The transition between day and night should remain smooth.
+
+The goal is to improve gameplay readability without changing daytime visuals.
+
+---
+
+2. Golden Apple Gameplay Rule
+
+Missing a Golden Apple must NOT reduce lives.
+
+The existing gameplay rules should become:
+
+- Missing a Regular Apple -> existing behavior.
+- Missing a Golden Apple -> no life lost.
+- Missing a Rotten Apple -> no life lost.
+- Missing a Bomb -> no life lost.
+
+Only collision with hazardous objects should damage the player.
+
+Reuse the existing object-type system rather than introducing special-case logic.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Modify rendering architecture.
+- Modify the lighting system.
+- Change collision architecture.
+- Change gameplay balance except for the rules above.
+
+---
+
+Acceptance Criteria
+
+- Regular Apples become white only during nighttime.
+- Daytime colors remain unchanged.
+- Golden Apples no longer reduce lives when missed.
+- Existing architecture is reused.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files modified
+- Night palette implementation
+- Gameplay rule update
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Modified:**
+
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/rendering.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `tests/test_core_systems.py`
+
+**Night Palette Implementation:**
+
+The environment-aware object palette now changes only regular apples. Daytime regular apples keep the configured red color, and nighttime regular apples smoothly interpolate toward light glowing white using the existing night factor. Golden apples, rotten apples, bombs, and power-ups retain their configured colors.
+
+**Gameplay Rule Update:**
+
+Miss damage continues to come from the object definition system. Non-hazard misses use `definition.damage`, while hazard misses apply zero miss damage. Golden apples already define `damage=0`, so missing them no longer reduces lives. A regression test now covers the golden apple miss case explicitly.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 29 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.
+
 ## Prompt 23 - Visual Readability & Environmental Polish
 
 **Goal:** Improve gameplay readability and environmental polish by strengthening night object identity, wind visibility, and gameplay feedback while reusing existing systems.

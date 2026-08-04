@@ -66,15 +66,15 @@ The basket surface includes:
 
 Procedural surfaces are cached by size and appearance so they are generated only when needed.
 
-Object rendering uses an environment-aware readability palette. During night,
-object colors interpolate toward dedicated gameplay colors instead of simply
-darkening:
+Object rendering uses an environment-aware readability palette. During daytime,
+falling object colors remain unchanged. During night, regular apples interpolate
+toward a light glowing white instead of being hidden by the darker environment:
 
-- Regular apples move toward light cyan.
-- Golden apples move toward bright gold.
-- Bombs move toward dark red.
-- Rotten apples move toward deep purple.
-- Power-ups move toward bright cyan.
+- Regular apples move toward light white.
+- Golden apples remain gold.
+- Rotten apples remain unchanged.
+- Bombs remain unchanged.
+- Power-ups remain unchanged.
 
 The interpolation is controlled by a night factor derived from ambient light:
 `night = clamp((0.58 - ambient) / 0.40, 0, 1)`. This keeps transitions smooth

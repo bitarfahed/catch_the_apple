@@ -130,20 +130,12 @@ class Renderer:
         session: GameSession,
     ) -> None:
         base_alpha = {
-            "regular_apple": 76,
-            "golden_apple": 128,
-            "rotten_apple": 88,
-            "bomb": 116,
-            "power_up": 124,
+            "regular_apple": 118,
         }.get(identifier, 0)
-        if session.powerups.is_active("magnet") and identifier in {"regular_apple", "golden_apple"}:
-            base_alpha += 44
-        if session.powerups.is_active("slow_motion"):
-            base_alpha += 18
-        alpha = int(base_alpha * clamp(0.35 + night_factor * 0.85, 0.0, 1.0))
+        alpha = int(base_alpha * night_factor)
         if alpha <= 0:
             return
-        glow_size = int(rect.width * (1.75 if identifier in {"golden_apple", "power_up"} else 1.55))
+        glow_size = int(rect.width * 1.65)
         glow_surface = self.get_glow_surface(max(rect.width + 8, glow_size), color, alpha)
         glow_rect = glow_surface.get_rect(center=rect.center)
         self.screen.blit(glow_surface, glow_rect)
@@ -172,11 +164,7 @@ class Renderer:
         night_factor: float,
     ) -> tuple[int, int, int]:
         night_palette = {
-            "regular_apple": (210, 255, 255),
-            "golden_apple": (255, 226, 62),
-            "rotten_apple": (64, 36, 108),
-            "bomb": (96, 12, 24),
-            "power_up": (120, 245, 255),
+            "regular_apple": (245, 255, 255),
         }
         night_color = night_palette.get(identifier, base_color)
         return blend_color(base_color, night_color, clamp(night_factor, 0.0, 1.0))

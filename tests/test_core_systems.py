@@ -321,6 +321,29 @@ class CoreSystemTests(unittest.TestCase):
                 self.assertFalse(session.game_over)
                 self.assertEqual(events[0].damage, 0)
 
+    def test_missed_golden_apple_does_not_cost_lives(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=4, combo=2)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["golden_apple"]
+        falling_object.y = config.SCREEN_HEIGHT + 1
+
+        events = apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertEqual(session.lives, 3)
+        self.assertEqual(session.score, 4)
+        self.assertEqual(session.combo, 2)
+        self.assertFalse(session.game_over)
+        self.assertEqual(events[0].damage, 0)
+
     def test_hazard_collision_costs_life_without_awarding_score(self) -> None:
         world = World()
         session = GameSession(lives=3)
@@ -474,16 +497,22 @@ class CoreSystemTests(unittest.TestCase):
         renderer = Renderer(screen)
 
         self.assertEqual(
+            renderer.object_color_for_environment("regular_apple", config.RED, 0.0),
+            config.RED,
+        )
+        self.assertEqual(
             renderer.object_color_for_environment("regular_apple", config.RED, 1.0),
-            (210, 255, 255),
+            (245, 255, 255),
         )
         self.assertEqual(
             renderer.object_color_for_environment("bomb", (32, 32, 32), 1.0),
-            (96, 12, 24),
+            (32, 32, 32),
         )
-        dusk_color = renderer.object_color_for_environment("golden_apple", (255, 215, 0), 0.5)
 
-        self.assertGreater(dusk_color[1], 215)
+        self.assertEqual(
+            renderer.object_color_for_environment("golden_apple", (255, 215, 0), 1.0),
+            (255, 215, 0),
+        )
 
     def test_environment_renderer_caches_parallax_layers(self) -> None:
         manager = EnvironmentManager("clear")
