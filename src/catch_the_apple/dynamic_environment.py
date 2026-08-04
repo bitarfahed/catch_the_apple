@@ -11,6 +11,7 @@ class WindConfig:
     strength: float = 8.0
     gust_strength: float = 6.0
     gust_frequency: float = 0.45
+    direction_sway: float = 0.16
 
 
 @dataclass
@@ -40,7 +41,9 @@ class WindSystem:
         gust = math.sin(elapsed_time * math.tau * self.config.gust_frequency) * self.config.gust_strength
         secondary = math.sin(elapsed_time * 1.73) * self.config.gust_strength * 0.35
         strength = max(0.0, self.config.strength + gust + secondary)
-        direction = self.normalized_direction
+        direction = self.normalized_direction.rotate(
+            math.sin(elapsed_time * 0.85) * self.config.direction_sway * 45.0
+        )
         self.state = WindState(direction=direction, strength=strength, velocity=direction * strength)
         return self.state
 
@@ -179,16 +182,23 @@ class EnvironmentState:
 
 
 class EnvironmentManager:
-    def __init__(self, weather_name: str = "clear") -> None:
+    def __init__(
+        self,
+        weather_name: str = "clear",
+        wind_config: WindConfig | None = None,
+        gameplay_wind_scale: float | None = None,
+    ) -> None:
         self.elapsed_time = 0.0
         self.weather = WEATHER_PRESETS[weather_name]
-        self.wind = WindSystem(self.weather.wind)
+        self.wind_config_override = wind_config
+        self.gameplay_wind_scale_override = gameplay_wind_scale
+        self.wind = WindSystem(wind_config or self.weather.wind)
         self.day_night = DayNightCycle()
         self.state = self._build_state()
 
     def set_weather(self, weather_name: str) -> None:
         self.weather = WEATHER_PRESETS[weather_name]
-        self.wind = WindSystem(self.weather.wind)
+        self.wind = WindSystem(self.wind_config_override or self.weather.wind)
         self.state = self._build_state()
 
     def update(self, delta_time: float) -> EnvironmentState:
@@ -199,7 +209,16 @@ class EnvironmentManager:
         return self.state
 
     def gameplay_wind_velocity(self) -> Vector2:
-        return self.state.wind.velocity * self.state.weather.gameplay_wind_scale
+        scale = (
+            self.gameplay_wind_scale_override
+            if self.gameplay_wind_scale_override is not None
+            else self.state.weather.gameplay_wind_scale
+        )
+        return self.state.wind.velocity * scale
+
+    @property
+    def wind_response(self) -> float:
+        return 2.8
 
     def particle_wind_velocity(self) -> Vector2:
         return self.state.wind.velocity * self.state.weather.particle_wind_scale

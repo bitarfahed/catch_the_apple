@@ -17,6 +17,8 @@ class InputState:
     mute_toggled: bool
     volume_up_pressed: bool
     volume_down_pressed: bool
+    mouse_left_clicked: bool
+    mouse_position: tuple[int, int]
 
 
 def poll_input() -> InputState:
@@ -30,6 +32,7 @@ def poll_input() -> InputState:
     mute_toggled = False
     volume_up_pressed = False
     volume_down_pressed = False
+    mouse_left_clicked = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit_requested = True
@@ -51,6 +54,8 @@ def poll_input() -> InputState:
             volume_up_pressed = True
         if event.type == pygame.KEYDOWN and event.key in (pygame.K_MINUS, pygame.K_UNDERSCORE):
             volume_down_pressed = True
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_left_clicked = True
 
     keys = pygame.key.get_pressed()
     return InputState(
@@ -66,4 +71,6 @@ def poll_input() -> InputState:
         mute_toggled=mute_toggled,
         volume_up_pressed=volume_up_pressed,
         volume_down_pressed=volume_down_pressed,
+        mouse_left_clicked=mouse_left_clicked,
+        mouse_position=pygame.mouse.get_pos(),
     )

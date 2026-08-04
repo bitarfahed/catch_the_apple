@@ -4,6 +4,7 @@ import pygame
 
 from catch_the_apple import config
 from catch_the_apple.debug import DebugSnapshot
+from catch_the_apple.difficulty_profiles import DifficultyProfile
 from catch_the_apple.dynamic_environment import EnvironmentState
 from catch_the_apple.events import GameplayEvent, ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.session import GameSession
@@ -37,6 +38,7 @@ class UI:
         self.font = pygame.font.SysFont(config.FONT_NAME, 26)
         self.small_font = pygame.font.SysFont(config.FONT_NAME, 19)
         self.animations = UIAnimations()
+        self.difficulty_buttons: list[tuple[pygame.Rect, DifficultyProfile]] = []
 
     def update(self, delta_time: float) -> None:
         self.animations.update(delta_time)
@@ -97,8 +99,59 @@ class UI:
         self.render_center_panel(
             screen,
             "Catch the Apple",
-            ("Press Enter to Start", "Arrow keys move  |  Space dashes", "F1 collision  |  F2 debug  |  M mute"),
+            ("Press Enter or Click to Start", "Choose difficulty with the mouse", "F1 collision  |  F2 debug  |  M mute"),
         )
+
+    def render_difficulty_selection(
+        self,
+        screen: pygame.Surface,
+        profiles: tuple[DifficultyProfile, ...],
+        mouse_position: tuple[int, int],
+    ) -> None:
+        title_surface = self.title_font.render("Select Difficulty", True, config.WHITE)
+        center_x = config.SCREEN_WIDTH // 2
+        screen.blit(title_surface, title_surface.get_rect(center=(center_x, 120)))
+
+        self.difficulty_buttons = []
+        button_width = 230
+        button_height = 138
+        gap = 20
+        total_width = len(profiles) * button_width + (len(profiles) - 1) * gap
+        start_x = center_x - total_width // 2
+        y = 220
+        for index, profile in enumerate(profiles):
+            rect = pygame.Rect(start_x + index * (button_width + gap), y, button_width, button_height)
+            self.difficulty_buttons.append((rect, profile))
+            hovered = rect.collidepoint(mouse_position)
+            fill = (28, 48, 58, 210) if hovered else (18, 30, 38, 185)
+            border = (120, 220, 240) if hovered else (82, 122, 138)
+            panel = pygame.Surface(rect.size, pygame.SRCALPHA)
+            panel.fill(fill)
+            screen.blit(panel, rect)
+            pygame.draw.rect(screen, border, rect, 2, border_radius=6)
+
+            name = self.large_font.render(profile.display_name, True, config.WHITE)
+            screen.blit(name, name.get_rect(center=(rect.centerx, rect.y + 35)))
+
+            details = (
+                f"Speed {int(profile.spawn_config.object_speed)}",
+                f"Growth +{int(profile.difficulty_config.speed_increase)}",
+                f"Objects {profile.spawn_config.max_active_objects}",
+                profile.description,
+            )
+            for detail_index, detail in enumerate(details):
+                font = self.small_font if detail_index < 3 else self.small_font
+                text = font.render(detail, True, (220, 232, 238))
+                screen.blit(text, text.get_rect(center=(rect.centerx, rect.y + 68 + detail_index * 21)))
+
+        hint = self.font.render("Click a profile to begin", True, (230, 238, 244))
+        screen.blit(hint, hint.get_rect(center=(center_x, 420)))
+
+    def profile_at_position(self, position: tuple[int, int]) -> DifficultyProfile | None:
+        for rect, profile in self.difficulty_buttons:
+            if rect.collidepoint(position):
+                return profile
+        return None
 
     def render_pause(self, screen: pygame.Surface) -> None:
         self.render_overlay(screen, alpha=115)

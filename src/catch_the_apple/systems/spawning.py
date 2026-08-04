@@ -10,8 +10,10 @@ from catch_the_apple.world import World
 class SpawnSystem:
     def __init__(self, spawn_config: config.SpawnConfig) -> None:
         self.config = spawn_config
+        self.current_object_speed = spawn_config.object_speed
         self.random = random.Random(spawn_config.seed)
         self.spawnable_definitions = get_spawnable_definitions(spawn_config.enabled_object_ids)
+        self.spawn_weights = dict(spawn_config.spawn_weights)
 
     def update(self, world: World) -> None:
         while len(world.falling_objects) < self.config.max_active_objects:
@@ -24,19 +26,24 @@ class SpawnSystem:
                 position=vec2(self.random_falling_object_x(definition), self.config.spawn_y)
             ),
             definition=definition,
-            speed=self.config.object_speed,
+            speed=self.current_object_speed,
         )
 
     def choose_object_definition(self) -> ObjectDefinition:
         return self.random.choices(
             self.spawnable_definitions,
-            weights=[definition.spawn_weight for definition in self.spawnable_definitions],
+            weights=[
+                self.spawn_weights.get(definition.identifier, definition.spawn_weight)
+                for definition in self.spawnable_definitions
+            ],
             k=1,
         )[0]
 
     def reset_falling_object(self, falling_object: FallingObject) -> None:
         falling_object.x = self.random_falling_object_x(falling_object.definition)
         falling_object.y = self.config.spawn_y
+        falling_object.speed = self.current_object_speed
+        falling_object.wind_velocity.update(0.0, 0.0)
         falling_object.previous_position.update(falling_object.transform.position)
 
     def random_falling_object_x(self, definition: ObjectDefinition) -> int:

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 
+from catch_the_apple.difficulty_profiles import DIFFICULTY_PROFILES
 from catch_the_apple.input import InputState
 
 if TYPE_CHECKING:
@@ -27,9 +28,8 @@ class GameStateBase:
 
 class MainMenuState(GameStateBase):
     def handle_input(self, game: Game, input_state: InputState) -> None:
-        if input_state.start_pressed:
-            game.reset_play_session()
-            game.states.change(PlayingState())
+        if input_state.start_pressed or input_state.mouse_left_clicked:
+            game.states.change(DifficultySelectionState())
 
     def update(self, game: Game, delta_time: float) -> None:
         game.environment_manager.update(delta_time)
@@ -38,6 +38,29 @@ class MainMenuState(GameStateBase):
     def render(self, game: Game, delta_time: float) -> None:
         game.renderer.render_background(game.environment_manager.state, delta_time)
         game.ui.render_menu(game.screen)
+
+
+class DifficultySelectionState(GameStateBase):
+    def handle_input(self, game: Game, input_state: InputState) -> None:
+        if not input_state.mouse_left_clicked:
+            return
+        selected_profile = game.ui.profile_at_position(input_state.mouse_position)
+        if selected_profile is None:
+            return
+        game.reset_play_session(selected_profile)
+        game.states.change(PlayingState())
+
+    def update(self, game: Game, delta_time: float) -> None:
+        game.environment_manager.update(delta_time)
+        game.ui.update(delta_time)
+
+    def render(self, game: Game, delta_time: float) -> None:
+        game.renderer.render_background(game.environment_manager.state, delta_time)
+        game.ui.render_difficulty_selection(
+            game.screen,
+            DIFFICULTY_PROFILES,
+            pygame.mouse.get_pos(),
+        )
 
 
 class PlayingState(GameStateBase):

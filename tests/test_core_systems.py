@@ -18,6 +18,7 @@ import pygame
 from catch_the_apple import __version__, config, get_version
 from catch_the_apple.audio import AudioSettings
 from catch_the_apple.collision import detect_basket_collision
+from catch_the_apple.difficulty_profiles import DIFFICULTY_PROFILES, EXPERT, INTERMEDIATE
 from catch_the_apple.dynamic_environment import EnvironmentManager, WEATHER_PRESETS
 from catch_the_apple.environment import ProceduralEnvironmentRenderer
 from catch_the_apple.events import ObjectCaughtEvent, ObjectMissedEvent
@@ -29,6 +30,7 @@ from catch_the_apple.particles import EmitterConfig, ParticleSystem
 from catch_the_apple.persistence import PersistenceStore
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.session import GameSession
+from catch_the_apple.systems.difficulty import apply_score_progression
 from catch_the_apple.systems.game_rules import apply_game_rules
 from catch_the_apple.systems.movement import update_movement
 from catch_the_apple.systems.spawning import SpawnSystem
@@ -49,6 +51,8 @@ def input_state(**overrides: bool) -> InputState:
         "mute_toggled": False,
         "volume_up_pressed": False,
         "volume_down_pressed": False,
+        "mouse_left_clicked": False,
+        "mouse_position": (0, 0),
     }
     values.update(overrides)
     return InputState(**values)
@@ -98,6 +102,31 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(first.x, second.x)
         self.assertEqual(first.y, config.SPAWN_CONFIG.spawn_y)
 
+    def test_difficulty_profiles_adjust_existing_spawn_and_wind_config(self) -> None:
+        profile_names = [profile.display_name for profile in DIFFICULTY_PROFILES]
+
+        self.assertEqual(profile_names, ["Beginner", "Intermediate", "Expert"])
+        self.assertLess(DIFFICULTY_PROFILES[0].spawn_config.object_speed, INTERMEDIATE.spawn_config.object_speed)
+        self.assertGreater(EXPERT.spawn_config.max_active_objects, INTERMEDIATE.spawn_config.max_active_objects)
+        self.assertGreater(EXPERT.wind_config.strength, INTERMEDIATE.wind_config.strength)
+        self.assertEqual(EXPERT.spawn_config.enabled_object_ids, ("regular_apple",))
+
+    def test_score_progression_is_profile_based_and_clamped(self) -> None:
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+
+        self.assertFalse(apply_score_progression(1, spawn_system, INTERMEDIATE.difficulty_config))
+        self.assertEqual(spawn_system.current_object_speed, INTERMEDIATE.spawn_config.object_speed)
+
+        self.assertTrue(apply_score_progression(5, spawn_system, INTERMEDIATE.difficulty_config))
+        self.assertEqual(
+            spawn_system.current_object_speed,
+            INTERMEDIATE.spawn_config.object_speed + INTERMEDIATE.difficulty_config.speed_increase,
+        )
+
+        spawn_system.current_object_speed = INTERMEDIATE.difficulty_config.max_object_speed
+        apply_score_progression(10, spawn_system, INTERMEDIATE.difficulty_config)
+        self.assertEqual(spawn_system.current_object_speed, INTERMEDIATE.difficulty_config.max_object_speed)
+
     def test_movement_uses_velocity_acceleration_drag_and_dash_state(self) -> None:
         world = World()
         start_x = world.basket.x
@@ -114,6 +143,26 @@ class CoreSystemTests(unittest.TestCase):
         velocity_before_drag = world.basket.velocity.x
         update_movement(world, input_state(), 0.2)
         self.assertLessEqual(abs(world.basket.velocity.x), abs(velocity_before_drag))
+
+    def test_wind_influence_eases_object_trajectory(self) -> None:
+        world = World()
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        manager = EnvironmentManager(
+            wind_config=INTERMEDIATE.wind_config,
+            gameplay_wind_scale=INTERMEDIATE.gameplay_wind_scale,
+        )
+        falling_object = world.falling_objects[0]
+        start_x = falling_object.x
+
+        manager.update(0.1)
+        update_movement(world, input_state(), 0.1, manager)
+        first_wind_velocity = falling_object.wind_velocity.x
+        update_movement(world, input_state(), 0.1, manager)
+
+        self.assertNotEqual(falling_object.x, start_x)
+        self.assertNotEqual(first_wind_velocity, 0.0)
+        self.assertGreater(abs(falling_object.wind_velocity.x), abs(first_wind_velocity))
 
     def test_catch_rule_updates_score_combo_and_emits_event(self) -> None:
         world = World()

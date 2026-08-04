@@ -3,6 +3,7 @@ import pygame
 from catch_the_apple.audio import AudioSystem
 from catch_the_apple import config
 from catch_the_apple.debug import DebugSnapshot
+from catch_the_apple.difficulty_profiles import DEFAULT_DIFFICULTY_PROFILE, DifficultyProfile
 from catch_the_apple.dynamic_environment import EnvironmentManager
 from catch_the_apple.effects import VisualEffects
 from catch_the_apple.input import poll_input
@@ -29,11 +30,12 @@ class Game:
 
         self.persistence = PersistenceStore()
         self.audio = AudioSystem(self.persistence.data.settings)
+        self.selected_profile = DEFAULT_DIFFICULTY_PROFILE
         self.session = GameSession()
         self.world = World()
-        self.spawn_system = SpawnSystem(config.SPAWN_CONFIG)
+        self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
         self.spawn_system.update(self.world)
-        self.environment_manager = EnvironmentManager()
+        self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
         self.renderer = Renderer(self.screen)
         self.ui = UI()
@@ -79,7 +81,12 @@ class Game:
     def update_playing(self, input_state, delta_time: float) -> None:
         self.environment_manager.update(delta_time)
         update_movement(self.world, input_state, delta_time, self.environment_manager)
-        events = apply_game_rules(self.world, self.session, self.spawn_system)
+        events = apply_game_rules(
+            self.world,
+            self.session,
+            self.spawn_system,
+            self.selected_profile.difficulty_config,
+        )
         self.persistence.record_events(events)
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
@@ -93,13 +100,22 @@ class Game:
             self.ui.render_debug_overlay(self.screen, self.build_debug_snapshot())
         pygame.display.flip()
 
-    def reset_play_session(self) -> None:
+    def reset_play_session(self, profile: DifficultyProfile | None = None) -> None:
         debug_collision_enabled = self.session.debug_collision_enabled
+        if profile is not None:
+            self.selected_profile = profile
         self.session = GameSession(debug_collision_enabled=debug_collision_enabled)
         self.world = World()
-        self.spawn_system = SpawnSystem(config.SPAWN_CONFIG)
+        self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
         self.spawn_system.update(self.world)
+        self.environment_manager = self.create_environment_manager()
         self.effects = VisualEffects()
+
+    def create_environment_manager(self) -> EnvironmentManager:
+        return EnvironmentManager(
+            wind_config=self.selected_profile.wind_config,
+            gameplay_wind_scale=self.selected_profile.gameplay_wind_scale,
+        )
 
     def finish_session(self) -> None:
         if self.session.finalized:

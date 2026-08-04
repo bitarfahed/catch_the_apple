@@ -16,7 +16,12 @@ def update_movement(
     for falling_object in world.falling_objects:
         falling_object.previous_position.update(falling_object.transform.position)
         if environment_manager is not None:
-            falling_object.x += environment_manager.gameplay_wind_velocity().x * delta_time
+            target_wind = environment_manager.gameplay_wind_velocity()
+            smoothing = environment_manager.wind_response
+            falling_object.wind_velocity.x += (
+                target_wind.x - falling_object.wind_velocity.x
+            ) * min(1.0, smoothing * delta_time)
+            falling_object.x += falling_object.wind_velocity.x * delta_time
             falling_object.x = clamp(falling_object.x, 0.0, config.SCREEN_WIDTH - falling_object.size)
         falling_object.y += falling_object.speed * delta_time
 

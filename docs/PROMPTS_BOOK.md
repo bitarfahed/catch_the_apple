@@ -2453,3 +2453,157 @@ The repository is ready for public portfolio release. The strongest compliance a
 The architecture is appropriate for a standalone 2D Pygame portfolio game. The SDK boundary, `src/` layout, focused gameplay systems, cached procedural rendering, environment manager, persistence, debug tooling, and headless tests provide a professional foundation without forcing enterprise patterns.
 
 **Completion Status:** Complete.
+
+## Prompt 18 - Gameplay Tuning & Difficulty Profiles
+
+**Goal:** Improve gameplay feel through smoother difficulty progression, mouse-only difficulty selection, profile-driven tuning, and more natural wind influence while reusing the existing systems.
+
+**Full Prompt Text:**
+
+```text
+Prompt 18 - Gameplay Tuning & Difficulty Profiles
+
+Context
+
+The current project already contains a modular gameplay architecture, a Difficulty System, Wind System, Weather System, UI, and supporting infrastructure.
+
+Recent playtesting revealed that the existing systems work correctly but are not yet well tuned.
+
+This prompt focuses exclusively on gameplay balancing and player experience.
+
+Do not redesign existing architecture.
+
+Reuse the existing systems whenever possible.
+
+---
+
+Objectives
+
+Improve the gameplay feel by tuning existing systems.
+
+Implement:
+
+1. Difficulty Curve Tuning
+
+The current difficulty increases too aggressively.
+
+Rebalance the existing Difficulty System so progression is smoother and remains enjoyable throughout a session.
+
+Use the current infrastructure instead of rewriting it.
+
+2. Difficulty Selection Screen
+
+Add a difficulty selection screen before gameplay.
+
+Selection must be performed using mouse buttons only.
+
+No keyboard shortcuts.
+
+Provide three profiles:
+
+- Beginner
+- Intermediate
+- Expert
+
+Each profile should reuse the existing Difficulty System while supplying different configuration values.
+
+Avoid duplicated gameplay logic.
+
+The profiles should primarily differ in:
+
+- Initial falling speed
+- Difficulty growth rate
+- Wind strength
+- Maximum active objects
+- Spawn probabilities
+
+3. Wind Tuning
+
+Improve the existing Wind System.
+
+Wind should influence object trajectories continuously, producing smooth curved or diagonal motion rather than artificial position jumps.
+
+Reuse the current physics system.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add new object types.
+- Add new power-ups.
+- Modify rendering architecture.
+- Change collision architecture.
+- Introduce new gameplay mechanics.
+- Perform major refactors.
+
+Reuse existing systems.
+
+---
+
+Acceptance Criteria
+
+- Difficulty progression feels significantly smoother.
+- Difficulty selection works entirely with the mouse.
+- Difficulty profiles reuse the existing infrastructure.
+- Wind produces natural trajectories.
+- Gameplay remains stable.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Difficulty tuning decisions
+- Wind tuning decisions
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `src/catch_the_apple/difficulty_profiles.py`
+
+**Files Modified:**
+
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/config.py`
+- `src/catch_the_apple/dynamic_environment.py`
+- `src/catch_the_apple/entities.py`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/input.py`
+- `src/catch_the_apple/states.py`
+- `src/catch_the_apple/systems/difficulty.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/movement.py`
+- `src/catch_the_apple/systems/spawning.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Difficulty Tuning Decisions:**
+
+Replaced the old global +60 px/s every five catches tuning with profile-driven `DifficultyConfig` values. Beginner starts slower, grows every six catches by a smaller amount, and caps lower. Intermediate is the balanced default. Expert starts faster, grows every four catches, allows two active regular apples, and caps higher. Spawn configuration remains data-driven and supports profile-specific weights while keeping only regular apples enabled.
+
+**Wind Tuning Decisions:**
+
+Wind now includes subtle direction sway and profile-specific strength. Falling objects keep a small `wind_velocity` that eases toward the current wind velocity, producing continuous diagonal/curved trajectories instead of immediately applying wind as direct positional displacement.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 17 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Dummy-window mouse-selection smoke check passed: menu -> difficulty selection -> intermediate profile -> playing state.
+- `uv --version` still fails in this shell due the local `uv.exe` launcher issue, so Ruff was not executed.
+
+**Completion Status:** Complete.

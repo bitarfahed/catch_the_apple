@@ -31,7 +31,10 @@ BASKET_RIM_HEIGHT = 16
 
 APPLE_SIZE = 30
 APPLE_INITIAL_SPEED = 5 * FPS
-APPLE_SPEED_INCREASE = 1 * FPS
+APPLE_SPEED_INCREASE = 0.45 * FPS
+APPLE_MAX_SPEED = 9 * FPS
+
+DIFFICULTY_SCORE_INTERVAL = 5
 
 RANDOM_SEED = None
 
@@ -45,9 +48,18 @@ class SpawnConfig:
     x_max: int = SCREEN_WIDTH - APPLE_SIZE
     spawn_y: int = -APPLE_SIZE
     object_speed: float = APPLE_INITIAL_SPEED
+    spawn_weights: tuple[tuple[str, float], ...] = (("regular_apple", 1.0),)
+
+
+@dataclass(frozen=True)
+class DifficultyConfig:
+    score_interval: int = DIFFICULTY_SCORE_INTERVAL
+    speed_increase: float = APPLE_SPEED_INCREASE
+    max_object_speed: float = APPLE_MAX_SPEED
 
 
 SPAWN_CONFIG = SpawnConfig()
+DIFFICULTY_CONFIG = DifficultyConfig()
 
 INITIAL_LIVES = 3
 FONT_NAME = "Arial"

@@ -12,6 +12,7 @@ def apply_game_rules(
     world: World,
     session: GameSession,
     spawn_system: SpawnSystem,
+    difficulty_config: config.DifficultyConfig = config.DIFFICULTY_CONFIG,
 ) -> list[GameplayEvent]:
     events: list[GameplayEvent] = []
     for falling_object in list(world.falling_objects):
@@ -34,7 +35,8 @@ def apply_game_rules(
             caught_position = falling_object.center
             add_score(session, falling_object.definition.score_value)
             spawn_system.reset_falling_object(falling_object)
-            apply_score_progression(session.score, falling_object)
+            if apply_score_progression(session.score, spawn_system, difficulty_config):
+                falling_object.speed = spawn_system.current_object_speed
             events.append(
                 ObjectCaughtEvent(
                     falling_object=falling_object,
