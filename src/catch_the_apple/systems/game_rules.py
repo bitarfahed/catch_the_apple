@@ -21,18 +21,19 @@ def apply_game_rules(
         definition = falling_object.definition
         if falling_object.y > config.SCREEN_HEIGHT:
             missed_position = falling_object.center
+            miss_damage = 0 if definition.category == "hazard" else definition.damage
             storm_bonus_object = (
                 session.powerups.is_active("magnet")
                 and definition.identifier in {"regular_apple", "golden_apple"}
             )
-            if not storm_bonus_object:
-                lose_life(session, definition.damage)
+            if not storm_bonus_object and miss_damage > 0:
+                lose_life(session, miss_damage)
             spawn_system.reset_falling_object(falling_object)
             events.append(
                 ObjectMissedEvent(
                     falling_object=falling_object,
                     position=missed_position,
-                    damage=0 if storm_bonus_object else definition.damage,
+                    damage=0 if storm_bonus_object else miss_damage,
                 )
             )
             if session.lives <= 0:

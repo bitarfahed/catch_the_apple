@@ -250,6 +250,31 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(session.combo, 2)
         self.assertEqual(events[0].damage, 0)
 
+    def test_missed_hazards_do_not_cost_lives(self) -> None:
+        for identifier in ("rotten_apple", "bomb"):
+            with self.subTest(identifier=identifier):
+                world = World()
+                session = GameSession(lives=3, score=4, combo=2)
+                spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+                spawn_system.update(world)
+                falling_object = world.falling_objects[0]
+                falling_object.definition = OBJECT_DEFINITIONS[identifier]
+                falling_object.y = config.SCREEN_HEIGHT + 1
+
+                events = apply_game_rules(
+                    world,
+                    session,
+                    spawn_system,
+                    INTERMEDIATE.difficulty_config,
+                    PowerUpSystem(seed=1),
+                )
+
+                self.assertEqual(session.lives, 3)
+                self.assertEqual(session.score, 4)
+                self.assertEqual(session.combo, 2)
+                self.assertFalse(session.game_over)
+                self.assertEqual(events[0].damage, 0)
+
     def test_hazard_collision_costs_life_without_awarding_score(self) -> None:
         world = World()
         session = GameSession(lives=3)

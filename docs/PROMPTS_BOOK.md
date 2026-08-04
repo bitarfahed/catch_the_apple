@@ -2988,3 +2988,82 @@ Magnet now adds five temporary active objects so Apple Storm is obvious. Slow Mo
 - Dummy gameplay render smoke passed with Expert, Magnet, and Slow Motion active: `PlayingState`, 7 active objects, HUD power-up labels rendered.
 
 **Completion Status:** Complete.
+
+## Prompt 21 - Fix Hazard Miss Logic
+
+**Goal:** Correct hazard miss behavior so rotten apples and bombs only damage the player when they collide with the basket.
+
+**Full Prompt Text:**
+
+```text
+Prompt 21 - Fix Hazard Miss Logic
+
+Context
+
+Playtesting revealed an incorrect gameplay rule.
+
+Currently, when a Rotten Apple or Bomb reaches the bottom of the screen without being caught, the player still loses one life.
+
+This is incorrect.
+
+---
+
+Objective
+
+Update the gameplay rules so that lives are only lost when appropriate.
+
+Required behavior:
+
+- Missing a Regular Apple should continue to behave according to the existing game rules.
+- Missing a Golden Apple should follow the existing intended rules.
+- Missing a Rotten Apple must NOT reduce lives.
+- Missing a Bomb must NOT reduce lives.
+
+Hazards should only affect the player if they actually collide with the basket.
+
+Reuse the existing object-type system rather than adding special-case logic.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Acceptance Criteria
+
+- Missing Rotten Apples does not reduce lives.
+- Missing Bombs does not reduce lives.
+- Hazards only cause damage on collision.
+- Existing gameplay rules for beneficial objects remain unchanged.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files modified
+- Gameplay rule updated
+- Manual verification performed
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Modified:**
+
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/systems/game_rules.py`
+- `tests/test_core_systems.py`
+
+**Gameplay Rule Updated:**
+
+Miss damage now comes from the object definition category. Hazards use zero miss damage, while non-hazard objects keep their configured miss damage. The game rules also avoid calling `lose_life` when miss damage is zero, preventing non-damaging misses from resetting combo.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 24 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.
