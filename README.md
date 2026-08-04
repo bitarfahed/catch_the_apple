@@ -74,7 +74,7 @@ catch-the-apple
 
 The cheat console is available only while paused. Press `C`, type a code, press `Enter`, then press `P` or `Esc` to resume.
 
-| Code | Super Power |
+| Code | Effect |
 |---|---|
 | `MAGNET` | Magnet / Apple Storm |
 | `TIME` | Time Warp |
@@ -85,6 +85,14 @@ The cheat console is available only while paused. Press `C`, type a code, press 
 | `GRAV` | Gravity Control |
 | `GOLD` | Golden Rain |
 | `FREEZE` | Freeze Bombs |
+| `easy` | Temporarily reduces falling speed and displays Easy Mode |
+| `wind` | Activates visible rain for about 20 seconds |
+| `nosound` | Mutes all sound |
+| `sound` | Restores sound |
+| `shield` | Costs 5 score and blocks bomb damage temporarily |
+| `cycle` | Temporarily enables wrap-around basket movement |
+| `flip <angle>` | Rotates the gameplay world by an angle from 0 to 360 degrees |
+| `fahed` | Temporarily expands the basket, auto-collects apples, blocks hazards, and shows strong effects |
 
 ## Testing
 

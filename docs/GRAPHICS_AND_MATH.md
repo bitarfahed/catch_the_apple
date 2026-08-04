@@ -143,6 +143,23 @@ Every super power combines gameplay behavior, a visual identity, and a simple ma
 | Golden Rain | Weighted sampling override: `P(golden)` is multiplied while active | Makes golden apples much more likely and suppresses hazards. | Gold HUD label and frequent glowing apples. |
 | Freeze Bombs | Selective velocity mask: `v_hazard = 0` | Freezes hazardous objects while beneficial objects continue falling. | Ice-blue HUD label and suspended hazards. |
 
+## Developer Cheats
+
+Developer cheats use the same pause-only console as Super Powers. Temporary
+cheats live in `CheatState`, update by delta time, and expire back to normal
+gameplay settings.
+
+| Cheat | Mathematical Concept | Algorithm | Gameplay Effect | Visual Effect |
+|---|---|---|---|---|
+| `easy` | Time scaling | Falling-object `dt` is multiplied by `0.55`. | Objects descend more slowly for debugging or demos. | Easy Mode countdown banner. |
+| `wind` | Particle simulation and vector fields | Weather is forced to Rain while rain particles are emitted from pooled emitters. | No gameplay physics changes. | Rain streaks appear for about 20 seconds. |
+| `nosound` | Boolean state gating | Audio volume resolves to zero while muted. | All generated sounds stop. | Console confirmation. |
+| `sound` | Boolean state restoration | Mute is cleared and channel volumes are recomputed. | Generated sounds return. | Console confirmation. |
+| `shield` | Collision filtering | Bomb collision damage is masked after spending 5 score. | Bombs cannot damage the player while active. | Shield countdown and basket glow. |
+| `cycle` | Modulo arithmetic | Basket position wraps with `x = (x + width) mod (screen_width + width) - width`. | Exiting one side re-enters from the other. | Cycle countdown. |
+| `flip <angle>` | Rotation matrix | Gameplay world is rendered to a surface and rotated around the playfield center. | World orientation changes temporarily. | The world visibly rotates while HUD remains readable. |
+| `fahed` | Scaling and collision geometry | Basket width scales to most of the screen; regular and golden apples auto-collect; hazard damage is masked. | Powerful demo mode with safe auto-catches. | Wide glowing basket, particles, motion trail, and countdown. |
+
 ## Performance Notes
 
 - Most visual assets are cached Pygame surfaces.

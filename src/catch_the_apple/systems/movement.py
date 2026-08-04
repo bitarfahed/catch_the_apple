@@ -14,8 +14,9 @@ def update_movement(
     falling_time_scale: float = 1.0,
     power_state: SuperPowerState | None = None,
     wind_scale: float = 1.0,
+    cycle_wrap: bool = False,
 ) -> None:
-    update_basket_movement(world, input_state, delta_time)
+    update_basket_movement(world, input_state, delta_time, cycle_wrap)
 
     for falling_object in world.falling_objects:
         falling_object.previous_position.update(falling_object.transform.position)
@@ -38,7 +39,12 @@ def update_movement(
         falling_object.y += falling_object.speed * object_delta_time
 
 
-def update_basket_movement(world: World, input_state: InputState, delta_time: float) -> None:
+def update_basket_movement(
+    world: World,
+    input_state: InputState,
+    delta_time: float,
+    cycle_wrap: bool = False,
+) -> None:
     basket = world.basket
     movement = basket.movement
 
@@ -66,6 +72,12 @@ def update_basket_movement(world: World, input_state: InputState, delta_time: fl
         movement.velocity.x = clamp(movement.velocity.x, -basket.max_speed, basket.max_speed)
 
     basket.x += movement.velocity.x * delta_time
+
+    if cycle_wrap:
+        basket.x = (basket.x + basket.width) % (config.SCREEN_WIDTH + basket.width) - basket.width
+        movement.direction.x = get_motion_direction(movement.velocity.x)
+        movement.direction.y = 0.0
+        return
 
     min_x = 0.0
     max_x = config.SCREEN_WIDTH - basket.width

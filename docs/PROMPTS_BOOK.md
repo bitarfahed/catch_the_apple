@@ -169,6 +169,271 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 
 **Completion Status:** Complete.
 
+## Prompt 26 - Developer Cheat Framework
+
+**Goal:** Implement a reusable pause-only Developer Cheat Framework for debugging, demonstrations, portfolio presentations, and testing.
+
+**Full Prompt Text:**
+
+```text
+Prompt 26 - Developer Cheat Framework
+
+Context
+
+The project is feature rich and intended as a portfolio demonstrating graphics, mathematics and gameplay systems.
+
+Implement a reusable Developer Cheat Framework.
+
+Reuse existing systems wherever possible.
+
+Do not perform major architectural refactors.
+
+---
+
+Objectives
+
+Implement a Cheat Console.
+
+Workflow:
+
+Pause
+-> Developer Cheat Console
+-> Enter Cheat Code
+-> Resume Game
+
+Typing cheat codes during active gameplay is forbidden.
+
+The console is intended for:
+
+- Debugging
+- Demonstrations
+- Portfolio presentations
+- Testing
+
+---
+
+Implement at minimum the following cheat codes.
+
+easy
+
+- Reduce falling speed.
+- Clearly display that Easy Mode is temporarily active.
+
+---
+
+wind
+
+- Activate rain for approximately 20 seconds.
+- Ensure rain actually appears.
+
+---
+
+nosound
+
+- Mute all sounds.
+
+---
+
+sound
+
+- Restore sound.
+
+---
+
+shield
+
+Requirements:
+
+- Cost: 5 score points.
+- If the player has fewer than 5 points, activation should fail gracefully.
+- While active, bombs cannot damage the player.
+- Clear visual indication while active.
+
+---
+
+cycle
+
+Temporarily enable wrap-around movement.
+
+When the basket exits one side of the screen it re-enters from the opposite side.
+
+Reuse modulo arithmetic.
+
+---
+
+flip <angle>
+
+Accept any angle between:
+
+0 degrees-360 degrees.
+
+Examples:
+
+flip 90
+
+flip 180
+
+flip 270
+
+Reuse the existing rendering/transformation system.
+
+Avoid fake visual tricks.
+
+The world should actually be transformed.
+
+---
+
+fahed
+
+Activate for approximately 20 seconds.
+
+Effects:
+
+- Basket expands to almost the full screen width.
+- Regular Apples are automatically collected.
+- Golden Apples are automatically collected.
+- Rotten Apples cause no damage.
+- Bombs cause no damage.
+- Strong glow.
+- Particle effects.
+- Motion trail.
+- Visible countdown timer.
+
+---
+
+Mathematical Demonstration
+
+Every cheat code must clearly demonstrate an underlying mathematical or algorithmic concept.
+
+Examples:
+
+- flip -> rotation transformations.
+- cycle -> modulo arithmetic.
+- wind -> vector field.
+- shield -> collision filtering.
+- fahed -> scaling + collision geometry.
+- rain -> particle simulation.
+
+---
+
+Documentation
+
+Update:
+
+README.md
+
+Document every cheat code.
+
+Update:
+
+GRAPHICS_AND_MATH.md
+
+For every cheat explain:
+
+- Mathematical concept.
+- Algorithm.
+- Gameplay effect.
+- Visual effect.
+
+---
+
+Feature Verification
+
+Verify that every cheat code actually works during gameplay.
+
+Do not leave placeholder implementations.
+
+Every command must:
+
+- Activate successfully.
+- Produce visible gameplay effects.
+- Expire correctly when temporary.
+- Restore normal gameplay afterward.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Rewrite architecture.
+- Introduce unnecessary abstractions.
+- Replace existing systems.
+
+Reuse the current gameplay framework.
+
+---
+
+Acceptance Criteria
+
+- Cheat Console implemented.
+- Every cheat code fully functional.
+- Every cheat visibly affects gameplay.
+- Mathematical documentation completed.
+- README updated.
+- GRAPHICS_AND_MATH updated.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Files created
+- Files modified
+- Cheat framework implementation
+- Mathematical documentation
+- Gameplay verification
+- Manual verification
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Created:**
+
+- `src/catch_the_apple/cheats.py`
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/rendering.py`
+- `src/catch_the_apple/session.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/movement.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Cheat Framework Implementation:**
+
+Added a reusable `CheatState` with timed active cheats and metadata. The existing pause-only Developer Console now dispatches both legacy Super Power cheat codes and the new developer commands.
+
+Implemented `easy`, `wind`, `nosound`, `sound`, `shield`, `cycle`, `flip <angle>`, and `fahed`. Temporary cheats expire through delta-time updates. `shield` spends 5 score and fails gracefully when score is too low. `cycle` uses modulo basket wrapping. `flip` renders the gameplay world to an offscreen surface and rotates it around the playfield center. `fahed` expands the basket, auto-collects regular/golden apples, blocks hazard damage, emits trails, and displays a countdown.
+
+**Mathematical Documentation:**
+
+`docs/GRAPHICS_AND_MATH.md` now documents each cheat's mathematical concept, algorithm, gameplay effect, and visual effect.
+
+**Gameplay Verification:**
+
+Automated tests cover cheat expiry, modulo wrapping, shield damage filtering, fahed auto-collection and hazard immunity, command dispatch, rain restoration, sound toggling, and flip angle storage.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 38 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Manual dummy smoke confirmed all new commands activate, shield fails gracefully below 5 score, Rain restores to Clear after expiry, sound restores, fahed expands the basket, and flip rotates the rendered world.
+
+**Completion Status:** Complete.
+
 ## Prompt 25 - Unified Gameplay Experience
 
 **Goal:** Simplify the player-facing flow into one balanced mode while integrating the player-name object, generated sounds, visual rain, and feature reachability through existing systems.

@@ -19,6 +19,23 @@ def apply_game_rules(
     events: list[GameplayEvent] = []
     for falling_object in list(world.falling_objects):
         definition = falling_object.definition
+        if (
+            session.cheats.is_active("fahed")
+            and definition.identifier in {"regular_apple", "golden_apple"}
+        ):
+            caught_position = falling_object.center
+            if definition.score_value > 0:
+                add_score(session, definition.score_value)
+            spawn_system.reset_falling_object(falling_object)
+            events.append(
+                ObjectCaughtEvent(
+                    falling_object=falling_object,
+                    position=caught_position,
+                    color=definition.color,
+                    object_identifier=definition.identifier,
+                )
+            )
+            continue
         if falling_object.y > config.SCREEN_HEIGHT:
             missed_position = falling_object.center
             miss_damage = definition.damage if definition.category != "hazard" else 0
@@ -45,7 +62,13 @@ def apply_game_rules(
             caught_position = falling_object.center
             definition = falling_object.definition
             if definition.category == "hazard":
-                lose_life(session, definition.damage)
+                shielded = (
+                    session.cheats.is_active("shield")
+                    and definition.identifier == "bomb"
+                ) or session.cheats.is_active("fahed")
+                damage = 0 if shielded else definition.damage
+                if damage > 0:
+                    lose_life(session, damage)
                 if session.lives <= 0:
                     session.game_over = True
                 spawn_system.reset_falling_object(falling_object)
@@ -53,7 +76,7 @@ def apply_game_rules(
                     ObjectMissedEvent(
                         falling_object=falling_object,
                         position=caught_position,
-                        damage=definition.damage,
+                        damage=damage,
                         object_identifier=definition.identifier,
                     )
                 )

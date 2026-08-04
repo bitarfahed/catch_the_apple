@@ -2,6 +2,7 @@ import pygame
 
 from catch_the_apple.audio import AudioSystem
 from catch_the_apple import config
+from catch_the_apple.cheats import CHEAT_DEFINITIONS
 from catch_the_apple.debug import DebugSnapshot
 from catch_the_apple.developer_console import DeveloperConsole
 from catch_the_apple.difficulty_profiles import DEFAULT_DIFFICULTY_PROFILE, DifficultyProfile
@@ -45,6 +46,7 @@ class Game:
         self.selected_profile = DEFAULT_DIFFICULTY_PROFILE
         self.player_name_input = ""
         self.name_error = ""
+        self._cheat_rain_was_active = False
         self.session = GameSession()
         self.world = World()
         self.spawn_system = SpawnSystem(self.selected_profile.spawn_config)
@@ -98,15 +100,18 @@ class Game:
     def update_playing(self, input_state, delta_time: float) -> None:
         self.environment_manager.update(delta_time)
         self.session.powerups.update(delta_time)
+        self.session.cheats.update(delta_time)
+        self.apply_cheat_environment()
         self.apply_power_up_modifiers()
         update_movement(
             self.world,
             input_state,
             delta_time,
             self.environment_manager,
-            power_up_time_scale(self.session.powerups),
+            power_up_time_scale(self.session.powerups) * self.cheat_falling_time_scale(),
             self.session.powerups,
             wind_control_scale(self.session.powerups),
+            self.session.cheats.is_active("cycle"),
         )
         apply_magnet_pull(self.world, delta_time, self.session.powerups)
         apply_black_hole(self.world, delta_time, self.session.powerups)
@@ -127,6 +132,8 @@ class Game:
         self.spawn_system.update(self.world)
         self.effects.handle_events(events)
         self.handle_audio_events(events)
+        if self.session.cheats.is_active("fahed"):
+            self.effects.emit_basket_dash_trail(self.world)
         self.effects.update(self.world, delta_time, self.environment_manager)
         self.ui.handle_events(events)
         self.ui.update(delta_time)
@@ -157,6 +164,7 @@ class Game:
         return True
 
     def render(self, delta_time: float) -> None:
+        self.renderer.world_rotation_angle = self.session.cheats.value("flip", 0.0)
         self.states.render(self, delta_time)
         if self.session.debug_overlay_enabled:
             self.ui.render_debug_overlay(self.screen, self.build_debug_snapshot())
@@ -187,9 +195,25 @@ class Game:
 
     def apply_power_up_modifiers(self) -> None:
         speed_scale = basket_speed_scale(self.session.powerups)
+        target_width = int(config.SCREEN_WIDTH * 0.92) if self.session.cheats.is_active("fahed") else config.BASKET_WIDTH
+        if self.world.basket.width != target_width:
+            center_x = self.world.basket.rect.centerx
+            self.world.basket.width = target_width
+            self.world.basket.x = center_x - target_width / 2
         self.world.basket.max_speed = config.BASKET_MAX_SPEED * speed_scale
         self.world.basket.acceleration_rate = config.BASKET_ACCELERATION * speed_scale
         self.world.basket.dash_speed = config.BASKET_DASH_SPEED * speed_scale
+
+    def cheat_falling_time_scale(self) -> float:
+        return 0.55 if self.session.cheats.is_active("easy") else 1.0
+
+    def apply_cheat_environment(self) -> None:
+        if self.session.cheats.is_active("wind"):
+            self._cheat_rain_was_active = True
+            self.environment_manager.set_weather("rain")
+        elif self._cheat_rain_was_active:
+            self.environment_manager.set_weather("clear")
+            self._cheat_rain_was_active = False
 
     def handle_audio_events(self, events: list[ObjectCaughtEvent | ObjectMissedEvent]) -> None:
         for event in events:
@@ -199,12 +223,62 @@ class Game:
                 self.audio.play_object_effect(event.object_identifier, caught=False)
 
     def activate_cheat_code(self, code: str) -> bool:
+        if self.activate_developer_cheat(code):
+            return True
         definition = self.power_up_system.by_cheat_code(code)
         if definition is None:
             self.developer_console.message = f"Unknown code: {code.upper()}"
             return False
         self.session.powerups.activate(definition)
         self.spawn_system.power_state = self.session.powerups
+        self.developer_console.message = f"Activated {definition.display_name}"
+        self.developer_console.clear()
+        return True
+
+    def activate_developer_cheat(self, code: str) -> bool:
+        parts = code.strip().lower().split()
+        if not parts:
+            return False
+        command = parts[0]
+        if command == "nosound":
+            self.audio.settings.muted = True
+            self.audio.apply_volumes()
+            self.developer_console.message = "Muted all sound"
+            self.developer_console.clear()
+            return True
+        if command == "sound":
+            self.audio.settings.muted = False
+            self.audio.apply_volumes()
+            self.developer_console.message = "Sound restored"
+            self.developer_console.clear()
+            return True
+        if command == "shield" and self.session.score < 5:
+            self.developer_console.message = "Shield needs 5 score"
+            return True
+        if command == "shield":
+            self.session.score -= 5
+        if command == "flip":
+            if len(parts) != 2:
+                self.developer_console.message = "Usage: flip <angle>"
+                return True
+            try:
+                angle = float(parts[1])
+            except ValueError:
+                self.developer_console.message = "Flip angle must be a number"
+                return True
+            if not 0.0 <= angle <= 360.0:
+                self.developer_console.message = "Flip angle must be 0-360"
+                return True
+            self.session.cheats.activate(CHEAT_DEFINITIONS["flip"], angle)
+            self.developer_console.message = f"Flip {angle:g} active"
+            self.developer_console.clear()
+            return True
+        definition = CHEAT_DEFINITIONS.get(command)
+        if definition is None:
+            return False
+        self.session.cheats.activate(definition)
+        if command == "wind":
+            self.environment_manager.set_weather("rain")
         self.developer_console.message = f"Activated {definition.display_name}"
         self.developer_console.clear()
         return True

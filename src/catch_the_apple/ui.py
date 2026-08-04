@@ -79,12 +79,21 @@ class UI:
         for index, label in enumerate(session.powerups.labels()):
             power_text = self.small_font.render(label, True, (160, 245, 255))
             screen.blit(power_text, (config.SCREEN_WIDTH - power_text.get_width() - 18, 112 + index * 21))
+        for index, label in enumerate(session.cheats.labels()):
+            cheat_text = self.small_font.render(label, True, (255, 245, 170))
+            screen.blit(cheat_text, (18, 120 + index * 21))
         if session.powerups.is_active("slow_motion"):
             self.render_status_banner(screen, "SLOW MOTION", (100, 230, 255))
         elif session.powerups.is_active("magnet"):
             self.render_status_banner(screen, "APPLE STORM", (255, 235, 110))
         elif session.powerups.is_active("speed_boost"):
             self.render_status_banner(screen, "SPEED BOOST", (145, 255, 170))
+        elif session.cheats.is_active("fahed"):
+            self.render_status_banner(screen, "FAHED MODE", (245, 255, 255))
+        elif session.cheats.is_active("shield"):
+            self.render_status_banner(screen, "SHIELD", (120, 245, 255))
+        elif session.cheats.is_active("easy"):
+            self.render_status_banner(screen, "EASY MODE", (255, 245, 170))
         elif session.powerups.active:
             active = next(iter(session.powerups.active.values()))
             self.render_status_banner(

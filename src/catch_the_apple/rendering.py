@@ -21,6 +21,7 @@ class Renderer:
         self.lighting = LightingSystem()
         self._particle_surface_cache: dict[tuple[int, tuple[int, int, int], int], pygame.Surface] = {}
         self._glow_surface_cache: dict[tuple[int, tuple[int, int, int], int], pygame.Surface] = {}
+        self.world_rotation_angle = 0.0
         self.elapsed_time = 0.0
 
     def render(
@@ -32,6 +33,26 @@ class Renderer:
         environment_state: EnvironmentState | None = None,
     ) -> None:
         self.elapsed_time += delta_time
+        if self.world_rotation_angle % 360.0 != 0.0:
+            original_screen = self.screen
+            scene = pygame.Surface(original_screen.get_size(), pygame.SRCALPHA).convert_alpha()
+            self.screen = scene
+            self._render_scene(world, session, effects, environment_state)
+            self.screen = original_screen
+            rotated = pygame.transform.rotate(scene, self.world_rotation_angle)
+            rotated_rect = rotated.get_rect(center=original_screen.get_rect().center)
+            original_screen.fill((3, 8, 18))
+            original_screen.blit(rotated, rotated_rect)
+            return
+        self._render_scene(world, session, effects, environment_state)
+
+    def _render_scene(
+        self,
+        world: World,
+        session: GameSession,
+        effects: VisualEffects | None,
+        environment_state: EnvironmentState | None,
+    ) -> None:
         if environment_state is not None:
             self.lighting.set_config(environment_state.lighting)
             self.environment.render(self.screen, environment_state)
@@ -40,6 +61,8 @@ class Renderer:
 
         basket_surface = self.assets.get_basket_surface(world.basket.width, world.basket.height)
         basket_surface = self.lighting.apply_lighting(basket_surface)
+        if session.cheats.is_active("shield") or session.cheats.is_active("fahed"):
+            self.render_basket_cheat_glow(world.basket.rect, session)
         basket_scale = effects.basket_squash.scale if effects is not None else (1.0, 1.0)
         self.blit_scaled(basket_surface, world.basket.rect, basket_scale)
         for falling_object in world.falling_objects:
@@ -80,6 +103,12 @@ class Renderer:
         lives_text = self.font.render(f"Lives: {session.lives}", True, config.WHITE)
         self.screen.blit(score_text, (10, 10))
         self.screen.blit(lives_text, (config.SCREEN_WIDTH - 120, 10))
+
+    def render_basket_cheat_glow(self, rect: pygame.Rect, session: GameSession) -> None:
+        color = (245, 255, 255) if session.cheats.is_active("fahed") else (120, 245, 255)
+        glow_surface = self.get_glow_surface(max(rect.width, 120), color, 132)
+        glow_rect = glow_surface.get_rect(center=rect.center)
+        self.screen.blit(glow_surface, glow_rect)
 
     def render_background(self, environment_state: EnvironmentState, delta_time: float = 0.0) -> None:
         self.elapsed_time += delta_time

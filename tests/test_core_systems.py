@@ -17,6 +17,7 @@ import pygame
 
 from catch_the_apple import __version__, config, get_version
 from catch_the_apple.audio import AudioSettings
+from catch_the_apple.cheats import CHEAT_DEFINITIONS, CheatState
 from catch_the_apple.game import is_valid_player_name
 from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.difficulty_profiles import DIFFICULTY_PROFILES, EXPERT, INTERMEDIATE
@@ -203,6 +204,15 @@ class CoreSystemTests(unittest.TestCase):
         update_movement(world, input_state(), 0.2)
         self.assertLessEqual(abs(world.basket.velocity.x), abs(velocity_before_drag))
 
+    def test_cycle_cheat_wraps_basket_with_modulo_arithmetic(self) -> None:
+        world = World()
+        world.basket.x = config.SCREEN_WIDTH - 4
+        world.basket.movement.velocity.x = 220.0
+
+        update_movement(world, input_state(right_pressed=True), 0.1, cycle_wrap=True)
+
+        self.assertLess(world.basket.x, 30.0)
+
     def test_wind_influence_eases_object_trajectory(self) -> None:
         world = World()
         spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
@@ -387,6 +397,47 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(session.combo, 0)
         self.assertIsInstance(events[0], ObjectMissedEvent)
 
+    def test_shield_cheat_filters_bomb_collision_damage(self) -> None:
+        world = World()
+        session = GameSession(lives=3)
+        session.cheats.activate(CHEAT_DEFINITIONS["shield"])
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["bomb"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        events = apply_game_rules(world, session, spawn_system)
+
+        self.assertEqual(session.lives, 3)
+        self.assertEqual(events[0].damage, 0)
+
+    def test_fahed_cheat_auto_collects_apples_and_blocks_hazard_damage(self) -> None:
+        world = World()
+        session = GameSession(score=0, lives=2)
+        session.cheats.activate(CHEAT_DEFINITIONS["fahed"])
+        spawn_system = SpawnSystem(
+            config.SpawnConfig(max_active_objects=1, enabled_object_ids=("regular_apple",))
+        )
+        spawn_system.update(world)
+
+        events = apply_game_rules(world, session, spawn_system)
+
+        self.assertEqual(session.score, 1)
+        self.assertIsInstance(events[0], ObjectCaughtEvent)
+
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["bomb"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+        events = apply_game_rules(world, session, spawn_system)
+
+        self.assertEqual(session.lives, 2)
+        self.assertEqual(events[0].damage, 0)
+
     def test_power_up_collision_activates_reusable_power_up_state(self) -> None:
         world = World()
         session = GameSession()
@@ -418,6 +469,15 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(system.by_cheat_code("void").identifier, "black_hole")
         self.assertIsNone(system.by_cheat_code("NOPE"))
         self.assertTrue(all(definition.spawn_weight > 0.0 for definition in system.definitions))
+
+    def test_cheat_state_expires_temporary_commands(self) -> None:
+        state = CheatState()
+        state.activate(CHEAT_DEFINITIONS["easy"])
+
+        state.update(19.0)
+        self.assertTrue(state.is_active("easy"))
+        state.update(2.0)
+        self.assertFalse(state.is_active("easy"))
 
     def test_magnet_only_pulls_regular_and_golden_apples(self) -> None:
         world = World()
@@ -569,6 +629,37 @@ class CoreSystemTests(unittest.TestCase):
 
         self.assertEqual(manager.state.weather.name, "Rain")
         self.assertGreater(manager.gameplay_wind_velocity().length(), initial_velocity * 0.5)
+
+    def test_developer_cheats_activate_and_restore_through_game(self) -> None:
+        from catch_the_apple.game import Game
+
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+        game.session.score = 6
+
+        self.assertTrue(game.activate_cheat_code("easy"))
+        self.assertTrue(game.session.cheats.is_active("easy"))
+        self.assertEqual(game.cheat_falling_time_scale(), 0.55)
+
+        self.assertTrue(game.activate_cheat_code("shield"))
+        self.assertEqual(game.session.score, 1)
+        self.assertTrue(game.session.cheats.is_active("shield"))
+
+        self.assertTrue(game.activate_cheat_code("flip 270"))
+        self.assertEqual(game.session.cheats.value("flip"), 270.0)
+
+        self.assertTrue(game.activate_cheat_code("nosound"))
+        self.assertTrue(game.audio.settings.muted)
+        self.assertTrue(game.activate_cheat_code("sound"))
+        self.assertFalse(game.audio.settings.muted)
+
+        self.assertTrue(game.activate_cheat_code("wind"))
+        game.apply_cheat_environment()
+        self.assertEqual(game.environment_manager.state.weather.name, "Rain")
+        game.session.cheats.update(21.0)
+        game.apply_cheat_environment()
+        self.assertEqual(game.environment_manager.state.weather.name, "Clear")
 
     def test_audio_system_generates_distinct_object_effects_when_available(self) -> None:
         from catch_the_apple.audio import AudioSystem
