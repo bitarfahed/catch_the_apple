@@ -62,7 +62,7 @@ catch-the-apple
 | Right Arrow | Move basket right |
 | Space | Dash |
 | Enter | Submit player name / start from menu |
-| Esc or P | Pause/resume |
+| Esc | Pause/resume |
 | C while paused | Open developer cheat console |
 | R | Restart from game over |
 | F1 | Toggle collision overlay |
@@ -72,7 +72,7 @@ catch-the-apple
 
 ## Developer Cheat Console
 
-The cheat console is available only while paused. Press `C`, type a code, and press `Enter`. Press `P` or `Esc` to return to Pause, then press `P` or `Esc` again to resume. Temporary cheats can be entered again to disable them early. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.
+The cheat console is available only while paused. Press `C`, type a code, and press `Enter`. Press `Esc` to return to Pause, then press `Esc` again to resume. Temporary cheats can be entered again to disable them early. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.
 
 | Code | Effect |
 |---|---|

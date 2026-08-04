@@ -238,7 +238,7 @@ class UI:
         self.render_center_panel(
             screen,
             "Paused",
-            ("Press P or Esc to Resume", "Press C for Developer Console", "Close the window to Exit"),
+            ("Press Esc to Resume", "Press C for Developer Console", "Close the window to Exit"),
         )
 
     def render_developer_console(self, screen: pygame.Surface, console: DeveloperConsole) -> None:
@@ -252,7 +252,7 @@ class UI:
         screen.blit(prompt, (panel.x + 28, panel.y + 88))
         message = self.small_font.render(console.message, True, (225, 235, 240))
         screen.blit(message, (panel.x + 28, panel.y + 132))
-        hint = self.small_font.render("Enter submits  |  Backspace edits  |  P/Esc resumes", True, (180, 195, 205))
+        hint = self.small_font.render("Enter submits  |  Backspace edits  |  Esc returns to Pause", True, (180, 195, 205))
         screen.blit(hint, (panel.x + 28, panel.y + 164))
 
     def render_game_over(self, screen: pygame.Surface, session: GameSession) -> None:

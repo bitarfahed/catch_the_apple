@@ -50,7 +50,7 @@ def poll_input() -> InputState:
             debug_collision_toggled = True
         if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
             start_pressed = True
-        if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_p):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             pause_pressed = True
         if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
             restart_pressed = True

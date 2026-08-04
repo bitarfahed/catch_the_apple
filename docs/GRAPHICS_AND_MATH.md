@@ -109,8 +109,12 @@ The environment renderer procedurally creates and caches parallax layers:
 
 Each layer has a depth factor and scroll speed. The dynamic environment manager supplies wind, weather tint, fog alpha, day/night colors, and lighting parameters.
 
-Wind applies to gameplay as an eased velocity target rather than a direct
-position offset. Falling objects move toward the current wind vector with:
+Wind is modeled as a continuous vector field built from overlapping sinusoidal
+components. The base weather direction is blended with primary gust,
+secondary gust, and swirl vectors, allowing the horizontal component to move
+smoothly through both leftward and rightward values. Wind applies to gameplay
+as an eased velocity target rather than a direct position offset. Falling
+objects move toward the current wind vector with:
 `wind_velocity += (target_wind - wind_velocity) * response * dt`, then their
 positions advance by `wind_velocity * dt`. This produces smooth diagonal paths
 and visible gust changes without abrupt sideways jumps.

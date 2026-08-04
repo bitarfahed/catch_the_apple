@@ -4452,3 +4452,77 @@ Append this prompt to docs/PROMPTS_BOOK.md.
 - `uv run ruff check .` was run and failed on a broad existing Ruff backlog, including pre-existing import-order, E402, and line-length issues outside this prompt's scope.
 
 **Completion Status:** Complete with verification limitation: generated bomb explosion playback was routed and mixer-compatible, but audible sound could not be personally heard in the dummy-audio environment.
+
+## Prompt 30 - Gameplay Fixes, Wind Model & Input Corrections
+
+**Goal:** Correct pause input conflicts, flip command behavior, Rotten Apple scoring, score-zero loss, rain visibility, and wind direction behavior while reusing the current architecture.
+
+**Full Prompt Text:**
+
+```text
+Prompt 30 - Gameplay Fixes, Wind Model & Input Corrections
+
+Context
+
+Recent playtesting revealed several gameplay issues that remain unresolved.
+
+Do NOT redesign the architecture.
+
+Reuse the existing gameplay, weather, physics and input systems.
+
+The goal is to correct gameplay behavior and complete unfinished integrations.
+
+Objectives
+
+1. Pause Controls
+2. Flip Command
+3. Rotten Apple Rule
+4. Losing Condition
+5. Rain
+6. Wind Model
+7. Verification
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/dynamic_environment.py`
+- `src/catch_the_apple/effects.py`
+- `src/catch_the_apple/input.py`
+- `src/catch_the_apple/session.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/scoring.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Implementation Summary:**
+
+- Removed `P` from pause/resume input so ESC is the only pause key.
+- Preserved full text input routing in the Developer Console so `flip 45`, `flip 180`, and `flip 270` work correctly.
+- Updated Rotten Apple catch behavior to subtract exactly 2 score, clamp score at zero, reset combo, and never remove lives.
+- Added `GameSession.has_earned_score` so the initial score of zero is safe, while returning to zero after earning points triggers game over.
+- Increased rain particle density, size, opacity, and screen coverage using the existing particle system.
+- Replaced one-sided wind with a continuous vector field combining base, gust, secondary, and swirl components so apples can curve left and right smoothly.
+- Updated controls and math documentation.
+
+**Verification Summary:**
+
+- Runtime verification confirmed `P` no longer pauses, ESC pauses/resumes, and console `flip` commands for 45, 180, and 270 degrees set the world rotation value.
+- Runtime gameplay rules confirmed Rotten Apple catches reduce score from 5 to 3 with no life loss, and score returning from 1 to 0 ends the game with lives unchanged.
+- Runtime rain verification rendered 361 active rain particles with visible alpha coverage across the playfield.
+- Runtime wind samples showed both leftward and rightward gameplay wind values.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 53 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.

@@ -9,6 +9,7 @@ from catch_the_apple.powerups import PowerUpState
 class GameSession:
     player_name: str = ""
     score: int = 0
+    has_earned_score: bool = False
     lives: int = config.INITIAL_LIVES
     combo: int = 0
     best_combo: int = 0

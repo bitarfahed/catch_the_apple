@@ -26,6 +26,7 @@ from catch_the_apple.entities import FallingObject
 from catch_the_apple.environment import ProceduralEnvironmentRenderer
 from catch_the_apple.events import ObjectCaughtEvent, ObjectMissedEvent
 from catch_the_apple.input import InputState
+from catch_the_apple.input import poll_input
 from catch_the_apple.lighting import LightingSystem
 from catch_the_apple.math2d import Transform2D, clamp, vec2
 from catch_the_apple.object_definitions import OBJECT_DEFINITIONS
@@ -235,6 +236,34 @@ class CoreSystemTests(unittest.TestCase):
         self.assertNotEqual(first_wind_velocity, 0.0)
         self.assertGreater(abs(falling_object.wind_velocity.x), abs(first_wind_velocity))
 
+    def test_wind_vector_field_moves_left_and_right_smoothly(self) -> None:
+        manager = EnvironmentManager(
+            wind_config=INTERMEDIATE.wind_config,
+            gameplay_wind_scale=INTERMEDIATE.gameplay_wind_scale,
+        )
+        samples = []
+
+        for index in range(80):
+            manager.update(0.5)
+            samples.append(manager.gameplay_wind_velocity().x)
+
+        self.assertTrue(any(value < 0.0 for value in samples))
+        self.assertTrue(any(value > 0.0 for value in samples))
+        self.assertLess(
+            max(abs(samples[index + 1] - samples[index]) for index in range(len(samples) - 1)),
+            230.0,
+        )
+
+    def test_poll_input_uses_escape_only_for_pause_not_p_key(self) -> None:
+        pygame.event.clear()
+        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_p))
+
+        self.assertFalse(poll_input().pause_pressed)
+
+        pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE))
+
+        self.assertTrue(poll_input().pause_pressed)
+
     def test_freeze_bombs_stops_only_hazard_falling_motion(self) -> None:
         world = World()
         spawn_system = SpawnSystem(
@@ -356,6 +385,70 @@ class CoreSystemTests(unittest.TestCase):
         self.assertEqual(session.combo, 2)
         self.assertFalse(session.game_over)
         self.assertEqual(events[0].damage, 0)
+
+    def test_catching_rotten_apple_reduces_score_without_life_loss(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=5, combo=2, has_earned_score=True)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["rotten_apple"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        events = apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertEqual(session.score, 3)
+        self.assertEqual(session.lives, 3)
+        self.assertEqual(session.combo, 0)
+        self.assertFalse(session.game_over)
+        self.assertIsInstance(events[0], ObjectCaughtEvent)
+
+    def test_score_returning_to_zero_after_earning_points_ends_game(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=1, combo=1, has_earned_score=True)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+        falling_object = world.falling_objects[0]
+        falling_object.definition = OBJECT_DEFINITIONS["rotten_apple"]
+        falling_object.x = world.basket.x + world.basket.width / 2 - falling_object.radius
+        falling_object.y = world.basket.y - falling_object.radius
+        falling_object.previous_position.update(falling_object.transform.position)
+
+        apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertEqual(session.score, 0)
+        self.assertEqual(session.lives, 3)
+        self.assertTrue(session.game_over)
+
+    def test_initial_zero_score_does_not_immediately_end_game(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=0)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        spawn_system.update(world)
+
+        apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertFalse(session.game_over)
 
     def test_player_name_object_grants_capped_extra_life_and_has_no_miss_penalty(self) -> None:
         world = World()
@@ -754,7 +847,7 @@ class CoreSystemTests(unittest.TestCase):
         game.update_playing(input_state(), 0.1)
 
         self.assertEqual(game.environment_manager.state.weather.name, "Rain")
-        self.assertGreater(sum(1 for _ in game.effects.particles.active_particles()), 0)
+        self.assertGreater(sum(1 for _ in game.effects.particles.active_particles()), 40)
 
     def test_magnet_attracts_only_regular_and_golden_apples(self) -> None:
         world = World()

@@ -38,13 +38,23 @@ class WindSystem:
         return direction.normalize()
 
     def update(self, elapsed_time: float) -> WindState:
-        gust = math.sin(elapsed_time * math.tau * self.config.gust_frequency) * self.config.gust_strength
-        secondary = math.sin(elapsed_time * 1.73) * self.config.gust_strength * 0.35
-        strength = max(0.0, self.config.strength + gust + secondary)
-        direction = self.normalized_direction.rotate(
-            math.sin(elapsed_time * 0.85) * self.config.direction_sway * 45.0
-        )
-        self.state = WindState(direction=direction, strength=strength, velocity=direction * strength)
+        base = self.normalized_direction * self.config.strength
+        primary = vec2(
+            math.sin(elapsed_time * math.tau * self.config.gust_frequency),
+            math.cos(elapsed_time * 0.73),
+        ) * (self.config.strength + self.config.gust_strength)
+        secondary = vec2(
+            math.sin(elapsed_time * 0.41 + 1.7),
+            math.sin(elapsed_time * 0.29 - 0.8),
+        ) * (self.config.gust_strength * 0.85)
+        swirl = vec2(
+            math.sin(elapsed_time * 0.19 + 2.4),
+            math.cos(elapsed_time * 0.31),
+        ) * (self.config.direction_sway * self.config.strength * 3.0)
+        velocity = base * 0.28 + primary + secondary + swirl
+        strength = velocity.length()
+        direction = velocity.normalize() if strength > 0.0 else self.normalized_direction
+        self.state = WindState(direction=direction, strength=strength, velocity=velocity)
         return self.state
 
 

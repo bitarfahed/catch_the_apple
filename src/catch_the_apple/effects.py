@@ -120,17 +120,17 @@ EXTRA_LIFE_BURST = EmitterConfig(
 )
 
 RAIN_STREAKS = EmitterConfig(
-    count=8,
-    speed_min=260.0,
-    speed_max=420.0,
-    lifetime_min=0.35,
-    lifetime_max=0.55,
-    start_size=2.0,
-    end_size=1.0,
-    start_alpha=105,
+    count=4,
+    speed_min=480.0,
+    speed_max=680.0,
+    lifetime_min=0.65,
+    lifetime_max=0.95,
+    start_size=9.0,
+    end_size=5.0,
+    start_alpha=210,
     end_alpha=0,
-    start_color=(170, 215, 245),
-    end_color=(120, 170, 220),
+    start_color=(190, 230, 255),
+    end_color=(120, 185, 235),
     drag=0.0,
     gravity_scale=0.10,
     angular_velocity_min=0.0,
@@ -207,9 +207,11 @@ class VisualEffects:
         self._rain_timer = max(0.0, self._rain_timer - delta_time)
         if self._rain_timer > 0.0:
             return
-        for x in range(20, config.SCREEN_WIDTH, 120):
-            self.particles.emit(vec2(float(x), -10.0), RAIN_STREAKS)
-        self._rain_timer = 0.08
+        for x in range(-40, config.SCREEN_WIDTH + 80, 64):
+            for y in range(-20, config.SCREEN_HEIGHT + 80, 120):
+                offset = (x * 17 + y * 7) % 41
+                self.particles.emit(vec2(float(x + offset), float(y)), RAIN_STREAKS)
+        self._rain_timer = 0.035
 
     def object_squash_for(self, falling_object: object) -> SquashStretch:
         key = id(falling_object)
