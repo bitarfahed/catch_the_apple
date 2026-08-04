@@ -15,7 +15,7 @@ from catch_the_apple.world import World
 class Renderer:
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen = screen
-        self.font = pygame.font.SysFont(config.FONT_NAME, config.FONT_SIZE)
+        self.font = make_font(config.FONT_SIZE)
         self.assets = ProceduralAssetRenderer()
         self.environment = ProceduralEnvironmentRenderer(config.SCREEN_WIDTH, config.SCREEN_HEIGHT)
         self.lighting = LightingSystem()
@@ -218,7 +218,7 @@ class Renderer:
     def night_factor(self, environment_state: EnvironmentState | None) -> float:
         if environment_state is None:
             return 0.0
-        return clamp((0.58 - environment_state.day_night.ambient) / 0.40, 0.0, 1.0)
+        return clamp((0.64 - environment_state.day_night.ambient) / 0.32, 0.0, 1.0)
 
     def render_ground_shadow(self, object_rect: pygame.Rect, height_factor: float) -> None:
         shadow_surface = self.lighting.get_ground_shadow(object_rect.width, object_rect.height, height_factor)
@@ -263,3 +263,8 @@ def blend_color(
         max(0, min(255, int(channel + (target_channel - channel) * amount)))
         for channel, target_channel in zip(color, target, strict=True)
     )
+
+
+def make_font(size: int) -> pygame.font.Font:
+    font_path = pygame.font.match_font(config.FONT_NAME) or pygame.font.match_font("dejavusans")
+    return pygame.font.Font(font_path, size) if font_path is not None else pygame.font.Font(None, size)

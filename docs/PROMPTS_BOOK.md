@@ -169,6 +169,225 @@ The game was split into a small `catch_the_apple` package. `main.py` now delegat
 
 **Completion Status:** Complete.
 
+## Prompt 27 - Regression Fixes & Feature Restoration
+
+**Goal:** Audit and repair regressions affecting Super Powers, the Developer Cheat Console, night palette readability, player-name text rendering, sound playback, and feature reachability.
+
+**Full Prompt Text:**
+
+```text
+Prompt 27 - Regression Fixes & Feature Restoration
+
+Context
+
+Recent playtesting revealed several regressions introduced during the latest development prompts.
+
+These features were intended to exist but are currently missing, broken, or only partially functional.
+
+The goal of this prompt is to restore the intended behavior.
+
+Do NOT redesign the architecture.
+
+Reuse the existing systems.
+
+---
+
+Objectives
+
+Perform a regression audit and fix the following issues.
+
+1. Super Powers
+
+Some or all Super Powers no longer appear or cannot be activated.
+
+Restore every implemented Super Power.
+
+Verify that every Super Power:
+
+- can spawn or activate correctly,
+- produces its intended gameplay effect,
+- produces its intended visual effect,
+- expires correctly,
+- returns the game to the normal state.
+
+---
+
+2. Cheat Console
+
+The intended workflow is:
+
+Pause
+-> Developer Cheat Console
+-> Enter Cheat Code
+-> Resume Game
+
+Currently the Cheat Console is missing or inaccessible.
+
+Implement this exact workflow.
+
+Typing cheat codes during active gameplay must remain impossible.
+
+Verify that every documented cheat code actually works.
+
+---
+
+3. Night Palette
+
+The Regular Apple currently remains red during nighttime.
+
+Fix the Night Palette so that:
+
+Day:
+- Regular Apple remains red.
+
+Night:
+- Regular Apple becomes bright white (or light glowing white).
+
+Golden Apples, Rotten Apples and Bombs should keep their intended colors.
+
+The transition must remain smooth.
+
+---
+
+4. Player Name Rendering
+
+The player-name input screen currently displays empty rectangles instead of readable characters.
+
+Fix text rendering.
+
+Ensure the selected font correctly renders the supported character set.
+
+Validate player-name input while displaying typed characters correctly.
+
+---
+
+5. Sound System
+
+The sound system is currently missing or inactive.
+
+Verify that sounds are actually loaded and played.
+
+At minimum:
+
+- Regular Apple
+- Golden Apple
+- Rotten Apple
+- Bomb
+- Power-up
+- Extra Life
+- UI buttons
+- Cheat activation (optional)
+
+Gracefully handle missing audio assets without crashing.
+
+---
+
+6. Full Regression Audit
+
+Before finishing, verify that all previously implemented gameplay systems are still operational.
+
+This includes, where implemented:
+
+- Super Powers
+- Apple Storm
+- Magnet
+- Slow Motion
+- Dash Boost
+- Wind
+- Rain
+- Day/Night
+- Lighting
+- Particle effects
+- Cheat codes
+- Player-name object
+- Sound effects
+
+If any existing feature is disabled, unreachable or accidentally broken, restore it without introducing architectural changes.
+
+---
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+---
+
+Restrictions
+
+Do NOT:
+
+- Add new gameplay features.
+- Perform major refactors.
+- Replace existing systems.
+
+Only repair regressions and complete unfinished integrations.
+
+---
+
+Acceptance Criteria
+
+- All Super Powers work again.
+- Cheat Console follows the required workflow.
+- Night Palette behaves correctly.
+- Player name renders correctly.
+- Sound effects are operational.
+- Regression audit completed.
+- PROMPTS_BOOK updated.
+
+---
+
+Required Response
+
+Report:
+
+- Bugs fixed
+- Files modified
+- Regression audit results
+- Manual verification performed
+- Confirmation that every existing gameplay feature was tested
+- Confirmation that PROMPTS_BOOK was updated
+```
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/audio.py`
+- `src/catch_the_apple/developer_console.py`
+- `src/catch_the_apple/game.py`
+- `src/catch_the_apple/rendering.py`
+- `src/catch_the_apple/ui.py`
+- `tests/test_core_systems.py`
+
+**Bugs Fixed:**
+
+- Restored `WIND` Super Power activation by resolving the conflict with the lowercase `wind` rain cheat. Console input now preserves case; lowercase `wind` activates Rain, uppercase `WIND` activates Wind Control.
+- Strengthened the night palette factor so nighttime regular apples reach bright white while daytime regular apples remain red and golden/rotten/bomb colors remain unchanged.
+- Replaced direct system-font construction with a font fallback helper for UI and gameplay text rendering, preventing player-name text from appearing as unreadable boxes when the preferred font is unavailable.
+- Added generated UI sounds for confirm, error, and cheat feedback; wired start validation and cheat activation/failure to the existing UI audio channel.
+- Added regression tests for pause -> console -> enter code -> resume workflow and for ignoring cheat typing during active gameplay.
+
+**Regression Audit Results:**
+
+- Super Powers: all documented Super Power cheat codes activate, display through HUD labels/banners, expire, and clear from active state.
+- Apple Storm/Magnet: Magnet activation increases active object capacity and pulls beneficial apples.
+- Slow Motion and Dash Boost: active power state still modifies falling time/difficulty growth and basket movement tuning.
+- Wind/Rain: uppercase `WIND` activates Wind Control; lowercase `wind` activates visible Rain particles and restores weather after expiry.
+- Day/Night and lighting: actual night state now produces bright-white regular apples with smooth interpolation; golden apples remain gold.
+- Particle effects: catch bursts, rain particles, trail effects, and extra-life particles remain available through the pooled particle system.
+- Cheat codes: new developer cheats and legacy Super Power cheats are verified.
+- Player-name object: existing tests verify rare object behavior, capped extra life, no miss penalty, and readable name rendering.
+- Sound effects: generated object and UI sounds load and play without crashing when the mixer is available.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 42 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+- Manual dummy smoke verified name rendering, pause-console workflow, `WIND` versus `wind`, Rain particles, night palette, Magnet/Apple Storm active objects, sound playback, and expiry/restoration to normal state.
+
+**Completion Status:** Complete.
+
 ## Prompt 26 - Developer Cheat Framework
 
 **Goal:** Implement a reusable pause-only Developer Cheat Framework for debugging, demonstrations, portfolio presentations, and testing.

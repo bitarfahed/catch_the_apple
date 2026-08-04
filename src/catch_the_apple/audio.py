@@ -99,6 +99,11 @@ class AudioSystem:
             "power_up": make_chime((440.0, 880.0), 0.14, 0.42),
             "player_name": make_chime((783.99, 1046.5), 0.16, 0.44),
         }
+        self.ui_sounds = {
+            "confirm": make_chime((587.33, 783.99), 0.10, 0.34),
+            "error": make_tone(146.83, 0.12, 0.30),
+            "cheat": make_chime((698.46, 932.33), 0.12, 0.36),
+        }
         self.apply_volumes()
 
 

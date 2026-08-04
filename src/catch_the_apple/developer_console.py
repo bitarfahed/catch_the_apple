@@ -7,7 +7,7 @@ class DeveloperConsole:
     message: str = "Enter a cheat code"
 
     def add_text(self, value: str) -> None:
-        self.text = (self.text + value.upper())[:24]
+        self.text = (self.text + value)[:24]
 
     def backspace(self) -> None:
         self.text = self.text[:-1]

@@ -18,7 +18,7 @@ import pygame
 from catch_the_apple import __version__, config, get_version
 from catch_the_apple.audio import AudioSettings
 from catch_the_apple.cheats import CHEAT_DEFINITIONS, CheatState
-from catch_the_apple.game import is_valid_player_name
+from catch_the_apple.game import Game, is_valid_player_name
 from catch_the_apple.collision import detect_basket_collision
 from catch_the_apple.difficulty_profiles import DIFFICULTY_PROFILES, EXPERT, INTERMEDIATE
 from catch_the_apple.dynamic_environment import EnvironmentManager, WEATHER_PRESETS
@@ -40,6 +40,7 @@ from catch_the_apple.powerups import (
 from catch_the_apple.procedural_assets import ProceduralAssetRenderer
 from catch_the_apple.rendering import Renderer
 from catch_the_apple.session import GameSession
+from catch_the_apple.states import DeveloperConsoleState, MainMenuState, PausedState, PlayingState
 from catch_the_apple.superpowers import SuperPowerSystem
 from catch_the_apple.systems.difficulty import apply_score_progression
 from catch_the_apple.systems.game_rules import apply_game_rules
@@ -581,11 +582,15 @@ class CoreSystemTests(unittest.TestCase):
     def test_renderer_uses_dedicated_night_palette_for_readability(self) -> None:
         screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
         renderer = Renderer(screen)
+        manager = EnvironmentManager("clear")
+        manager.day_night.progress = 0.0
+        manager.update(0.0)
 
         self.assertEqual(
             renderer.object_color_for_environment("regular_apple", config.RED, 0.0),
             config.RED,
         )
+        self.assertEqual(renderer.night_factor(manager.state), 1.0)
         self.assertEqual(
             renderer.object_color_for_environment("regular_apple", config.RED, 1.0),
             (245, 255, 255),
@@ -599,6 +604,18 @@ class CoreSystemTests(unittest.TestCase):
             renderer.object_color_for_environment("golden_apple", (255, 215, 0), 1.0),
             (255, 215, 0),
         )
+
+    def test_name_entry_renders_supported_characters(self) -> None:
+        from catch_the_apple.ui import UI
+
+        screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
+        ui = UI()
+
+        ui.render_name_entry(screen, "Ada7", "")
+        rendered_text = ui.large_font.render("Ada7", True, config.WHITE)
+
+        self.assertGreater(rendered_text.get_width(), 0)
+        self.assertGreater(rendered_text.get_height(), 0)
 
     def test_player_name_validation_accepts_one_alphanumeric_word(self) -> None:
         self.assertTrue(is_valid_player_name("Ada7"))
@@ -631,8 +648,6 @@ class CoreSystemTests(unittest.TestCase):
         self.assertGreater(manager.gameplay_wind_velocity().length(), initial_velocity * 0.5)
 
     def test_developer_cheats_activate_and_restore_through_game(self) -> None:
-        from catch_the_apple.game import Game
-
         game = Game()
         game.player_name_input = "Ada"
         game.start_named_session()
@@ -661,6 +676,56 @@ class CoreSystemTests(unittest.TestCase):
         game.apply_cheat_environment()
         self.assertEqual(game.environment_manager.state.weather.name, "Clear")
 
+    def test_pause_console_workflow_activates_cheat_and_resumes(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+
+        game.states.handle_input(game, input_state(pause_pressed=True))
+        self.assertIsInstance(game.states.current, PausedState)
+
+        game.states.handle_input(game, input_state(console_requested=True))
+        self.assertIsInstance(game.states.current, DeveloperConsoleState)
+
+        game.states.handle_input(game, input_state(text_input="easy"))
+        game.states.handle_input(game, input_state(console_submit_pressed=True))
+        self.assertTrue(game.session.cheats.is_active("easy"))
+
+        game.states.handle_input(game, input_state(pause_pressed=True))
+        self.assertIsInstance(game.states.current, PlayingState)
+
+    def test_typing_cheat_codes_during_active_gameplay_is_ignored(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+
+        game.states.handle_input(game, input_state(text_input="easy", console_submit_pressed=True))
+
+        self.assertIsInstance(game.states.current, PlayingState)
+        self.assertFalse(game.session.cheats.is_active("easy"))
+
+    def test_all_documented_super_power_cheats_activate_and_expire(self) -> None:
+        game = Game()
+        game.player_name_input = "Ada"
+        game.start_named_session()
+
+        for code, identifier in (
+            ("MAGNET", "magnet"),
+            ("TIME", "slow_motion"),
+            ("DASH", "speed_boost"),
+            ("WIND", "wind_control"),
+            ("WAVE", "shockwave"),
+            ("VOID", "black_hole"),
+            ("GRAV", "gravity_control"),
+            ("GOLD", "golden_rain"),
+            ("FREEZE", "freeze_bombs"),
+        ):
+            with self.subTest(code=code):
+                self.assertTrue(game.activate_cheat_code(code))
+                self.assertTrue(game.session.powerups.is_active(identifier))
+                game.session.powerups.update(99.0)
+                self.assertFalse(game.session.powerups.is_active(identifier))
+
     def test_audio_system_generates_distinct_object_effects_when_available(self) -> None:
         from catch_the_apple.audio import AudioSystem
 
@@ -670,6 +735,10 @@ class CoreSystemTests(unittest.TestCase):
 
         expected = {"regular_apple", "golden_apple", "rotten_apple", "bomb", "power_up", "player_name"}
         self.assertTrue(expected.issubset(audio.sound_effects))
+        self.assertTrue({"confirm", "error", "cheat"}.issubset(audio.ui_sounds))
+
+        audio.play_effect("regular_apple")
+        audio.play_ui("confirm")
 
 
 if __name__ == "__main__":

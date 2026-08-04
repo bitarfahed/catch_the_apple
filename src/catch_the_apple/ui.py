@@ -34,10 +34,10 @@ class UIAnimations:
 
 class UI:
     def __init__(self) -> None:
-        self.title_font = pygame.font.SysFont(config.FONT_NAME, 54, bold=True)
-        self.large_font = pygame.font.SysFont(config.FONT_NAME, 38, bold=True)
-        self.font = pygame.font.SysFont(config.FONT_NAME, 26)
-        self.small_font = pygame.font.SysFont(config.FONT_NAME, 19)
+        self.title_font = make_font(54, bold=True)
+        self.large_font = make_font(38, bold=True)
+        self.font = make_font(26)
+        self.small_font = make_font(19)
         self.animations = UIAnimations()
         self.difficulty_buttons: list[tuple[pygame.Rect, DifficultyProfile]] = []
 
@@ -309,3 +309,10 @@ class UI:
         for index, line in enumerate(lines):
             text = self.small_font.render(line, True, (210, 235, 225))
             screen.blit(text, (26, config.SCREEN_HEIGHT - height + 2 + index * 20))
+
+
+def make_font(size: int, bold: bool = False) -> pygame.font.Font:
+    font_path = pygame.font.match_font(config.FONT_NAME) or pygame.font.match_font("dejavusans")
+    font = pygame.font.Font(font_path, size) if font_path is not None else pygame.font.Font(None, size)
+    font.set_bold(bold)
+    return font

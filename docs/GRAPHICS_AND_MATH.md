@@ -77,7 +77,7 @@ toward a light glowing white instead of being hidden by the darker environment:
 - Power-ups remain unchanged.
 
 The interpolation is controlled by a night factor derived from ambient light:
-`night = clamp((0.58 - ambient) / 0.40, 0, 1)`. This keeps transitions smooth
+`night = clamp((0.64 - ambient) / 0.32, 0, 1)`. This keeps transitions smooth
 while preserving immediate object recognition.
 
 The rare player-name object reuses the falling-object system and renders as a
@@ -125,7 +125,8 @@ Gameplay sound effects are generated in memory with short decaying sine waves.
 Simple tones and two-tone chimes distinguish regular apples, golden apples,
 rotten apples, bombs, power-ups, and the extra-life name object without external
 audio assets. Each waveform uses a linear decay envelope so sounds remain brief
-and unobtrusive.
+and unobtrusive. UI confirmation, error, and cheat feedback sounds use the same
+generated waveform approach.
 
 ## Super Powers
 

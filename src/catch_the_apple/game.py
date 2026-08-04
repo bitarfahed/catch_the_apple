@@ -155,11 +155,13 @@ class Game:
         name = self.player_name_input.strip()
         if not is_valid_player_name(name):
             self.name_error = "Enter one word using letters or numbers"
+            self.audio.play_ui("error")
             return False
         from catch_the_apple.states import PlayingState
 
         self.reset_play_session()
         self.session.player_name = name
+        self.audio.play_ui("confirm")
         self.states.change(PlayingState())
         return True
 
@@ -228,31 +230,39 @@ class Game:
         definition = self.power_up_system.by_cheat_code(code)
         if definition is None:
             self.developer_console.message = f"Unknown code: {code.upper()}"
+            self.audio.play_ui("error")
             return False
         self.session.powerups.activate(definition)
         self.spawn_system.power_state = self.session.powerups
+        self.audio.play_ui("cheat")
         self.developer_console.message = f"Activated {definition.display_name}"
         self.developer_console.clear()
         return True
 
     def activate_developer_cheat(self, code: str) -> bool:
-        parts = code.strip().lower().split()
+        parts = code.strip().split()
         if not parts:
             return False
-        command = parts[0]
+        command_text = parts[0]
+        command = command_text.lower()
+        if command == "wind" and command_text != "wind":
+            return False
         if command == "nosound":
             self.audio.settings.muted = True
             self.audio.apply_volumes()
+            self.audio.play_ui("cheat")
             self.developer_console.message = "Muted all sound"
             self.developer_console.clear()
             return True
         if command == "sound":
             self.audio.settings.muted = False
             self.audio.apply_volumes()
+            self.audio.play_ui("cheat")
             self.developer_console.message = "Sound restored"
             self.developer_console.clear()
             return True
         if command == "shield" and self.session.score < 5:
+            self.audio.play_ui("error")
             self.developer_console.message = "Shield needs 5 score"
             return True
         if command == "shield":
@@ -260,16 +270,20 @@ class Game:
         if command == "flip":
             if len(parts) != 2:
                 self.developer_console.message = "Usage: flip <angle>"
+                self.audio.play_ui("error")
                 return True
             try:
                 angle = float(parts[1])
             except ValueError:
                 self.developer_console.message = "Flip angle must be a number"
+                self.audio.play_ui("error")
                 return True
             if not 0.0 <= angle <= 360.0:
                 self.developer_console.message = "Flip angle must be 0-360"
+                self.audio.play_ui("error")
                 return True
             self.session.cheats.activate(CHEAT_DEFINITIONS["flip"], angle)
+            self.audio.play_ui("cheat")
             self.developer_console.message = f"Flip {angle:g} active"
             self.developer_console.clear()
             return True
@@ -279,6 +293,7 @@ class Game:
         self.session.cheats.activate(definition)
         if command == "wind":
             self.environment_manager.set_weather("rain")
+        self.audio.play_ui("cheat")
         self.developer_console.message = f"Activated {definition.display_name}"
         self.developer_console.clear()
         return True

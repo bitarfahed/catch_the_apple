@@ -72,7 +72,7 @@ catch-the-apple
 
 ## Developer Cheat Console
 
-The cheat console is available only while paused. Press `C`, type a code, press `Enter`, then press `P` or `Esc` to resume.
+The cheat console is available only while paused. Press `C`, type a code, press `Enter`, then press `P` or `Esc` to resume. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.
 
 | Code | Effect |
 |---|---|
