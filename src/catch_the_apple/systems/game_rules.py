@@ -18,6 +18,8 @@ def apply_game_rules(
     power_up_system: PowerUpSystem | None = None,
 ) -> list[GameplayEvent]:
     events: list[GameplayEvent] = []
+    update_beneficial_groups(world, session)
+    mark_current_beneficial_catches(world, session)
     for falling_object in list(world.falling_objects):
         definition = falling_object.definition
         if (
@@ -45,7 +47,8 @@ def apply_game_rules(
                 and definition.identifier in {"regular_apple", "golden_apple"}
             )
             if definition.identifier == "regular_apple" and not storm_bonus_object:
-                subtract_score(session, 2)
+                if not beneficial_group_has_catch(session, falling_object):
+                    subtract_score(session, 2)
             spawn_system.reset_falling_object(falling_object)
             events.append(
                 ObjectMissedEvent(
@@ -104,6 +107,7 @@ def apply_game_rules(
                 score_value = score_value_for_object(session, definition)
                 if score_value > 0:
                     add_score(session, score_value)
+                    mark_beneficial_group_caught(session, falling_object)
 
             spawn_system.reset_falling_object(falling_object)
             if apply_score_progression(
@@ -122,7 +126,67 @@ def apply_game_rules(
                 )
             )
         update_game_over_conditions(session)
+    cleanup_beneficial_groups(world, session)
     return events
+
+
+def update_beneficial_groups(world: World, session: GameSession) -> None:
+    visible_beneficial = [
+        falling_object
+        for falling_object in world.falling_objects
+        if is_beneficial_object(falling_object.definition.identifier)
+        and is_visible(falling_object)
+    ]
+    ungrouped = [
+        falling_object
+        for falling_object in visible_beneficial
+        if falling_object.beneficial_group_id is None
+    ]
+    if len(visible_beneficial) >= 2 and ungrouped:
+        group_id = session.next_beneficial_group_id
+        session.next_beneficial_group_id += 1
+        for falling_object in visible_beneficial:
+            if falling_object.beneficial_group_id is None:
+                falling_object.beneficial_group_id = group_id
+
+
+def is_beneficial_object(identifier: str) -> bool:
+    return identifier in {"regular_apple", "golden_apple"}
+
+
+def is_visible(falling_object) -> bool:
+    return falling_object.y <= config.SCREEN_HEIGHT and falling_object.y + falling_object.size >= 0
+
+
+def mark_beneficial_group_caught(session: GameSession, falling_object) -> None:
+    if falling_object.beneficial_group_id is not None:
+        session.caught_beneficial_group_ids.add(falling_object.beneficial_group_id)
+
+
+def mark_current_beneficial_catches(world: World, session: GameSession) -> None:
+    for falling_object in world.falling_objects:
+        if (
+            is_beneficial_object(falling_object.definition.identifier)
+            and falling_object.beneficial_group_id is not None
+            and detect_basket_collision(world.basket, falling_object).caught
+        ):
+            mark_beneficial_group_caught(session, falling_object)
+
+
+def beneficial_group_has_catch(session: GameSession, falling_object) -> bool:
+    return (
+        falling_object.beneficial_group_id is not None
+        and falling_object.beneficial_group_id in session.caught_beneficial_group_ids
+    )
+
+
+def cleanup_beneficial_groups(world: World, session: GameSession) -> None:
+    active_group_ids = {
+        falling_object.beneficial_group_id
+        for falling_object in world.falling_objects
+        if falling_object.beneficial_group_id is not None
+    }
+    session.caught_beneficial_group_ids.intersection_update(active_group_ids)
 
 
 def score_value_for_object(session: GameSession, definition: ObjectDefinition) -> int:

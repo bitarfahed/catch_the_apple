@@ -20,3 +20,5 @@ class GameSession:
     debug_overlay_enabled: bool = False
     powerups: PowerUpState = field(default_factory=PowerUpState)
     cheats: CheatState = field(default_factory=CheatState)
+    next_beneficial_group_id: int = 1
+    caught_beneficial_group_ids: set[int] = field(default_factory=set)

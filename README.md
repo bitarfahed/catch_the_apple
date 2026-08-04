@@ -74,6 +74,7 @@ catch-the-apple
 
 - Catching Regular Apples increases score.
 - Missing Regular Apples reduces score by 2 and never removes lives.
+- When multiple Regular/Golden Apples are visible together, catching one prevents miss penalties for the rest of that active group.
 - Catching Rotten Apples reduces score by 2 and never removes lives.
 - Missing Golden Apples, Rotten Apples, or Bombs has no penalty.
 - Bomb collisions reduce lives unless a protective effect is active.

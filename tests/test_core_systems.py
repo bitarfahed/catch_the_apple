@@ -419,6 +419,80 @@ class CoreSystemTests(unittest.TestCase):
         self.assertFalse(session.game_over)
         self.assertEqual(events[0].damage, 0)
 
+    def test_catching_one_beneficial_object_suppresses_group_miss_penalties(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=5, combo=0, has_earned_score=True)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        caught_regular = FallingObject(
+            transform=Transform2D(
+                vec2(
+                    world.basket.x + world.basket.width / 2 - config.APPLE_SIZE / 2,
+                    world.basket.y - config.APPLE_SIZE / 2,
+                )
+            ),
+            definition=OBJECT_DEFINITIONS["regular_apple"],
+        )
+        missed_regular = FallingObject(
+            transform=Transform2D(vec2(80.0, world.basket.y - config.APPLE_SIZE / 2)),
+            definition=OBJECT_DEFINITIONS["regular_apple"],
+        )
+        missed_golden = FallingObject(
+            transform=Transform2D(vec2(130.0, world.basket.y - config.APPLE_SIZE / 2)),
+            definition=OBJECT_DEFINITIONS["golden_apple"],
+        )
+        world.falling_objects = [caught_regular, missed_regular, missed_golden]
+
+        catch_events = apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertEqual(session.score, 6)
+        self.assertEqual(session.lives, 3)
+        self.assertTrue(any(isinstance(event, ObjectCaughtEvent) for event in catch_events))
+        self.assertIsNotNone(missed_regular.beneficial_group_id)
+        self.assertIn(missed_regular.beneficial_group_id, session.caught_beneficial_group_ids)
+
+        missed_regular.y = config.SCREEN_HEIGHT + 1
+        missed_golden.y = config.SCREEN_HEIGHT + 1
+        miss_events = apply_game_rules(
+            world,
+            session,
+            spawn_system,
+            INTERMEDIATE.difficulty_config,
+            PowerUpSystem(seed=1),
+        )
+
+        self.assertEqual(session.score, 6)
+        self.assertEqual(session.lives, 3)
+        self.assertFalse(session.game_over)
+        self.assertTrue(any(isinstance(event, ObjectMissedEvent) for event in miss_events))
+
+    def test_uncaught_beneficial_group_regular_misses_still_reduce_score(self) -> None:
+        world = World()
+        session = GameSession(lives=3, score=5, has_earned_score=True)
+        spawn_system = SpawnSystem(INTERMEDIATE.spawn_config)
+        regular = FallingObject(
+            transform=Transform2D(vec2(80.0, world.basket.y - config.APPLE_SIZE / 2)),
+            definition=OBJECT_DEFINITIONS["regular_apple"],
+        )
+        golden = FallingObject(
+            transform=Transform2D(vec2(130.0, world.basket.y - config.APPLE_SIZE / 2)),
+            definition=OBJECT_DEFINITIONS["golden_apple"],
+        )
+        world.falling_objects = [regular, golden]
+
+        apply_game_rules(world, session, spawn_system, INTERMEDIATE.difficulty_config)
+        regular.y = config.SCREEN_HEIGHT + 1
+        golden.y = config.SCREEN_HEIGHT + 1
+        apply_game_rules(world, session, spawn_system, INTERMEDIATE.difficulty_config)
+
+        self.assertEqual(session.score, 3)
+        self.assertEqual(session.lives, 3)
+
     def test_catching_rotten_apple_reduces_score_without_life_loss(self) -> None:
         world = World()
         session = GameSession(lives=3, score=5, combo=2, has_earned_score=True)

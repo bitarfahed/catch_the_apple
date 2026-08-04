@@ -59,6 +59,7 @@ class SpawnSystem:
         falling_object.speed = self.current_object_speed
         falling_object.wind_velocity.update(0.0, 0.0)
         falling_object.magnet_velocity.update(0.0, 0.0)
+        falling_object.beneficial_group_id = None
         falling_object.previous_position.update(falling_object.transform.position)
 
     def random_falling_object_x(self, definition: ObjectDefinition, scale: float = 1.0) -> int:

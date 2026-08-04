@@ -118,6 +118,7 @@ class FallingObject:
     previous_position: pygame.Vector2 = field(default_factory=pygame.Vector2)
     wind_velocity: pygame.Vector2 = field(default_factory=pygame.Vector2)
     magnet_velocity: pygame.Vector2 = field(default_factory=pygame.Vector2)
+    beneficial_group_id: int | None = None
 
     def __post_init__(self) -> None:
         self.previous_position.update(self.transform.position)

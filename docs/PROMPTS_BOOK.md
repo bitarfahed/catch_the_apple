@@ -4603,3 +4603,70 @@ Append this prompt to docs/PROMPTS_BOOK.md.
 - `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
 
 **Completion Status:** Complete.
+
+## Prompt 32 - Beneficial Object Grouping & Miss Logic Refinement
+
+**Goal:** Refine beneficial object miss rules so Golden Apple misses are always penalty-free and catching one visible Regular/Golden Apple protects the rest of that active beneficial group from miss penalties.
+
+**Full Prompt Text:**
+
+```text
+Prompt 32 - Beneficial Object Grouping & Miss Logic Refinement
+
+Context
+
+Playtesting showed that the current miss logic becomes unfair when multiple beneficial objects are simultaneously visible.
+
+This prompt refines only the gameplay rules.
+
+Do NOT redesign the architecture.
+
+Reuse the existing object, scoring and spawn systems.
+
+Objectives
+
+1. Golden Apple Miss Rule
+2. Beneficial Object Group Rule
+3. Preserve Existing Hazard Rules
+4. Verification
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `README.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/entities.py`
+- `src/catch_the_apple/session.py`
+- `src/catch_the_apple/systems/game_rules.py`
+- `src/catch_the_apple/systems/spawning.py`
+- `tests/test_core_systems.py`
+
+**Gameplay Rule Changes:**
+
+- Golden Apple misses remain penalty-free for score and lives.
+- Visible Regular and Golden Apples are assigned a lightweight beneficial group id when two or more are active together.
+- Catching any object in that beneficial group records the group as satisfied.
+- Regular Apple misses from a satisfied beneficial group no longer subtract score.
+- Regular Apple misses outside a satisfied group still subtract exactly 2 score.
+- Spawn reset clears beneficial group ids so future waves are evaluated independently.
+- Rotten Apple and Bomb miss/catch rules were preserved.
+
+**Verification Summary:**
+
+- Runtime verification confirmed missing a Golden Apple left score/lives unchanged.
+- Runtime verification confirmed catching one Regular Apple in a group of Regular, Regular, and Golden Apples awarded the caught score and prevented penalties when the remaining Regular and Golden Apple later left the screen.
+- Runtime verification confirmed an uncaught Regular Apple miss still reduced score by 2.
+- Runtime verification confirmed Rotten Apple and Bomb misses stayed penalty-free, Rotten Apple catch still reduced score by 2, and Bomb catch still reduced lives.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 58 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.
