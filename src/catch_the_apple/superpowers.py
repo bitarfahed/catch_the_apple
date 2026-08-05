@@ -58,7 +58,7 @@ SUPER_POWER_DEFINITIONS = {
         duration=15.0,
         spawn_weight=0.26,
         cheat_code="MAGNET",
-        math_model="Attractive force: dx/dt = clamp(k(target_x - x), -vmax, vmax).",
+        math_model="Attractive acceleration: a = clamp(k(target_x - x), -amax, amax), with clamped velocity.",
         visual_color=(255, 235, 110),
     ),
     "slow_motion": SuperPowerDefinition(

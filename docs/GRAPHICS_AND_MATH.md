@@ -136,17 +136,22 @@ generated waveform approach.
 
 Every super power combines gameplay behavior, a visual identity, and a simple mathematical model.
 
-| Power | Mathematical Idea | Gameplay Effect | Visual Representation |
-|---|---|---|---|
-| Magnet | Smooth attractive force: `a = clamp(k(target_x - x), -amax, amax)`, `v = clamp(v + a dt, -vmax, vmax)` | Pulls only regular and golden apples toward the basket and starts Apple Storm. | Gold HUD banner, apple storm density, glow, and apple-only trail particles. |
-| Time Warp | Time scaling: `dt' = s * dt`, where `0 < s < 1` | Slows falling objects and difficulty growth. | Blue HUD banner and power-up burst. |
-| Dash Boost | Velocity scaling: `vmax' = alpha * vmax` and `dash' = alpha * dash` | Raises basket acceleration, max speed, and dash speed. | Green HUD banner and stronger basket motion. |
-| Wind Control | Vector field boost: `wind' = beta * wind + control_bias` | Amplifies sideways wind drift during normal movement. | Cyan HUD label, HUD wind vector, and stronger diagonal trajectories. |
-| Shockwave | Radial impulse: `p' = p + normalize(p-c) * I * falloff(r)` | Pushes falling objects away from the basket. | Bright burst particles and sudden radial separation. |
-| Black Hole | Inverse-distance attraction: `a = G(center - p) / (r^2 + epsilon)` | Draws objects toward screen center. | Violet HUD label and converging object paths. |
-| Gravity Control | Gravity scaling: vertical motion uses `g' = gamma * g` | Reduces falling speed independently of normal Time Warp. | Pale blue HUD label and lighter descent. |
-| Golden Rain | Weighted sampling override: `P(golden)` is multiplied while active | Makes golden apples much more likely and suppresses hazards. | Gold HUD label and frequent glowing apples. |
-| Freeze Bombs | Selective velocity mask: `v_hazard = 0` | Freezes hazardous objects while beneficial objects continue falling. | Ice-blue HUD label and suspended hazards. |
+Canonical Super Power cheat codes are uppercase. The console also accepts each
+internal identifier as an alias, such as `magnet` or `black_hole`, because the
+lookup normalizes Super Power input. Lowercase `wind` is reserved for the rain
+developer cheat, so use uppercase `WIND` for Wind Control.
+
+| Command | Alias | Duration | Parameters | Mathematical Idea | Gameplay Effect | Visual Representation | Notes |
+|---|---|---:|---|---|---|---|---|
+| `MAGNET` | `magnet` | 15s | None | Smooth attractive acceleration: `a = clamp(k(target_x - x), -amax, amax)`, `v = clamp(v + a dt, -vmax, vmax)` | Pulls only Regular and Golden Apples toward the basket and preserves Apple Storm synergy. | Gold HUD banner/status, glow, apple-only trail particles, and denser apple action during synergy. | Rotten Apples and Bombs are explicitly excluded. |
+| `TIME` | `slow_motion` | 8s | None | Time scaling: `dt' = s * dt`, where `0 < s < 1` | Slows falling objects and difficulty growth. | Blue HUD banner and power-up burst. | Stacks through the existing simulation time-scale path. |
+| `DASH` | `speed_boost` | 7s | None | Velocity scaling: `vmax' = alpha * vmax` and `dash' = alpha * dash` | Raises basket acceleration, max speed, and dash speed. | Green HUD banner and stronger basket motion. | Reuses basket movement tuning. |
+| `WIND` | `wind_control` | 10s | None | Vector field boost: `wind' = beta * wind + control_bias` | Amplifies sideways wind drift during normal movement. | Cyan HUD label, HUD wind vector, and stronger diagonal trajectories. | Distinct from lowercase `wind`, which activates rain. |
+| `WAVE` | `shockwave` | 1.2s | None | Radial impulse: `p' = p + normalize(p-c) * I * falloff(r)` | Pushes falling objects away from the basket. | Bright burst particles and sudden radial separation. | Short-lived impulse effect. |
+| `VOID` | `black_hole` | 7s | None | Inverse-distance attraction: `a = G(center - p) / (r^2 + epsilon)` | Draws objects toward screen center. | Violet HUD label and converging object paths. | Uses a minimum radius to avoid extreme acceleration. |
+| `GRAV` | `gravity_control` | 9s | None | Gravity scaling: vertical motion uses `g' = gamma * g` | Reduces falling speed independently of normal Time Warp. | Pale blue HUD label and lighter descent. | Also contributes to simulation time scaling. |
+| `GOLD` | `golden_rain` | 10s | None | Weighted sampling override: `P(golden)` is multiplied while active | Makes Golden Apples much more likely and suppresses hazards. | Gold HUD label and frequent glowing apples. | Does not change Golden Apple miss penalties. |
+| `FREEZE` | `freeze_bombs` | 8s | None | Selective velocity mask: `v_hazard = 0` | Freezes hazardous objects while beneficial objects continue falling. | Ice-blue HUD label and suspended hazards. | Applies only to objects categorized as hazards. |
 
 ## Developer Cheats
 
@@ -155,17 +160,17 @@ cheats live in `CheatState`, update by delta time, and expire back to normal
 gameplay settings. Entering an active temporary cheat again toggles it off and
 restores the normal state immediately.
 
-| Cheat | Mathematical Concept | Algorithm | Gameplay Effect | Visual Effect |
-|---|---|---|---|---|
-| `easy` | Time scaling | Falling-object `dt` is multiplied by `0.55`. | Objects descend more slowly for debugging or demos. | Easy Mode countdown banner. |
-| `wind` | Particle simulation and vector fields | Weather is forced to Rain while rain particles are emitted from pooled emitters. | No gameplay physics changes. | Rain streaks appear for about 20 seconds. |
-| `nosound` | Boolean state gating | Audio volume resolves to zero while muted. | All generated sounds stop. | Console confirmation. |
-| `sound` | Boolean state restoration | Mute is cleared and channel volumes are recomputed. | Generated sounds return. | Console confirmation. |
-| `shield` | Collision filtering | Bomb collision damage is masked after spending 5 score. | Bombs cannot damage the player while active. | Shield countdown and basket glow. |
-| `cycle` | Modulo arithmetic | Basket position wraps with `x = (x + width) mod (screen_width + width) - width`. | Exiting one side re-enters from the other. | Cycle countdown. |
-| `flip <angle>` | Rotation matrix | Gameplay world is rendered to a surface and rotated around the playfield center. | World orientation changes temporarily. | The world visibly rotates while HUD remains readable. |
-| `fahed` | Scaling and collision geometry | Basket width scales to most of the screen; regular and golden apples auto-collect; hazard damage is masked. | Powerful demo mode with safe auto-catches. | Wide glowing basket, particles, motion trail, and countdown. |
-| `insane` | Random scale sampling | Regular apples sample `scale ~ U(3, 6)` per spawn; golden apples use `scale = 10`. | Regular apples stay worth 1 point; golden apples are worth 3 points while active. | Insane Mode banner, giant apples, glow, and activation particles. |
+| Syntax | Duration | Parameters | Mathematical Concept | Algorithm | Gameplay Effect | Visual Effect | Notes |
+|---|---:|---|---|---|---|---|---|
+| `easy` | 20s | None | Time scaling | Falling-object `dt` is multiplied by `0.55`. | Objects descend more slowly for debugging or demos. | Easy Mode countdown banner. | Entering `easy` again disables it early. |
+| `wind` | 20s | None | Particle simulation and weather override | Weather is forced to Rain while rain particles are emitted from pooled emitters. | No gameplay physics changes. | Rain streaks cover the screen for about 20 seconds. | Lowercase only; uppercase `WIND` activates Wind Control. |
+| `nosound` | Until `sound` | None | Boolean state gating | Audio volume resolves to zero while muted. | All generated sounds stop. | Console confirmation. | Persistent until `sound` is entered or settings change. |
+| `sound` | Instant | None | Boolean state restoration | Mute is cleared and channel volumes are recomputed. | Generated sounds return. | Console confirmation. | Does not activate a timed cheat state. |
+| `shield` | 20s | Costs 5 score | Collision filtering | Bomb collision damage is masked after spending 5 score. | Bombs cannot damage the player while active. | Shield countdown and basket glow. | Fails gracefully below 5 score; entering again disables it early without another cost. |
+| `cycle` | 20s | None | Modulo arithmetic | Basket position wraps with `x = (x + width) mod (screen_width + width) - width`. | Exiting one side re-enters from the other. | Cycle countdown. | Entering `cycle` again disables it early. |
+| `flip <angle>` | 20s | `angle` from 0 to 360 degrees | Rotation matrix | Gameplay world is rendered to a surface and rotated around the playfield center. | World orientation changes temporarily. | The world visibly rotates while HUD remains readable. | Entering any `flip <angle>` while active disables the current flip. |
+| `fahed` | 20s | None | Scaling and collision geometry | Basket width scales to most of the screen; Regular and Golden Apples auto-collect; hazard damage is masked. | Powerful demo mode with safe auto-catches. | Wide glowing basket, particles, motion trail, and countdown. | Entering `fahed` again disables it early. |
+| `insane` | 20s | None | Random scale sampling | Regular Apples sample `scale ~ U(3, 6)` per spawn; Golden Apples use `scale = 10`. | Regular Apples stay worth 1 point; Golden Apples are worth 3 points while active. | Insane Mode banner, giant apples, glow, and activation particles. | Rotten Apples and Bombs keep normal size. |
 
 ## Performance Notes
 

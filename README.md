@@ -85,26 +85,28 @@ catch-the-apple
 
 The cheat console is available only while paused. Press `C`, type a code, and press `Enter`. Press `Esc` to return to Pause, then press `Esc` again to resume. Temporary cheats can be entered again to disable them early. Codes are case-sensitive where shown; `WIND` activates Wind Control, while `wind` activates temporary rain.
 
-| Code | Effect |
-|---|---|
-| `MAGNET` | Magnet / Apple Storm |
-| `TIME` | Time Warp |
-| `DASH` | Dash Boost |
-| `WIND` | Wind Control |
-| `WAVE` | Shockwave |
-| `VOID` | Black Hole |
-| `GRAV` | Gravity Control |
-| `GOLD` | Golden Rain |
-| `FREEZE` | Freeze Bombs |
-| `easy` | Temporarily reduces falling speed and displays Easy Mode |
-| `wind` | Activates visible rain for about 20 seconds |
-| `nosound` | Mutes all sound |
-| `sound` | Restores sound |
-| `shield` | Costs 5 score and blocks bomb damage temporarily |
-| `cycle` | Temporarily enables wrap-around basket movement |
-| `flip <angle>` | Rotates the gameplay world by an angle from 0 to 360 degrees |
-| `fahed` | Temporarily expands the basket, auto-collects apples, blocks hazards, and shows strong effects |
-| `insane` | Temporarily spawns giant regular apples and huge golden apples; golden apples are worth 3 during the effect |
+Super Power codes also accept their internal identifier aliases such as `magnet`, `slow_motion`, and `black_hole`. The one intentional exception is wind: lowercase `wind` is the rain cheat, while uppercase `WIND` is Wind Control.
+
+| Syntax | Duration | Gameplay effect | Visual effect | Math / algorithm |
+|---|---:|---|---|---|
+| `MAGNET` | 15s | Attracts only Regular and Golden Apples and supports Apple Storm synergy. | Gold HUD/status, glow, trails, and attraction particles. | Clamped attractive acceleration and velocity integration. |
+| `TIME` | 8s | Slows simulation time and difficulty growth. | Blue Time Warp feedback. | Delta-time scaling. |
+| `DASH` | 7s | Increases basket movement and dash speed. | Green Dash Boost feedback. | Velocity scaling. |
+| `WIND` | 10s | Amplifies gameplay wind drift. | Cyan wind feedback and stronger diagonal trajectories. | Vector-field scaling. |
+| `WAVE` | 1.2s | Pushes falling objects away from the basket. | Bright radial burst. | Radial impulse with distance falloff. |
+| `VOID` | 7s | Pulls objects toward the screen center. | Violet Black Hole feedback. | Inverse-distance attraction. |
+| `GRAV` | 9s | Reduces falling speed through gravity/simulation scaling. | Pale-blue Gravity Control feedback. | Gravity and time scaling. |
+| `GOLD` | 10s | Increases Golden Apple probability and suppresses hazards. | Frequent glowing Golden Apples. | Weighted spawn sampling. |
+| `FREEZE` | 8s | Freezes hazardous objects only. | Ice-blue Freeze Bombs feedback. | Selective velocity mask. |
+| `easy` | 20s | Reduces falling-object time scale to 0.55. | Easy Mode countdown. | Delta-time scaling. |
+| `wind` | 20s | Forces visual rain only; gameplay physics are unchanged. | Screen-covering rain particles. | Weather override and particle simulation. |
+| `nosound` | Until `sound` | Mutes all generated sounds. | Console confirmation. | Boolean audio gate. |
+| `sound` | Instant | Restores generated sound playback. | Console confirmation. | Volume recomputation. |
+| `shield` | 20s | Costs 5 score, then blocks bomb damage; fails gracefully below 5 score. | Shield countdown and basket glow. | Collision filtering. |
+| `cycle` | 20s | Wraps basket movement across screen edges. | Cycle countdown. | Modulo arithmetic. |
+| `flip <angle>` | 20s | Rotates the gameplay world by `angle` degrees, where `angle` is 0-360. | Rotated world with readable HUD. | Rotation transform around the playfield center. |
+| `fahed` | 20s | Expands the basket, auto-collects Regular/Golden Apples, and blocks hazards. | Strong glow, particles, motion trail, and countdown. | Scaling and expanded collision geometry. |
+| `insane` | 20s | Regular Apples spawn at random 3x-6x scale for 1 point; Golden Apples spawn at 10x scale for 3 points. | Giant apples, banner, glow, and activation particles. | Random scale sampling. |
 
 ## Testing
 

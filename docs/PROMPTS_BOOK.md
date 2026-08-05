@@ -4670,3 +4670,77 @@ Append this prompt to docs/PROMPTS_BOOK.md.
 - `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
 
 **Completion Status:** Complete.
+
+## Prompt 33 - Cheat Code Documentation Audit
+
+**Goal:** Audit the source code as the authoritative cheat-command registry, synchronize all implemented Developer Cheat and Super Power commands with public documentation, and avoid adding new functionality.
+
+**Full Prompt Text:**
+
+```text
+Prompt 33 - Cheat Code Documentation Audit
+
+Context
+
+The project now contains multiple Developer Cheat Codes and Super Power commands.
+
+Before adding any new functionality, perform a complete documentation audit.
+
+The goal is to ensure that every implemented cheat command is documented consistently across the project.
+
+Do not assume the documentation is complete.
+
+Objectives
+
+1. Discover All Cheat Codes
+2. Documentation Audit
+3. Documentation Update
+4. Consistency Check
+
+PROMPTS_BOOK
+
+Append this prompt to docs/PROMPTS_BOOK.md.
+
+Restrictions
+
+Do NOT add new cheat codes.
+Do NOT redesign the Cheat System.
+
+Acceptance Criteria
+
+- Every implemented cheat code has been discovered.
+- Every implemented cheat code is documented.
+- No undocumented cheat codes remain.
+- Documentation matches the current implementation.
+- PROMPTS_BOOK updated.
+```
+
+**Files Created:** None.
+
+**Files Modified:**
+
+- `README.md`
+- `docs/GRAPHICS_AND_MATH.md`
+- `docs/PROMPTS_BOOK.md`
+- `src/catch_the_apple/superpowers.py`
+
+**Discovered Cheat Commands:**
+
+- Developer cheats: `easy`, `wind`, `nosound`, `sound`, `shield`, `cycle`, `flip <angle>`, `fahed`, `insane`.
+- Super Power cheats: `MAGNET`, `TIME`, `DASH`, `WIND`, `WAVE`, `VOID`, `GRAV`, `GOLD`, `FREEZE`.
+- Super Power aliases accepted by the console: `magnet`, `slow_motion`, `speed_boost`, `wind_control`, `shockwave`, `black_hole`, `gravity_control`, `golden_rain`, `freeze_bombs`.
+
+**Documentation Audit Summary:**
+
+- Expanded `README.md` from a short effect-only cheat list into a command table covering syntax, duration, gameplay effect, visual effect, and mathematical or algorithmic concept.
+- Expanded `docs/GRAPHICS_AND_MATH.md` to document every discovered Developer Cheat and Super Power command with parameters, duration, algorithms, visual representation, notes, and limitations.
+- Clarified the case-sensitive distinction between lowercase `wind` for temporary rain and uppercase `WIND` for Wind Control.
+- Documented accepted Super Power aliases while preserving canonical uppercase command names.
+- Corrected Magnet metadata in `src/catch_the_apple/superpowers.py` to match the current acceleration-plus-clamped-velocity implementation.
+
+**Test Results:**
+
+- `.venv\Scripts\python.exe -m unittest discover` passed: 58 tests.
+- `.venv\Scripts\python.exe -m compileall src tests main.py` passed.
+
+**Completion Status:** Complete.
